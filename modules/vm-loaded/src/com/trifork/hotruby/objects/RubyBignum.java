@@ -3,15 +3,12 @@ package com.trifork.hotruby.objects;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import com.trifork.hotruby.classes.RubyClassArray;
 import com.trifork.hotruby.classes.RubyClassBignum;
 import com.trifork.hotruby.marshal.UnmarshalStream;
 import com.trifork.hotruby.runtime.CallContext;
 import com.trifork.hotruby.runtime.Selector;
 
 public class RubyBignum extends RubyBaseBignum {
-
-	private static final CallContext META = RubyClassBignum.instance.get_meta_class();
 
 	java.math.BigInteger value;
 

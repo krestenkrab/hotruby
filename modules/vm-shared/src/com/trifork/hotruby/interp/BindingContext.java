@@ -1,6 +1,5 @@
 package com.trifork.hotruby.interp;
 
-import com.trifork.hotruby.compiler.MethodCompiler;
 import com.trifork.hotruby.interp.ISeq.Loop;
 import com.trifork.hotruby.objects.IRubyArray;
 import com.trifork.hotruby.objects.IRubyClass;
@@ -31,8 +30,6 @@ import com.trifork.hotruby.runtime.ThreadState;
 import com.trifork.hotruby.runtime.ThreadState.ModuleFrame;
 
 public class BindingContext implements Instructions {
-
-	private static final IRubyObject[] EMPTY_ARR = new IRubyObject[0];
 
 	// this is the exact type of self, because an BindingContext is always
 	// specialized

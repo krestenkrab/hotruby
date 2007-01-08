@@ -18,6 +18,8 @@ public class LexicalBindings implements CallContext {
 	// selectors are customized for call context
 	final Selector[] selectors;
 	private final MetaModule lexical_context;
+	
+	// we need the frame to resolve constants correctly
 	private final ModuleFrame frame;
 	private RubyMethodAccessor super_method;
 

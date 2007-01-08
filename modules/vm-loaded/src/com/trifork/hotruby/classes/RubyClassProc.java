@@ -1,9 +1,13 @@
 package com.trifork.hotruby.classes;
 
-import com.trifork.hotruby.callable.*;
-import com.trifork.hotruby.classes.*;
-import com.trifork.hotruby.objects.*;
-import com.trifork.hotruby.runtime.*;
+import com.trifork.hotruby.callable.PublicMethod;
+import com.trifork.hotruby.objects.IRubyObject;
+import com.trifork.hotruby.objects.RubyProc;
+import com.trifork.hotruby.runtime.MetaClass;
+import com.trifork.hotruby.runtime.NewProcException;
+import com.trifork.hotruby.runtime.NonLocalJump;
+import com.trifork.hotruby.runtime.RubyBlock;
+import com.trifork.hotruby.runtime.ThreadState;
 
 public class RubyClassProc extends RubyBaseClassProc {
 	@Override

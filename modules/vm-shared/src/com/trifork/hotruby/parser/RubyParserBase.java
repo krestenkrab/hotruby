@@ -2,21 +2,71 @@
 
 package com.trifork.hotruby.parser;
 
-import com.trifork.hotruby.ast.*;
-
-import antlr.TokenBuffer;
-import antlr.TokenStreamException;
-import antlr.TokenStreamIOException;
-import antlr.ANTLRException;
-import antlr.LLkParser;
-import antlr.Token;
-import antlr.TokenStream;
-import antlr.RecognitionException;
 import antlr.NoViableAltException;
-import antlr.MismatchedTokenException;
-import antlr.SemanticException;
 import antlr.ParserSharedInputState;
-import antlr.collections.impl.BitSet;
+import antlr.RecognitionException;
+import antlr.Token;
+import antlr.TokenBuffer;
+import antlr.TokenStream;
+import antlr.TokenStreamException;
+
+import com.trifork.hotruby.ast.AliasExpression;
+import com.trifork.hotruby.ast.ArrayExpression;
+import com.trifork.hotruby.ast.AssignmentExpression;
+import com.trifork.hotruby.ast.AssocHolder;
+import com.trifork.hotruby.ast.BeginEndExpression;
+import com.trifork.hotruby.ast.BinaryExpression;
+import com.trifork.hotruby.ast.BlockCode;
+import com.trifork.hotruby.ast.CaseExpression;
+import com.trifork.hotruby.ast.ClassCode;
+import com.trifork.hotruby.ast.ClassExpression;
+import com.trifork.hotruby.ast.ClassVarExpression;
+import com.trifork.hotruby.ast.CommandOutputExpression;
+import com.trifork.hotruby.ast.ConstVarExpression;
+import com.trifork.hotruby.ast.ConstantStringExpression;
+import com.trifork.hotruby.ast.DefExpression;
+import com.trifork.hotruby.ast.DefinedExpression;
+import com.trifork.hotruby.ast.EvalCode;
+import com.trifork.hotruby.ast.Expression;
+import com.trifork.hotruby.ast.FalseExpression;
+import com.trifork.hotruby.ast.FileExpression;
+import com.trifork.hotruby.ast.FloatExpression;
+import com.trifork.hotruby.ast.FunctionExpression;
+import com.trifork.hotruby.ast.GlobalVarExpression;
+import com.trifork.hotruby.ast.HashExpression;
+import com.trifork.hotruby.ast.IdentifierExpression;
+import com.trifork.hotruby.ast.IfThenElseExpression;
+import com.trifork.hotruby.ast.InstanceVarExpression;
+import com.trifork.hotruby.ast.IntegerExpression;
+import com.trifork.hotruby.ast.LineExpression;
+import com.trifork.hotruby.ast.LogicalAndExpression;
+import com.trifork.hotruby.ast.LogicalOrExpression;
+import com.trifork.hotruby.ast.MethodCallExpression;
+import com.trifork.hotruby.ast.MethodCode;
+import com.trifork.hotruby.ast.MethodDenominator;
+import com.trifork.hotruby.ast.ModuleCode;
+import com.trifork.hotruby.ast.ModuleExpression;
+import com.trifork.hotruby.ast.MultiAssignmentExpression;
+import com.trifork.hotruby.ast.NilExpression;
+import com.trifork.hotruby.ast.RegularExpression;
+import com.trifork.hotruby.ast.RescueClause;
+import com.trifork.hotruby.ast.RescueExpression;
+import com.trifork.hotruby.ast.RestArgExpression;
+import com.trifork.hotruby.ast.RubyCode;
+import com.trifork.hotruby.ast.SelfExpression;
+import com.trifork.hotruby.ast.SequenceExpression;
+import com.trifork.hotruby.ast.SingletonClassExpression;
+import com.trifork.hotruby.ast.StringConcatExpression;
+import com.trifork.hotruby.ast.SuperExpression;
+import com.trifork.hotruby.ast.SymbolExpression;
+import com.trifork.hotruby.ast.TopLevelCode;
+import com.trifork.hotruby.ast.TrueExpression;
+import com.trifork.hotruby.ast.UnaryExpression;
+import com.trifork.hotruby.ast.UndefExpression;
+import com.trifork.hotruby.ast.VariableExpression;
+import com.trifork.hotruby.ast.WArrayExpression;
+import com.trifork.hotruby.ast.WhileExpression;
+import com.trifork.hotruby.ast.YieldExpression;
 
 public class RubyParserBase extends antlr.LLkParser       implements RubyTokenTypes
  {
@@ -500,7 +550,7 @@ public RubyParserBase(ParserSharedInputState state) {
 		
 		expr=statement();
 		{
-		_loop5921:
+		_loop9:
 		do {
 			if ((LA(1)==SEMI||LA(1)==LINE_BREAK)) {
 				terminal();
@@ -525,7 +575,7 @@ public RubyParserBase(ParserSharedInputState state) {
 				}
 			}
 			else {
-				break _loop5921;
+				break _loop9;
 			}
 			
 		} while (true);
@@ -540,7 +590,7 @@ public RubyParserBase(ParserSharedInputState state) {
 		
 		expr=statementWithoutModifier();
 		{
-		_loop5925:
+		_loop13:
 		do {
 			switch ( LA(1)) {
 			case IF_MODIFIER:
@@ -595,7 +645,7 @@ public RubyParserBase(ParserSharedInputState state) {
 			}
 			default:
 			{
-				break _loop5925;
+				break _loop13;
 			}
 			}
 		} while (true);
@@ -705,7 +755,7 @@ public RubyParserBase(ParserSharedInputState state) {
 			keyword_undef();
 			args=undef_parameter(args);
 			{
-			_loop5930:
+			_loop18:
 			do {
 				if ((LA(1)==COMMA)) {
 					match(COMMA);
@@ -792,7 +842,7 @@ public RubyParserBase(ParserSharedInputState state) {
 					args=undef_parameter(args);
 				}
 				else {
-					break _loop5930;
+					break _loop18;
 				}
 				
 			} while (true);
@@ -1837,8 +1887,8 @@ public RubyParserBase(ParserSharedInputState state) {
 		
 		
 		{
-		int _cnt5951=0;
-		_loop5951:
+		int _cnt39=0;
+		_loop39:
 		do {
 			if (((LA(1)==COMMA))&&(!done)) {
 				match(COMMA);
@@ -1856,10 +1906,10 @@ public RubyParserBase(ParserSharedInputState state) {
 				}
 			}
 			else {
-				if ( _cnt5951>=1 ) { break _loop5951; } else {throw new NoViableAltException(LT(1), getFilename());}
+				if ( _cnt39>=1 ) { break _loop39; } else {throw new NoViableAltException(LT(1), getFilename());}
 			}
 			
-			_cnt5951++;
+			_cnt39++;
 		} while (true);
 		}
 		{
@@ -2083,7 +2133,7 @@ public RubyParserBase(ParserSharedInputState state) {
 				rhs.addExpression(expr);
 			}
 			{
-			_loop5956:
+			_loop44:
 			do {
 				if (((LA(1)==COMMA))&&(!done)) {
 					match(COMMA);
@@ -2193,7 +2243,7 @@ public RubyParserBase(ParserSharedInputState state) {
 					}
 				}
 				else {
-					break _loop5956;
+					break _loop44;
 				}
 				
 			} while (true);
@@ -2798,10 +2848,10 @@ public RubyParserBase(ParserSharedInputState state) {
 		
 		Expression expr = null; SequenceExpression nested = null; boolean done;
 		
-		boolean synPredMatched5942 = false;
+		boolean synPredMatched30 = false;
 		if (((LA(1)==LPAREN))) {
-			int _m5942 = mark();
-			synPredMatched5942 = true;
+			int _m30 = mark();
+			synPredMatched30 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -2811,26 +2861,26 @@ public RubyParserBase(ParserSharedInputState state) {
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched5942 = false;
+				synPredMatched30 = false;
 			}
-			rewind(_m5942);
+			rewind(_m30);
 inputState.guessing--;
 		}
-		if ( synPredMatched5942 ) {
+		if ( synPredMatched30 ) {
 			match(LPAREN);
 			if ( inputState.guessing==0 ) {
 				nested = new SequenceExpression();
 			}
 			done=mlhs_item(nested);
 			{
-			_loop5944:
+			_loop32:
 			do {
 				if (((LA(1)==COMMA))&&(!done)) {
 					match(COMMA);
 					done=mlhs_item(nested);
 				}
 				else {
-					break _loop5944;
+					break _loop32;
 				}
 				
 			} while (true);
@@ -2972,7 +3022,7 @@ inputState.guessing--;
 		
 		done=mlhs_item(parms);
 		{
-		_loop5962:
+		_loop50:
 		do {
 			if (((LA(1)==COMMA))&&(!done)) {
 				match(COMMA);
@@ -3050,7 +3100,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop5962;
+				break _loop50;
 			}
 			
 		} while (true);
@@ -3481,7 +3531,7 @@ inputState.guessing--;
 				expr = exc = new StringConcatExpression(s1.getLine(), ConstantStringExpression.DOUBLE_QUOTE); exc.add(s1.getText()); exc.add(exp2);
 			}
 			{
-			_loop6076:
+			_loop164:
 			do {
 				if ((LA(1)==STRING_BETWEEN_EXPRESSION_SUBSTITUTION)) {
 					s3 = LT(1);
@@ -3492,7 +3542,7 @@ inputState.guessing--;
 					}
 				}
 				else {
-					break _loop6076;
+					break _loop164;
 				}
 				
 			} while (true);
@@ -3519,7 +3569,7 @@ inputState.guessing--;
 		
 		expr=andorExpression();
 		{
-		_loop5979:
+		_loop67:
 		do {
 			if ((LA(1)==ASSIGN_WITH_NO_LEADING_SPACE||LA(1)==ASSIGN||LA(1)==PLUS_ASSIGN||LA(1)==MINUS_ASSIGN||LA(1)==STAR_ASSIGN||LA(1)==DIV_ASSIGN||LA(1)==MOD_ASSIGN||LA(1)==POWER_ASSIGN||LA(1)==BAND_ASSIGN||LA(1)==BXOR_ASSIGN||LA(1)==BOR_ASSIGN||LA(1)==LEFT_SHIFT_ASSIGN||LA(1)==RIGHT_SHIFT_ASSIGN||LA(1)==LOGICAL_AND_ASSIGN||LA(1)==LOGICAL_OR_ASSIGN)) {
 				{
@@ -3689,7 +3739,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop5979;
+				break _loop67;
 			}
 			
 		} while (true);
@@ -3704,7 +3754,7 @@ inputState.guessing--;
 		
 		expr=notExpression();
 		{
-		_loop5983:
+		_loop71:
 		do {
 			if ((LA(1)==LITERAL_and||LA(1)==LITERAL_or)) {
 				{
@@ -3737,7 +3787,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop5983;
+				break _loop71;
 			}
 			
 		} while (true);
@@ -4818,7 +4868,7 @@ inputState.guessing--;
 		
 		expr=logicalOrExpression();
 		{
-		_loop5990:
+		_loop78:
 		do {
 			if ((LA(1)==INCLUSIVE_RANGE||LA(1)==EXCLUSIVE_RANGE)) {
 				{
@@ -4845,7 +4895,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop5990;
+				break _loop78;
 			}
 			
 		} while (true);
@@ -5385,7 +5435,7 @@ inputState.guessing--;
 		
 		expr=logicalAndExpression();
 		{
-		_loop5993:
+		_loop81:
 		do {
 			if ((LA(1)==LOGICAL_OR)) {
 				op=operator_LOGICAL_OR();
@@ -5395,7 +5445,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop5993;
+				break _loop81;
 			}
 			
 		} while (true);
@@ -5570,7 +5620,7 @@ inputState.guessing--;
 		
 		expr=equalityExpression();
 		{
-		_loop5996:
+		_loop84:
 		do {
 			if ((LA(1)==LOGICAL_AND)) {
 				op=operator_LOGICAL_AND();
@@ -5580,7 +5630,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop5996;
+				break _loop84;
 			}
 			
 		} while (true);
@@ -5675,7 +5725,7 @@ inputState.guessing--;
 		
 		expr=relationalExpression();
 		{
-		_loop6000:
+		_loop88:
 		do {
 			if ((LA(1)==EQUAL||LA(1)==CASE_EQUAL||LA(1)==MATCH||LA(1)==COMPARE||LA(1)==NOT_EQUAL||LA(1)==NOT_MATCH)) {
 				{
@@ -5730,7 +5780,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop6000;
+				break _loop88;
 			}
 			
 		} while (true);
@@ -5825,7 +5875,7 @@ inputState.guessing--;
 		
 		expr=orExpression();
 		{
-		_loop6004:
+		_loop92:
 		do {
 			if ((LA(1)==LESS_THAN||LA(1)==GREATER_THAN||LA(1)==GREATER_OR_EQUAL||LA(1)==LESS_OR_EQUAL)) {
 				{
@@ -5862,7 +5912,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop6004;
+				break _loop92;
 			}
 			
 		} while (true);
@@ -6357,7 +6407,7 @@ inputState.guessing--;
 		
 		expr=andExpression();
 		{
-		_loop6008:
+		_loop96:
 		do {
 			if ((LA(1)==BOR||LA(1)==BXOR)) {
 				{
@@ -6384,7 +6434,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop6008;
+				break _loop96;
 			}
 			
 		} while (true);
@@ -6719,7 +6769,7 @@ inputState.guessing--;
 		
 		expr=shiftExpression();
 		{
-		_loop6011:
+		_loop99:
 		do {
 			if ((LA(1)==BAND)) {
 				op=operator_BAND();
@@ -6729,7 +6779,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop6011;
+				break _loop99;
 			}
 			
 		} while (true);
@@ -6904,7 +6954,7 @@ inputState.guessing--;
 		
 		expr=additiveExpression();
 		{
-		_loop6015:
+		_loop103:
 		do {
 			if ((LA(1)==LEFT_SHIFT||LA(1)==RIGHT_SHIFT)) {
 				{
@@ -6931,7 +6981,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop6015;
+				break _loop103;
 			}
 			
 		} while (true);
@@ -7026,7 +7076,7 @@ inputState.guessing--;
 		
 		expr=multiplicativeExpression();
 		{
-		_loop6019:
+		_loop107:
 		do {
 			if ((LA(1)==PLUS||LA(1)==MINUS)) {
 				{
@@ -7053,7 +7103,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop6019;
+				break _loop107;
 			}
 			
 		} while (true);
@@ -7228,7 +7278,7 @@ inputState.guessing--;
 		
 		expr=powerExpression();
 		{
-		_loop6023:
+		_loop111:
 		do {
 			if (((LA(1) >= STAR && LA(1) <= MOD))) {
 				{
@@ -7260,7 +7310,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop6023;
+				break _loop111;
 			}
 			
 		} while (true);
@@ -7435,7 +7485,7 @@ inputState.guessing--;
 		
 		expr=unaryExpression();
 		{
-		_loop6026:
+		_loop114:
 		do {
 			if ((LA(1)==POWER)) {
 				op=operator_POWER();
@@ -7445,7 +7495,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop6026;
+				break _loop114;
 			}
 			
 		} while (true);
@@ -7699,7 +7749,7 @@ inputState.guessing--;
 		Expression expr2; String op=null; java.util.ArrayList<String> ops=null;
 		
 		{
-		_loop6029:
+		_loop117:
 		do {
 			switch ( LA(1)) {
 			case UNARY_PLUS:
@@ -7736,7 +7786,7 @@ inputState.guessing--;
 			}
 			default:
 			{
-				break _loop6029;
+				break _loop117;
 			}
 			}
 		} while (true);
@@ -8244,7 +8294,7 @@ inputState.guessing--;
 			}
 			}
 			{
-			_loop6037:
+			_loop125:
 			do {
 				if (((LA(1) >= DOT && LA(1) <= LBRACK))) {
 					expr=commandPart(expr);
@@ -8252,7 +8302,7 @@ inputState.guessing--;
 					is_lhs_=empty_true();
 				}
 				else {
-					break _loop6037;
+					break _loop125;
 				}
 				
 			} while (true);
@@ -8667,7 +8717,7 @@ inputState.guessing--;
 		{
 			keyValuePair(args);
 			{
-			_loop6104:
+			_loop192:
 			do {
 				if (((LA(1)==COMMA))&&(!done)) {
 					match(COMMA);
@@ -8776,7 +8826,7 @@ inputState.guessing--;
 					}
 				}
 				else {
-					break _loop6104;
+					break _loop192;
 				}
 				
 			} while (true);
@@ -9046,10 +9096,10 @@ inputState.guessing--;
 		
 		SequenceExpression args = null; BlockCode block = null; int line = line();;
 		
-		boolean synPredMatched6048 = false;
+		boolean synPredMatched136 = false;
 		if (((LA(1)==LPAREN))) {
-			int _m6048 = mark();
-			synPredMatched6048 = true;
+			int _m136 = mark();
+			synPredMatched136 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -9057,12 +9107,12 @@ inputState.guessing--;
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched6048 = false;
+				synPredMatched136 = false;
 			}
-			rewind(_m6048);
+			rewind(_m136);
 inputState.guessing--;
 		}
-		if ( synPredMatched6048 ) {
+		if ( synPredMatched136 ) {
 			args=methodInvocationArgumentWithParen();
 			is_lhs_=empty_false();
 			seen_rparen_=empty_true();
@@ -9083,10 +9133,10 @@ inputState.guessing--;
 			}
 		}
 		else {
-			boolean synPredMatched6051 = false;
+			boolean synPredMatched139 = false;
 			if (((LA(1)==LCURLY_BLOCK||LA(1)==LITERAL_do))) {
-				int _m6051 = mark();
-				synPredMatched6051 = true;
+				int _m139 = mark();
+				synPredMatched139 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -9109,12 +9159,12 @@ inputState.guessing--;
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched6051 = false;
+					synPredMatched139 = false;
 				}
-				rewind(_m6051);
+				rewind(_m139);
 inputState.guessing--;
 			}
-			if ( synPredMatched6051 ) {
+			if ( synPredMatched139 ) {
 				block=codeBlock();
 				is_lhs_=empty_false();
 				if ( inputState.guessing==0 ) {
@@ -9201,7 +9251,7 @@ inputState.guessing--;
 		{
 			normalMethodInvocationArgument(args, should_ignore_line_break);
 			{
-			_loop6061:
+			_loop149:
 			do {
 				if (((LA(1)==COMMA))&&(!seen_star_or_band)) {
 					match(COMMA);
@@ -9217,10 +9267,10 @@ inputState.guessing--;
 					
 					}
 					{
-					boolean synPredMatched6060 = false;
+					boolean synPredMatched148 = false;
 					if (((LA(1)==EOF||LA(1)==SEMI||LA(1)==LINE_BREAK||LA(1)==IF_MODIFIER||LA(1)==UNLESS_MODIFIER||LA(1)==WHILE_MODIFIER||LA(1)==UNTIL_MODIFIER||LA(1)==RESCUE_MODIFIER||LA(1)==COMMA||LA(1)==LCURLY_BLOCK||LA(1)==RCURLY||LA(1)==REST_ARG_PREFIX||LA(1)==ASSIGN_WITH_NO_LEADING_SPACE||LA(1)==RPAREN||LA(1)==BOR||LA(1)==LITERAL_in||LA(1)==LITERAL_end||LA(1)==LOGICAL_OR||LA(1)==COLON_WITH_NO_FOLLOWING_SPACE||LA(1)==RBRACK||LA(1)==LITERAL_do||LA(1)==BLOCK_ARG_PREFIX||LA(1)==ASSOC||LA(1)==ASSIGN||LA(1)==LITERAL_rescue||LA(1)==LITERAL_else||LA(1)==LITERAL_ensure||LA(1)==LITERAL_elsif||LA(1)==LESS_THAN||LA(1)==LEFT_SHIFT||LA(1)==RIGHT_SHIFT||LA(1)==EQUAL||LA(1)==CASE_EQUAL||LA(1)==GREATER_THAN||LA(1)==GREATER_OR_EQUAL||LA(1)==LESS_OR_EQUAL||LA(1)==PLUS||LA(1)==MINUS||LA(1)==STAR||LA(1)==DIV||LA(1)==MOD||LA(1)==POWER||LA(1)==BAND||LA(1)==BXOR||LA(1)==MATCH||LA(1)==COMPARE||LA(1)==LOGICAL_AND||LA(1)==LITERAL_and||LA(1)==LITERAL_or||LA(1)==LITERAL_then||LA(1)==LITERAL_when||LA(1)==COLON||LA(1)==DO_IN_CONDITION||LA(1)==QUESTION||LA(1)==PLUS_ASSIGN||LA(1)==MINUS_ASSIGN||LA(1)==STAR_ASSIGN||LA(1)==DIV_ASSIGN||LA(1)==MOD_ASSIGN||LA(1)==POWER_ASSIGN||LA(1)==BAND_ASSIGN||LA(1)==BXOR_ASSIGN||LA(1)==BOR_ASSIGN||LA(1)==LEFT_SHIFT_ASSIGN||LA(1)==RIGHT_SHIFT_ASSIGN||LA(1)==LOGICAL_AND_ASSIGN||LA(1)==LOGICAL_OR_ASSIGN||LA(1)==INCLUSIVE_RANGE||LA(1)==EXCLUSIVE_RANGE||LA(1)==NOT_EQUAL||LA(1)==NOT_MATCH))) {
-						int _m6060 = mark();
-						synPredMatched6060 = true;
+						int _m148 = mark();
+						synPredMatched148 = true;
 						inputState.guessing++;
 						try {
 							{
@@ -9243,12 +9293,12 @@ inputState.guessing--;
 							}
 						}
 						catch (RecognitionException pe) {
-							synPredMatched6060 = false;
+							synPredMatched148 = false;
 						}
-						rewind(_m6060);
+						rewind(_m148);
 inputState.guessing--;
 					}
-					if ( synPredMatched6060 ) {
+					if ( synPredMatched148 ) {
 						seen_star_or_band=empty_true();
 					}
 					else if ((LA(1)==IDENTIFIER||LA(1)==CONSTANT||LA(1)==FUNCTION||LA(1)==GLOBAL_VARIBLE||LA(1)==LPAREN||LA(1)==COLON_WITH_NO_FOLLOWING_SPACE||LA(1)==INSTANCE_VARIBLE||LA(1)==CLASS_VARIBLE||LA(1)==LBRACK||LA(1)==LITERAL_return||LA(1)==LITERAL_break||LA(1)==LITERAL_next||LA(1)==LITERAL_retry||LA(1)==LITERAL_redo||LA(1)==LITERAL_nil||LA(1)==LITERAL_self||LA(1)==LITERAL_true||LA(1)==LITERAL_false||LA(1)==LITERAL___FILE__||LA(1)==LITERAL___LINE__||LA(1)==DOUBLE_QUOTE_STRING||LA(1)==SINGLE_QUOTE_STRING||LA(1)==STRING_BEFORE_EXPRESSION_SUBSTITUTION||LA(1)==DOUBLE_QUOTE_WARRAY||LA(1)==SINGLE_QUOTE_WARRAY||LA(1)==WARRAY_BEFORE_EXPRESSION_SUBSTITUTION||LA(1)==REGEX||LA(1)==REGEX_BEFORE_EXPRESSION_SUBSTITUTION||LA(1)==COMMAND_OUTPUT||LA(1)==COMMAND_OUTPUT_BEFORE_EXPRESSION_SUBSTITUTION||LA(1)==HERE_DOC_BEGIN||LA(1)==INTEGER||LA(1)==HEX||LA(1)==BINARY||LA(1)==OCTAL||LA(1)==FLOAT||LA(1)==ASCII_VALUE||LA(1)==LEADING_COLON2||LA(1)==LITERAL_super||LA(1)==LITERAL_yield||LA(1)==LCURLY_HASH||LA(1)==LITERAL_begin||LA(1)==LITERAL_if||LA(1)==LITERAL_unless||LA(1)==LITERAL_case||LA(1)==BNOT||LA(1)==NOT||LA(1)==LITERAL_def||LA(1)==108||LA(1)==LITERAL_module||LA(1)==LITERAL_until||LA(1)==LITERAL_for||LA(1)==LITERAL_while||LA(1)==LITERAL_class||LA(1)==LITERAL_not||LA(1)==UNARY_PLUS||LA(1)==UNARY_MINUS)) {
@@ -9261,7 +9311,7 @@ inputState.guessing--;
 					}
 				}
 				else {
-					break _loop6061;
+					break _loop149;
 				}
 				
 			} while (true);
@@ -9783,7 +9833,7 @@ inputState.guessing--;
 				expr = exc = new StringConcatExpression(s1.getLine(), ConstantStringExpression.DOUBLE_QUOTE); exc.add(s1.getText()); exc.add(exp2);
 			}
 			{
-			_loop6082:
+			_loop170:
 			do {
 				if ((LA(1)==STRING_BETWEEN_EXPRESSION_SUBSTITUTION)) {
 					s3 = LT(1);
@@ -9794,7 +9844,7 @@ inputState.guessing--;
 					}
 				}
 				else {
-					break _loop6082;
+					break _loop170;
 				}
 				
 			} while (true);
@@ -9850,7 +9900,7 @@ inputState.guessing--;
 				tell_lexer_we_have_finished_parsing_regex_expression_substituation();
 			}
 			{
-			_loop6086:
+			_loop174:
 			do {
 				if ((LA(1)==STRING_BETWEEN_EXPRESSION_SUBSTITUTION)) {
 					s3 = LT(1);
@@ -9864,7 +9914,7 @@ inputState.guessing--;
 					}
 				}
 				else {
-					break _loop6086;
+					break _loop174;
 				}
 				
 			} while (true);
@@ -9917,7 +9967,7 @@ inputState.guessing--;
 				expr = exc = new StringConcatExpression(s1.getLine(), ConstantStringExpression.COMMAND_OUTPUT); exc.add(s1.getText()); exc.add(exp2);
 			}
 			{
-			_loop6090:
+			_loop178:
 			do {
 				if ((LA(1)==STRING_BETWEEN_EXPRESSION_SUBSTITUTION)) {
 					s3 = LT(1);
@@ -9928,7 +9978,7 @@ inputState.guessing--;
 					}
 				}
 				else {
-					break _loop6090;
+					break _loop178;
 				}
 				
 			} while (true);
@@ -9970,7 +10020,7 @@ inputState.guessing--;
 		{
 			expr=string();
 			{
-			_loop6093:
+			_loop181:
 			do {
 				if (((LA(1) >= DOUBLE_QUOTE_STRING && LA(1) <= STRING_BEFORE_EXPRESSION_SUBSTITUTION))) {
 					expr2=string();
@@ -9982,7 +10032,7 @@ inputState.guessing--;
 					}
 				}
 				else {
-					break _loop6093;
+					break _loop181;
 				}
 				
 			} while (true);
@@ -10163,14 +10213,14 @@ inputState.guessing--;
 		{
 			keyValuePair(expr);
 			{
-			_loop6116:
+			_loop204:
 			do {
 				if (((LA(1)==COMMA))&&(RCURLY != LA(2))) {
 					match(COMMA);
 					keyValuePair(expr);
 				}
 				else {
-					break _loop6116;
+					break _loop204;
 				}
 				
 			} while (true);
@@ -10301,7 +10351,7 @@ inputState.guessing--;
 		}
 		}
 		{
-		_loop6136:
+		_loop224:
 		do {
 			if ((LA(1)==LITERAL_elsif)) {
 				match(LITERAL_elsif);
@@ -10469,7 +10519,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop6136;
+				break _loop224;
 			}
 			
 		} while (true);
@@ -11063,8 +11113,8 @@ inputState.guessing--;
 		}
 		}
 		{
-		int _cnt6147=0;
-		_loop6147:
+		int _cnt235=0;
+		_loop235:
 		do {
 			if ((LA(1)==LITERAL_when)) {
 				keyword_when();
@@ -11160,10 +11210,10 @@ inputState.guessing--;
 				}
 			}
 			else {
-				if ( _cnt6147>=1 ) { break _loop6147; } else {throw new NoViableAltException(LT(1), getFilename());}
+				if ( _cnt235>=1 ) { break _loop235; } else {throw new NoViableAltException(LT(1), getFilename());}
 			}
 			
-			_cnt6147++;
+			_cnt235++;
 		} while (true);
 		}
 		{
@@ -12032,7 +12082,7 @@ inputState.guessing--;
 		}
 		}
 		{
-		_loop6121:
+		_loop209:
 		do {
 			if ((LA(1)==LITERAL_rescue)) {
 				match(LITERAL_rescue);
@@ -12042,7 +12092,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop6121;
+				break _loop209;
 			}
 			
 		} while (true);
@@ -13058,7 +13108,7 @@ inputState.guessing--;
 			sb.append(c.getText());
 		}
 		{
-		_loop6160:
+		_loop248:
 		do {
 			if ((LA(1)==COLON2)) {
 				match(COLON2);
@@ -13069,7 +13119,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop6160;
+				break _loop248;
 			}
 			
 		} while (true);
@@ -13167,7 +13217,7 @@ inputState.guessing--;
 		}
 		}
 		{
-		_loop6169:
+		_loop257:
 		do {
 			if ((LA(1)==COLON2)) {
 				match(COLON2);
@@ -13178,7 +13228,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop6169;
+				break _loop257;
 			}
 			
 		} while (true);
@@ -13563,7 +13613,7 @@ inputState.guessing--;
 		{
 			normalMethodDefinitionArgument(def);
 			{
-			_loop6194:
+			_loop282:
 			do {
 				if (((LA(1)==COMMA))&&(!seen_star_or_band)) {
 					match(COMMA);
@@ -13593,7 +13643,7 @@ inputState.guessing--;
 					}
 				}
 				else {
-					break _loop6194;
+					break _loop282;
 				}
 				
 			} while (true);

@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.trifork.hotruby.interp.CompileContext;
-import com.trifork.hotruby.interp.ConstantPool;
-import com.trifork.hotruby.objects.IRubyHash;
 
 public class HashExpression extends Expression implements AssocHolder {
 

@@ -1,6 +1,5 @@
 package com.trifork.hotruby.interp;
 
-import com.trifork.hotruby.objects.IRubyArray;
 import com.trifork.hotruby.objects.IRubyObject;
 import com.trifork.hotruby.runtime.ExposedLocals;
 import com.trifork.hotruby.runtime.NonLocalBreak;

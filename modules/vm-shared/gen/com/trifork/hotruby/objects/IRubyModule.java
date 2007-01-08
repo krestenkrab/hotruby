@@ -1,7 +1,5 @@
 package com.trifork.hotruby.objects;
-import com.trifork.hotruby.classes.*;
-import com.trifork.hotruby.objects.*;
-import com.trifork.hotruby.runtime.*;
+import com.trifork.hotruby.runtime.MetaModule;
 public interface IRubyModule
 	extends IRubyObject
 {

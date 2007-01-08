@@ -24,19 +24,10 @@ public class WhileExpression extends Expression {
 		Label break_label = ctx.new_label();
 		Label loop_start = ctx.new_label();
 
-		if (push) {
-			ctx.emit_push_nil();
-		}
-
 		ctx.emit_goto(next_label);
 		ctx.mark(loop_start);
 
 		if (body != null) {
-
-			// pop value from last iteration
-			if (push) {
-				ctx.emit_pop();
-			} 
 
 			Label redo_label = ctx.new_label();
 			ctx.mark(redo_label);
@@ -44,7 +35,7 @@ public class WhileExpression extends Expression {
 			ctx.push_loop_context(break_label, redo_label, next_label);
 
 			// evaluate body
-			body.compile(ctx, push);
+			body.compile(ctx, false);
 
 			ctx.pop_loop_context();
 
@@ -73,5 +64,9 @@ public class WhileExpression extends Expression {
 
 		ctx.mark(break_label);
 
+		// a while loop always returns nil
+		if (push) {
+			ctx.emit_push_nil();
+		}
 	}
 }

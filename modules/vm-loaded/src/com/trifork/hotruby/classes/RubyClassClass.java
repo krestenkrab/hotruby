@@ -8,7 +8,6 @@ import com.trifork.hotruby.objects.RubyClass;
 import com.trifork.hotruby.objects.RubyString;
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
 import com.trifork.hotruby.runtime.MetaClass;
-import com.trifork.hotruby.runtime.CallerControlException;
 import com.trifork.hotruby.runtime.RubyBlock;
 import com.trifork.hotruby.runtime.Selector;
 

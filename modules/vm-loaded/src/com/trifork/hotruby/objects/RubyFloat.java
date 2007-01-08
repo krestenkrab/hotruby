@@ -3,12 +3,8 @@ package com.trifork.hotruby.objects;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import sun.tools.tree.NewInstanceExpression;
-
-import com.trifork.hotruby.classes.RubyClassBignum;
 import com.trifork.hotruby.classes.RubyClassFloat;
 import com.trifork.hotruby.marshal.UnmarshalStream;
-import com.trifork.hotruby.runtime.CallContext;
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
 import com.trifork.hotruby.runtime.Selector;
 

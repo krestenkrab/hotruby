@@ -22,4 +22,9 @@ public class Global {
 	public IRubyObject get() {
 		return value;
 	}
+	
+	@Override
+	public String toString() {
+		return name + "=" + (value==null?"nil":value.inspect());
+	}
 }

@@ -1,8 +1,9 @@
 package com.trifork.hotruby.classes;
 import com.trifork.hotruby.callable.PublicMethod0;
-import com.trifork.hotruby.classes.*;
-import com.trifork.hotruby.objects.*;
-import com.trifork.hotruby.runtime.*;
+import com.trifork.hotruby.objects.IRubyObject;
+import com.trifork.hotruby.objects.RubyFloat;
+import com.trifork.hotruby.runtime.MetaClass;
+import com.trifork.hotruby.runtime.RubyBlock;
 public class RubyClassFloat
 	extends RubyBaseClassFloat
 {

@@ -1,11 +1,7 @@
 package com.trifork.hotruby.compiler;
 
-import com.trifork.hotruby.objects.IRubyArray;
-import com.trifork.hotruby.objects.IRubyObject;
 import com.trifork.hotruby.runtime.MetaModule;
-import com.trifork.hotruby.runtime.RubyBlock;
 import com.trifork.hotruby.runtime.RubyMethod;
-import com.trifork.hotruby.runtime.RubyRuntime;
 
 public abstract class CompiledMethod extends RubyMethod {
 

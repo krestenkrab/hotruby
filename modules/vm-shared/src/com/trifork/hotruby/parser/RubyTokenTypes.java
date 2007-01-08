@@ -2,7 +2,6 @@
 
 package com.trifork.hotruby.parser;
 
-import com.trifork.hotruby.ast.*;
 
 public interface RubyTokenTypes {
 	int EOF = 1;

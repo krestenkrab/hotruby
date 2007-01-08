@@ -20,7 +20,6 @@ import antlr.TokenStreamException;
 import com.trifork.hotruby.ast.RubyCode;
 import com.trifork.hotruby.ast.TopLevelCode;
 import com.trifork.hotruby.interp.BindingContext;
-import com.trifork.hotruby.interp.BlockISeq;
 import com.trifork.hotruby.interp.Instructions;
 import com.trifork.hotruby.interp.InterpCompileContext;
 import com.trifork.hotruby.interp.MethodISeq;
@@ -38,7 +37,6 @@ import com.trifork.hotruby.objects.IRubyRegexp;
 import com.trifork.hotruby.objects.IRubyString;
 import com.trifork.hotruby.objects.IRubySymbol;
 import com.trifork.hotruby.parser.RubyParser;
-import com.trifork.util.collection.WeakIdentityToIntMap;
 
 public abstract class RubyRuntime {
 

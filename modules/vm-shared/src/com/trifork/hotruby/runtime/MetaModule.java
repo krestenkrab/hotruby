@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import sun.reflect.MethodAccessor;
-
-import com.trifork.hotruby.objects.IRubyClass;
 import com.trifork.hotruby.objects.IRubyModule;
 import com.trifork.hotruby.objects.IRubyObject;
 import com.trifork.hotruby.objects.IRubySymbol;

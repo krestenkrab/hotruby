@@ -7,14 +7,11 @@ import com.trifork.hotruby.classes.RubyClassObject;
 import com.trifork.hotruby.marshal.UnmarshalStream;
 import com.trifork.hotruby.objects.IRubyArray;
 import com.trifork.hotruby.objects.IRubyClass;
-import com.trifork.hotruby.objects.IRubyFalseClass;
 import com.trifork.hotruby.objects.IRubyFixnum;
 import com.trifork.hotruby.objects.IRubyFloat;
 import com.trifork.hotruby.objects.IRubyHash;
 import com.trifork.hotruby.objects.IRubyInteger;
-import com.trifork.hotruby.objects.IRubyModule;
 import com.trifork.hotruby.objects.IRubyObject;
-import com.trifork.hotruby.objects.IRubyProc;
 import com.trifork.hotruby.objects.IRubyRegexp;
 import com.trifork.hotruby.objects.IRubyString;
 import com.trifork.hotruby.objects.IRubySymbol;
@@ -47,8 +44,6 @@ public class LoadedRubyRuntime extends RubyRuntime {
 	public static RubyNilClass NIL = null;
 
 	public static MetaClass META_OBJECT = null;
-
-	private RubyArray ARR_NIL1;
 
 	private MetaClass meta_class;
 
@@ -107,8 +102,6 @@ public class LoadedRubyRuntime extends RubyRuntime {
 		new_system_class("Hash");
 		new_system_class("Time");
 		new_system_class("Binding");
-		
-		ARR_NIL1 = new RubyArray().initialize(1);
 		
 		RubyString.init(string_class);
 	}

@@ -10,7 +10,6 @@ import com.trifork.hotruby.runtime.NonLocalBreak;
 import com.trifork.hotruby.runtime.NonLocalJump;
 import com.trifork.hotruby.runtime.NonLocalNext;
 import com.trifork.hotruby.runtime.NonLocalRedo;
-import com.trifork.hotruby.runtime.NonLocalReturn;
 import com.trifork.hotruby.runtime.RubyBlock;
 
 public class RubyHash extends RubyBaseHash {

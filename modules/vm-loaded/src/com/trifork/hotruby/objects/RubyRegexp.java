@@ -3,11 +3,7 @@ package com.trifork.hotruby.objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.trifork.hotruby.classes.RubyClassRegexp;
-import com.trifork.hotruby.runtime.CallContext;
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
-import com.trifork.hotruby.runtime.MetaModule;
-import com.trifork.hotruby.runtime.Selector;
 
 public class RubyRegexp extends RubyBaseRegexp {
 	Pattern pattern;

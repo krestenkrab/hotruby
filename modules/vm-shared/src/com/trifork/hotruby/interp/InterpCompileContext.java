@@ -11,8 +11,6 @@ import com.trifork.hotruby.ast.MethodCode;
 import com.trifork.hotruby.ast.ModuleCode;
 import com.trifork.hotruby.ast.RubyCode;
 import com.trifork.hotruby.interp.ISeq.Loop;
-import com.trifork.hotruby.runtime.CallContext;
-import com.trifork.hotruby.runtime.Global;
 import com.trifork.hotruby.runtime.MetaModule;
 import com.trifork.hotruby.runtime.RubyRuntime;
 import com.trifork.hotruby.runtime.ThreadState.ModuleFrame;

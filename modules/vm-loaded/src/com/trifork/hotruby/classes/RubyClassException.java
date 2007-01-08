@@ -7,7 +7,6 @@ import com.trifork.hotruby.objects.IRubyString;
 import com.trifork.hotruby.objects.RubyClass;
 import com.trifork.hotruby.objects.RubyException;
 import com.trifork.hotruby.objects.RubyObject;
-import com.trifork.hotruby.objects.RubyString;
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
 import com.trifork.hotruby.runtime.MetaClass;
 import com.trifork.hotruby.runtime.PublicMethodN;

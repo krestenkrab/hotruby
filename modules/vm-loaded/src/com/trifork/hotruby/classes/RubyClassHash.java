@@ -5,7 +5,6 @@ import com.trifork.hotruby.callable.PublicMethod1;
 import com.trifork.hotruby.callable.PublicMethod2;
 import com.trifork.hotruby.objects.IRubyObject;
 import com.trifork.hotruby.objects.RubyHash;
-import com.trifork.hotruby.runtime.CallContext;
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
 import com.trifork.hotruby.runtime.MetaClass;
 import com.trifork.hotruby.runtime.RubyBlock;

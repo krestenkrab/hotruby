@@ -25,7 +25,6 @@ import com.trifork.hotruby.objects.IRubyFalseClass;
 import com.trifork.hotruby.objects.IRubyFixnum;
 import com.trifork.hotruby.objects.IRubyFloat;
 import com.trifork.hotruby.objects.IRubyNilClass;
-import com.trifork.hotruby.objects.IRubyObject;
 import com.trifork.hotruby.objects.IRubyProc;
 import com.trifork.hotruby.objects.IRubyRegexp;
 import com.trifork.hotruby.objects.IRubyString;

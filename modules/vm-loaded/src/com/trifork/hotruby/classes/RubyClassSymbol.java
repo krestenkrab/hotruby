@@ -3,7 +3,6 @@ import com.trifork.hotruby.callable.PublicMethod0;
 import com.trifork.hotruby.objects.IRubyObject;
 import com.trifork.hotruby.objects.RubyString;
 import com.trifork.hotruby.runtime.MetaClass;
-import com.trifork.hotruby.runtime.MetaModule;
 import com.trifork.hotruby.runtime.RubyBlock;
 public class RubyClassSymbol
 	extends RubyBaseClassSymbol

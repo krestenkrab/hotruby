@@ -1,7 +1,6 @@
 package com.trifork.hotruby.classes;
 import com.trifork.hotruby.callable.PublicMethod0;
 import com.trifork.hotruby.callable.PublicMethod1;
-import com.trifork.hotruby.objects.IRubyArray;
 import com.trifork.hotruby.objects.IRubyObject;
 import com.trifork.hotruby.objects.RubyArray;
 import com.trifork.hotruby.objects.RubyInteger;

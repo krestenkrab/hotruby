@@ -1,8 +1,11 @@
 package com.trifork.hotruby.classes;
-import com.trifork.hotruby.callable.*;
-import com.trifork.hotruby.classes.*;
-import com.trifork.hotruby.objects.*;
-import com.trifork.hotruby.runtime.*;
+import com.trifork.hotruby.objects.IRubyObject;
+import com.trifork.hotruby.objects.RubyClass;
+import com.trifork.hotruby.objects.RubyTrueClass;
+import com.trifork.hotruby.runtime.LoadedRubyRuntime;
+import com.trifork.hotruby.runtime.MetaClass;
+import com.trifork.hotruby.runtime.RubyMethod;
+import com.trifork.hotruby.runtime.Selector;
 public abstract class RubyBaseClassTrueClass
 	extends RubyClass
 {

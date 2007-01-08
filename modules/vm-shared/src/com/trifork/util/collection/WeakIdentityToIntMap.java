@@ -11,8 +11,6 @@ import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.NoSuchElementException;
 
-import com.trifork.util.collection.ObjectToIntMap.EntryIter;
-
 
 /**
  * @author Kresten Krab Thorup (krab@trifork.com)

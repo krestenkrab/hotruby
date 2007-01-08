@@ -19,7 +19,6 @@ import com.trifork.hotruby.runtime.EvalContext;
 import com.trifork.hotruby.runtime.EvalMissingEnvironException;
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
 import com.trifork.hotruby.runtime.MetaModule;
-import com.trifork.hotruby.runtime.NewProcException;
 import com.trifork.hotruby.runtime.PublicMethodN;
 import com.trifork.hotruby.runtime.RubyBlock;
 import com.trifork.hotruby.runtime.RubyMethod;

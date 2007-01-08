@@ -7,7 +7,6 @@ import com.trifork.hotruby.ast.ClassCode;
 import com.trifork.hotruby.ast.Expression;
 import com.trifork.hotruby.ast.MethodCode;
 import com.trifork.hotruby.ast.ModuleCode;
-import com.trifork.hotruby.ast.SequenceExpression;
 import com.trifork.hotruby.runtime.RubyRuntime;
 
 public interface CompileContext {

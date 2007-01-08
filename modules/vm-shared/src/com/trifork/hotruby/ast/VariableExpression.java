@@ -1,6 +1,5 @@
 package com.trifork.hotruby.ast;
 
-import com.trifork.hotruby.interp.CompileContext;
 
 
 public abstract class VariableExpression extends Expression implements MethodDenominator {

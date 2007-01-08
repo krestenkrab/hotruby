@@ -1,7 +1,6 @@
 package com.trifork.hotruby.ast;
 
 import com.trifork.hotruby.interp.CompileContext;
-import com.trifork.hotruby.objects.IRubyInteger;
 
 public class IntegerExpression extends Expression {
 

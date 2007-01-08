@@ -18,7 +18,6 @@ import org.objectweb.asm.commons.Method;
 import com.trifork.hotruby.compiler.CompilerConsts;
 import com.trifork.hotruby.objects.IRubyClass;
 import com.trifork.hotruby.objects.IRubyModule;
-import com.trifork.hotruby.objects.IRubyObject;
 
 public class CodeGen implements Opcodes, CompilerConsts {
 

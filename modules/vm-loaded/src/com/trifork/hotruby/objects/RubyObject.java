@@ -1,11 +1,9 @@
 package com.trifork.hotruby.objects;
 
-import com.trifork.hotruby.classes.RubyClassObject;
 import com.trifork.hotruby.runtime.CallContext;
-import com.trifork.hotruby.runtime.MetaClass;
-import com.trifork.hotruby.runtime.MetaModule;
-import com.trifork.hotruby.runtime.RubyBlock;
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
+import com.trifork.hotruby.runtime.MetaClass;
+import com.trifork.hotruby.runtime.RubyBlock;
 import com.trifork.hotruby.runtime.RubyIvarAccessor;
 import com.trifork.hotruby.runtime.RubyMethod;
 import com.trifork.hotruby.runtime.RubyRuntime;
@@ -47,12 +45,6 @@ public class RubyObject extends RubyBaseObject {
 		throw new RuntimeException("asignment to frozed "
 				+ o.get_class().inspect());
 	}
-
-	private CallContext CTX = new CallContext() {
-		public MetaModule getCaller() {
-			return RubyClassObject.instance.get_meta_class();
-		}
-	};
 
 	public RubyMethod do_select(Selector sel) {
 		if (singleton == null) {

@@ -1,12 +1,20 @@
 package com.trifork.hotruby.classes;
 import com.trifork.hotruby.ast.LocalVariable;
 import com.trifork.hotruby.ast.LocalVariableAccess;
-import com.trifork.hotruby.callable.PublicMethod;
 import com.trifork.hotruby.callable.PublicMethod0;
 import com.trifork.hotruby.callable.PublicMethod1;
-import com.trifork.hotruby.classes.*;
-import com.trifork.hotruby.objects.*;
-import com.trifork.hotruby.runtime.*;
+import com.trifork.hotruby.objects.IRubyClass;
+import com.trifork.hotruby.objects.IRubyObject;
+import com.trifork.hotruby.objects.IRubyString;
+import com.trifork.hotruby.objects.IRubySymbol;
+import com.trifork.hotruby.objects.RubyModule;
+import com.trifork.hotruby.runtime.EvalContext;
+import com.trifork.hotruby.runtime.ExposedLocals;
+import com.trifork.hotruby.runtime.LoadedRubyRuntime;
+import com.trifork.hotruby.runtime.MetaClass;
+import com.trifork.hotruby.runtime.MetaModule;
+import com.trifork.hotruby.runtime.RubyBlock;
+import com.trifork.hotruby.runtime.ThreadState;
 public class RubyClassModule
 	extends RubyBaseClassModule
 {

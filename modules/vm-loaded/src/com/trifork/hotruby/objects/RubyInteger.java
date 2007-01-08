@@ -1,10 +1,6 @@
 package com.trifork.hotruby.objects;
 
-import java.math.BigInteger;
-
-import com.trifork.hotruby.classes.*;
-import com.trifork.hotruby.objects.*;
-import com.trifork.hotruby.runtime.*;
+import com.trifork.hotruby.runtime.LoadedRubyRuntime;
 
 public abstract class RubyInteger extends RubyBaseInteger implements IRubyInteger {
 
