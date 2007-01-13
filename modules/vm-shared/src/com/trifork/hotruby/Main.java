@@ -9,7 +9,7 @@ public class Main {
 	{
 		RubyRuntime rr = RubyRuntime.newRuntime();
 		
-		IRubyObject obj = rr.load("rb/supertest.rb", rr.getObject());
+		IRubyObject obj = rr.load("rb/fibtest.rb", rr.getObject());
 		
 		System.out.println("=> " + obj.inspect());
 	}

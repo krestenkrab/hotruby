@@ -11,6 +11,12 @@ import com.trifork.hotruby.runtime.Selector;
 
 public class RubyFixnum extends RubyBaseFixnum {
 	
+	private static final IRubyFixnum FIX_MINUS_1 =  new RubyFixnum(-1);
+
+	private static final IRubyFixnum FIX_PLUS_1 = new RubyFixnum(1);
+
+	private static final IRubyFixnum FIX0 = new RubyFixnum(0);
+
 	public String inspect() {
 		return Integer.toString(value);
 	}
@@ -51,6 +57,26 @@ public class RubyFixnum extends RubyBaseFixnum {
 	IRubyObject fast_bit_and(IRubyObject arg, Selector selector) {
 		RubyInteger intval = RubyInteger.mm_induced_from(arg);
 		return intval.inverse_bit_and(value);
+	}
+	
+	@Override
+	public IRubyObject fast_cmp(IRubyObject arg, Selector selector) {
+		return op_cmp(arg);
+	}
+	
+	private IRubyObject op_cmp(IRubyObject arg) {
+		return numeric(arg).inverse_cmp(this.value);
+	}
+
+	@Override
+	public IRubyFixnum inverse_cmp(int intval) {
+		if (intval < value) {
+			return FIX_MINUS_1;
+		} else if (intval > value) {
+			return FIX_PLUS_1;
+		} else {
+			return FIX0;
+		}
 	}
 	
 	public IRubyObject fast_eq2(IRubyObject arg, Selector selector) {
@@ -170,6 +196,14 @@ public class RubyFixnum extends RubyBaseFixnum {
 
 	public IRubyObject to_s() {
 		return new RubyString(Integer.toString(value));
+	}
+
+	public IRubyObject op_succ() {
+		if (value < Integer.MAX_VALUE) {
+			return new RubyFixnum(value+1);
+		} else {
+			return newInteger(1L + value);
+		}
 	}
 
 }

@@ -72,5 +72,23 @@ public abstract class RubyClass extends RubyBaseClass {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	@Override
+	public IRubyObject fast_lt(IRubyObject arg, Selector selector) {
+		return op_lt(arg);
+	}
+
+	public IRubyObject op_lt(IRubyObject arg) {
+		if (arg instanceof RubyClass) {
+			return this.is_subclass_of ((RubyClass)arg);
+		}
+		
+		return bool(false);
+	}
+
+	private IRubyObject is_subclass_of(RubyClass class1) {
+		boolean result = this.get_meta_class().is_subclass_of(class1.get_meta_class());
+		return bool(result);
+	}
 
 }

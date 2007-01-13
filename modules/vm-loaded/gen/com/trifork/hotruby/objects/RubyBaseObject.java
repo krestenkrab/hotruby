@@ -6,7 +6,7 @@ import com.trifork.hotruby.runtime.Selector;
 public abstract class RubyBaseObject
 	implements IRubyObject
 {
-	interface SelectObject { RubyMethod get_RubyObject(); }
+	public interface SelectObject { RubyMethod get_RubyObject(); }
 	public RubyMethod select(Selector sel) {
 		if(sel instanceof SelectObject) { return ((SelectObject)sel).get_RubyObject(); }
 		else { return LoadedRubyRuntime.resolve_method((RubyObject)this,sel,SelectObject.class); }

@@ -29,4 +29,7 @@ public abstract class RubyNumeric
 	public abstract IRubyObject op_minus(IRubyObject numeric);
 
 	public abstract RubyNumeric inverse_minus(int bignum);
+
+
+	public abstract IRubyFixnum inverse_cmp(int value);
 }

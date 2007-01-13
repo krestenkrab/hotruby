@@ -1,5 +1,6 @@
 package com.trifork.hotruby.interp;
 
+import com.trifork.hotruby.compiler.MethodCompiler;
 import com.trifork.hotruby.interp.ISeq.Loop;
 import com.trifork.hotruby.objects.IRubyArray;
 import com.trifork.hotruby.objects.IRubyClass;
@@ -20,6 +21,7 @@ import com.trifork.hotruby.runtime.NonLocalJump;
 import com.trifork.hotruby.runtime.NonLocalNext;
 import com.trifork.hotruby.runtime.NonLocalRedo;
 import com.trifork.hotruby.runtime.NonLocalReturn;
+import com.trifork.hotruby.runtime.RaiseException;
 import com.trifork.hotruby.runtime.RubyBlock;
 import com.trifork.hotruby.runtime.RubyIvarAccessor;
 import com.trifork.hotruby.runtime.RubyMethod;
@@ -51,7 +53,8 @@ public class BindingContext implements Instructions {
 			MetaModule dynamic_context, ModuleFrame frame,
 			boolean self_is_module) {
 		this(method_template, new LexicalBindings(method_template,
-				lexical_context, frame, self_is_module), dynamic_context, self_is_module);
+				lexical_context, frame, self_is_module), dynamic_context,
+				self_is_module);
 	}
 
 	public BindingContext(ISeq method_template,
@@ -115,9 +118,15 @@ public class BindingContext implements Instructions {
 		// store the value of the variable "result" into stack[self_sp],
 		// and set state.setStackPointer(self_sp+1).
 
-		final int frame_sp = sp - (given_args + (template.getCodeType() == ISEQ_TYPE_BLOCK ? 0 : 1));
-		int arg0_idx = frame_sp + (template.getCodeType() == ISEQ_TYPE_BLOCK ? 0 : 1);
-		int local0_idx = frame_sp - (template.getCodeType() == ISEQ_TYPE_BLOCK ? (template.code_args==-1 ? 1 : 0) : 0);
+		final int frame_sp = sp
+				- (given_args + (template.getCodeType() == ISEQ_TYPE_BLOCK ? 0
+						: 1));
+		int arg0_idx = frame_sp
+				+ (template.getCodeType() == ISEQ_TYPE_BLOCK ? 0 : 1);
+		int local0_idx = frame_sp
+				- (template.getCodeType() == ISEQ_TYPE_BLOCK ? (template.code_args == -1 ? 1
+						: 0)
+						: 0);
 		Object result = method_template.getCPool()[CPOOL_NIL];
 
 		IterpExposedLocals dvars = null;
@@ -142,6 +151,7 @@ public class BindingContext implements Instructions {
 					template.firstLine(), template.getMethod(), null, self);
 		}
 
+		int empty_stack = -1;
 		try {
 
 			int parms_size = 1 // / receiver
@@ -214,6 +224,9 @@ public class BindingContext implements Instructions {
 				stack[sp++] = method_template.getCPool()[0];
 			}
 
+			// this corresponds to an "empty stack"
+			empty_stack = sp;
+
 			// final int fp = sp;
 
 			// If any of the parameters are also dvars
@@ -244,742 +257,808 @@ public class BindingContext implements Instructions {
 			// template.dump_locals(stack, frame_sp, sp, dvars);
 
 			byte[] code = template.code;
-			Object[] cpool = template.getCPool();
+			Object[] cpool = method_template.getCPool();
 
 			int opcode;
 			next_insn: while (true) {
-				switch (opcode = code[pc++]) {
+				try {
+					switch (opcode = code[pc++]) {
 
-				case TRACE: {
-					int kind = code[pc++];
-					int line = ui(code[pc++], code[pc++]);
+					case TRACE: {
+						int kind = code[pc++];
+						int line = ui(code[pc++], code[pc++]);
 
-					getRuntime().trace(state, kind, template.getFile(), line,
-							template.getMethod(), dvars, self);
+						getRuntime().trace(state, kind, template.getFile(),
+								line, template.getMethod(), dvars, self);
 
-					continue next_insn;
-				}
-
-				case NOP:
-					continue next_insn;
-
-				case SWAP: {
-					Object val1 = stack[sp - 2];
-					stack[sp - 2] = stack[sp - 1];
-					stack[sp - 1] = val1;
-					continue next_insn;
-				}
-
-				case SETLOCAL:
-					stack[local0_idx + ui(code[pc++])] = stack[--sp];
-					continue next_insn;
-
-				case GETLOCAL:
-					stack[sp++] = stack[local0_idx + ui(code[pc++])];
-					continue next_insn;
-
-				case SETSPECIAL:
-					setspecial(ui(code[pc++]), (IRubyObject) stack[--sp]);
-					continue next_insn;
-
-				case GETSPECIAL:
-					stack[sp++] = getspecial(ui(code[pc++]));
-					continue next_insn;
-
-				case SETGLOBAL: {
-					Global g = lexical_bindings.globals[(ui(code[pc++]))];
-					g.set((IRubyObject) stack[--sp]);
-					continue next_insn;
-				}
-
-				case GETGLOBAL: {
-					Global g = lexical_bindings.globals[(ui(code[pc++]))];
-					stack[sp++] = g.get();
-					continue next_insn;
-				}
-
-				case GETDYNAMIC:
-					stack[sp++] = dvars.getdynamic(ui(code[pc++]),
-							ui(code[pc++]));
-					continue next_insn;
-
-				case SETDYNAMIC:
-					dvars.setdynamic(ui(code[pc++]), ui(code[pc++]),
-							stack[--sp]);
-					continue next_insn;
-
-				case BRANCHUNLESS: {
-					int offset = si(code[pc++], code[pc++]);
-					if (is_false((IRubyObject) stack[--sp])) {
-						pc = pc - 3 + offset;
-					}
-					continue next_insn;
-				}
-
-				case BRANCHIF: {
-					int offset = si(code[pc++], code[pc++]);
-					if (is_true((IRubyObject) stack[--sp])) {
-						pc = pc - 3 + offset;
-					}
-					continue next_insn;
-				}
-
-				case JUMP: {
-					int offset = si(code[pc++], code[pc++]);
-					pc = pc - 3 + offset;
-					continue next_insn;
-				}
-
-					// yield
-				case INVOKEBLOCK: {
-					if (block == null) {
-						throw getRuntime().newLocalJumpError("no block given",
-								null);
+						continue next_insn;
 					}
 
-					int flags = code[pc++];
-					int nargs = ui(code[pc++]); // number of known args at
-					// call-site
-
-					if ((flags & FLAG_REST_ARG) == FLAG_REST_ARG) {
-
-						IRubyObject[] rest = (IRubyObject[]) stack[--sp];
-						for (int i = 0; i < rest.length; i++) {
-							stack[sp++] = rest[i];
-						}
-
-						nargs += rest.length;
-					}
-
-					state.setStackPointer(sp);
-					try {
-						block.interp_call(state, nargs);
-
-					} catch (NonLocalJump e) {
-
-						ISeq.Loop loop = find_loop_or_rethrow(pc,
-								template.loops, e);
-						pc = loop.get(e.kind);
+					case NOP:
 						continue next_insn;
 
-					} catch (NonLocalReturn nlr) {
-						if (nlr.scope == dvars) {
-							// this will put the return value in the right
-							// place..
-							result = nlr.value;
-							return;
+					case SWAP: {
+						Object val1 = stack[sp - 2];
+						stack[sp - 2] = stack[sp - 1];
+						stack[sp - 1] = val1;
+						continue next_insn;
+					}
 
-						} else {
-							// this is someone else's return value
-							throw nlr;
+					case SETLOCAL:
+						stack[local0_idx + ui(code[pc++])] = stack[--sp];
+						continue next_insn;
+
+					case GETLOCAL:
+						stack[sp++] = stack[local0_idx + ui(code[pc++])];
+						continue next_insn;
+
+					case SETSPECIAL:
+						setspecial(ui(code[pc++]), (IRubyObject) stack[--sp]);
+						continue next_insn;
+
+					case GETSPECIAL:
+						stack[sp++] = getspecial(ui(code[pc++]));
+						continue next_insn;
+
+					case SETGLOBAL: {
+						Global g = lexical_bindings.globals[(ui(code[pc++]))];
+						g.set((IRubyObject) stack[--sp]);
+						continue next_insn;
+					}
+
+					case GETGLOBAL: {
+						Global g = lexical_bindings.globals[(ui(code[pc++]))];
+						stack[sp++] = g.get();
+						continue next_insn;
+					}
+
+					case GETDYNAMIC:
+						stack[sp++] = dvars.getdynamic(ui(code[pc++]),
+								ui(code[pc++]));
+						continue next_insn;
+
+					case SETDYNAMIC:
+						dvars.setdynamic(ui(code[pc++]), ui(code[pc++]),
+								stack[--sp]);
+						continue next_insn;
+
+					case BRANCHUNLESS: {
+						int offset = si(code[pc++], code[pc++]);
+						if (is_false((IRubyObject) stack[--sp])) {
+							pc = pc - 3 + offset;
 						}
+						continue next_insn;
 					}
 
-					sp -= (nargs);
-					sp += 1; // result
-
-					assert state.getStackPointer() == sp;
-
-					// pop result if requested...
-					if ((flags & FLAG_PUSH_RESULT) == 0) {
-						sp -= 1;
+					case BRANCHIF: {
+						int offset = si(code[pc++], code[pc++]);
+						if (is_true((IRubyObject) stack[--sp])) {
+							pc = pc - 3 + offset;
+						}
+						continue next_insn;
 					}
 
-					continue next_insn;
-				}
-
-					//
-					// stack: receiver, arg1, arg2, ... argN, [splat1, splat2,
-					// ..., splatM, Integer(M)], block_arg
-					//
-				case INVOKESUPER:
-				case SELFSEND:
-				case SEND: {
-					// special flags
-					int flags = code[pc++];
-
-					// compile-time known args (N in the above)
-					int nargs = ui(code[pc++]);
-
-					// the selector sits here...
-					int selector_pos = (opcode==INVOKESUPER) ? -1 : ui(code[pc++], code[pc++]);
-
-					int imm_block_pos = ui(code[pc++], code[pc++]);
-
-					boolean has_amp_block_arg = (flags & FLAG_BLOCK_ARG) != 0;
-
-					RubyBlock call_block = null;
-
-					if (has_amp_block_arg) {
-						call_block = (RubyBlock) stack[--sp];
+					case JUMP: {
+						int offset = si(code[pc++], code[pc++]);
+						pc = pc - 3 + offset;
+						continue next_insn;
 					}
 
-					RubyBlock old_block = null;
-					if ((flags & FLAG_PROC_NEW) == FLAG_PROC_NEW) {
-						old_block = state.setCallersBlock(block);
-					} else if ((flags & FLAG_SEND_EVAL) != 0) {
-
+					case LOCAL_JSR: {
+						int offset = si(code[pc++], code[pc++]);
+						stack[sp++] = new Integer(pc);
+						pc = pc - 3 + offset;
+						continue next_insn;
 					}
 
-					if (imm_block_pos != 0) {
-						assert call_block == null;
-
-						ISeq block_template = (ISeq) cpool[imm_block_pos];
-						call_block = new BlockISeq(block_template, self, dvars,
-								block, this);
-					} 
-					
-					
-					if (opcode==INVOKESUPER && call_block==null) {
-						call_block = block;
+					case LOCAL_RETURN: {
+						Integer new_pc = (Integer) stack[local0_idx + ui(code[pc++], code[pc++])];
+						pc = new_pc.intValue();
+						continue next_insn;
 					}
-					
 
-					int result_pos = -512;
+						// yield
+					case INVOKEBLOCK: {
+						if (block == null) {
+							throw getRuntime().newLocalJumpError(
+									"no block given", null);
+						}
 
-					try {
+						int flags = code[pc++];
+						int nargs = ui(code[pc++]); // number of known args at
+						// call-site
 
 						if ((flags & FLAG_REST_ARG) == FLAG_REST_ARG) {
 
-							IRubyObject[] all_args = (IRubyObject[]) stack[--sp];
-							IRubyObject receiver = (IRubyObject) stack[--sp];
-
-							result_pos = sp;
-
-							state.setStackPointer(sp);
-							RubyMethod method;
-
-							if (opcode == INVOKESUPER) {
-								method = lexical_bindings.get_super_method();
-							} else if (opcode == SELFSEND) {
-								method = self_methods[selector_pos].get();
-							} else {
-								Selector sel = lexical_bindings.selectors[selector_pos];
-								if (sel.getName().equals("to_s")) {
-									System.out.print("");
-								}
-								method = receiver.do_select(sel);
+							IRubyObject[] rest = (IRubyObject[]) stack[--sp];
+							for (int i = 0; i < rest.length; i++) {
+								stack[sp++] = rest[i];
 							}
 
-							if ((flags & FLAG_SEND_EVAL) != 0) {
-								result = method.call_eval(receiver, all_args,
-										call_block, dvars);
-							} else {
-								result = method.call(receiver, all_args,
-										call_block);
-							}
-
-						} else {
-
-							// all the args are on the stack...
-							int receiver_pos = sp - nargs - 1;
-							IRubyObject receiver = (IRubyObject) stack[receiver_pos];
-
-							state.setStackPointer(sp);
-
-							result_pos = receiver_pos;
-
-							RubyMethod method;
-
-							if (opcode == INVOKESUPER) {
-								method = lexical_bindings.get_super_method();
-							} else if (opcode == SELFSEND) {
-								method = self_methods[selector_pos].get();
-							} else {
-								Selector sel = lexical_bindings.selectors[selector_pos];
-								if (sel.getName().equals("[]=")) {
-									System.out.print("");
-								}
-								method = receiver.do_select(sel);
-							}
-
-							if ((flags & FLAG_SEND_EVAL) != 0) {
-								result = method.interp_call_eval(receiver,
-										state, nargs, call_block, dvars);
-							} else {
-								result = method.interp_call(receiver, state,
-										nargs, call_block);
-							}
-
-							sp = receiver_pos;
+							nargs += rest.length;
 						}
 
-					} catch (NewProcException ex) {
-
-						System.out.println(">> caught NewProc exception");
-
-						assert flags == code[pc - 6];
-						// mark this as a call to proc new
-						code[pc - 6] |= FLAG_PROC_NEW;
-
-						sp = result_pos;
-						result = getRuntime().newProc(block);
-
-					} catch (NonLocalReturn nlr) {
-						if (nlr.scope == dvars) {
-							// this will put the return value in the right
-							// place..
-							result = nlr.value;
-							return;
-
-						} else {
-							// this is someone else's return value
-							throw nlr;
-						}
-					} finally {
-
-						if ((flags & FLAG_PROC_NEW) == FLAG_PROC_NEW) {
-							state.setCallersBlock(old_block);
-						}
-
-					}
-
-					if ((flags & FLAG_PUSH_RESULT) != 0) {
-						stack[sp++] = result;
-					}
-
-					continue next_insn;
-				}
-
-					// arg1, arg2, ..., argN, ryby-array[M] -> EXPANDARRAY(N) ->
-					// java-array[N+M]
-				case EXPAND_REST_ARG: {
-					// compiler uses the operand to be able to generate code
-					// with known stack size.
-					int n_pre_args = code[pc++];
-
-					IRubyObject rest_arg = (IRubyObject) stack[--sp];
-
-					IRubyArray arr;
-					if (rest_arg instanceof IRubyArray) {
-						arr = (IRubyArray) rest_arg;
-
-					} else {
 						state.setStackPointer(sp);
-						arr = convert_rest_arg_to_array(rest_arg);
-					}
+						try {
+							block.interp_call(state, nargs);
 
-					IRubyObject[] args = new IRubyObject[n_pre_args
-							+ arr.int_size()];
-					sp = popinto(stack, sp, args, n_pre_args);
+						} catch (NonLocalJump e) {
 
-					for (int i = 0; i < arr.int_size(); i++) {
-						args[n_pre_args + i] = arr.int_at(i);
-					}
+							ISeq.Loop loop = find_loop_or_rethrow(pc,
+									template.loops, e);
+							pc = loop.get(e.kind);
+							continue next_insn;
 
-					stack[sp++] = args;
-					continue next_insn;
-				}
+						} catch (NonLocalReturn nlr) {
+							if (nlr.scope == dvars) {
+								// this will put the return value in the right
+								// place..
+								result = nlr.value;
+								return;
 
-				case PUSHOBJECT: {
-					int op1 = ui(code[pc++]);
-					stack[sp++] = cpool[op1];
-					continue next_insn;
-				}
-
-				case PUSHOBJECT2: {
-					int op1 = ui(code[pc++], code[pc++]);
-					stack[sp++] = cpool[op1];
-					continue next_insn;
-				}
-
-				case CONCATSTRINGS: {
-					int howmany = ui(code[pc++]);
-					StringBuilder sb = new StringBuilder();
-					sp -= howmany;
-					for (int i = 0; i < howmany; i++) {
-						IRubyString string = (IRubyString) stack[sp + i];
-						sb.append(string.asSymbol());
-					}
-					stack[sp++] = getRuntime().newString(sb.toString());
-					continue next_insn;
-				}
-
-				case PUSHSELF: {
-					stack[sp++] = self;
-					continue next_insn;
-				}
-
-				case NEWHASH: {
-					pc += 1; // unused size
-					stack[sp++] = getRuntime().newHash();
-					continue next_insn;
-				}
-
-					// "regex" -> NEWREGEX(flags) -> regex
-				case NEWREGEX: {
-					int flags = code[pc++];
-					IRubyString string = (IRubyString) stack[--sp];
-					IRubyRegexp regex = getRuntime().newRegexp(string, flags);
-					stack[sp++] = regex;
-				}
-
-				case DUP: {
-					Object val = stack[sp - 1];
-					stack[sp++] = val;
-					continue next_insn;
-				}
-
-				case POP: {
-					sp -= 1;
-					continue next_insn;
-				}
-
-					// evaluation of &x in argument context
-				case PROC2BLOCK: {
-					stack[sp - 1] = proc_to_block((IRubyObject) stack[sp - 1]);
-					continue next_insn;
-				}
-
-				case NEWSYMBOL: {
-					IRubyString string = (IRubyString) stack[sp - 1];
-					stack[sp - 1] = getRuntime().newSymbol(string.asSymbol());
-					continue next_insn;
-				}
-
-				case INTERNAL_TO_A: {
-					if (stack[sp - 1] instanceof IRubyArray) {
-						// do nothing
-					} else {
-						IRubyObject o = (IRubyObject) stack[sp - 1];
-						IRubyArray arr = getRuntime().newArray(1);
-						arr.int_at_put(0, o);
-						stack[sp - 1] = arr;
-					}
-					continue next_insn;
-				}
-
-					// arg1, arg2, ..., argN, (rest[M])? -> NEWARRAY(N, rest?)
-					// -> array[N+M]
-				case NEWARRAY: {
-					int size = code[pc++];
-					boolean has_rest_arg = (code[pc++] == 1);
-
-					// System.out.println("NEWARRAY " + size + ", " +
-					// has_rest_arg);
-
-					IRubyArray arr;
-					if (has_rest_arg) {
-						IRubyObject[] extra = (IRubyObject[]) stack[--sp];
-						if (size == 0) {
-							arr = getRuntime().newArray(extra);
-						} else {
-							arr = getRuntime().newArray(size + extra.length);
-							for (int i = 0; i < extra.length; i++) {
-								arr.int_at_put(size + i, extra[i]);
+							} else {
+								// this is someone else's return value
+								throw nlr;
 							}
 						}
-					} else {
-						arr = getRuntime().newArray(size);
+
+						sp -= (nargs);
+						sp += 1; // result
+
+						assert state.getStackPointer() == sp;
+
+						// pop result if requested...
+						if ((flags & FLAG_PUSH_RESULT) == 0) {
+							sp -= 1;
+						}
+
+						continue next_insn;
 					}
 
-					sp -= size;
-					for (int i = 0; i < size; i++) {
-						IRubyObject val = (IRubyObject) stack[sp + i];
-						arr.int_at_put(i, val);
+						//
+						// stack: receiver, arg1, arg2, ... argN, [splat1,
+						// splat2,
+						// ..., splatM, Integer(M)], block_arg
+						//
+					case INVOKESUPER:
+					case SELFSEND:
+					case SEND: {
+						// special flags
+						int flags = code[pc++];
+
+						// compile-time known args (N in the above)
+						int nargs = ui(code[pc++]);
+
+						// the selector sits here...
+						int selector_pos = (opcode == INVOKESUPER) ? -1 : ui(
+								code[pc++], code[pc++]);
+
+						int imm_block_pos = ui(code[pc++], code[pc++]);
+
+						boolean has_amp_block_arg = (flags & FLAG_BLOCK_ARG) != 0;
+
+						RubyBlock call_block = null;
+
+						if (has_amp_block_arg) {
+							call_block = (RubyBlock) stack[--sp];
+						}
+
+						RubyBlock old_block = null;
+						if ((flags & FLAG_PROC_NEW) == FLAG_PROC_NEW) {
+							old_block = state.setCallersBlock(block);
+						} else if ((flags & FLAG_SEND_EVAL) != 0) {
+
+						}
+
+						if (imm_block_pos != 0) {
+							assert call_block == null;
+
+							ISeq block_template = (ISeq) cpool[imm_block_pos];
+							call_block = new BlockISeq(block_template, self,
+									dvars, block, this);
+						}
+
+						if (opcode == INVOKESUPER && call_block == null) {
+							call_block = block;
+						}
+
+						int result_pos = -512;
+
+						try {
+
+							if ((flags & FLAG_REST_ARG) == FLAG_REST_ARG) {
+
+								IRubyObject[] all_args = (IRubyObject[]) stack[--sp];
+								IRubyObject receiver = (IRubyObject) stack[--sp];
+
+								result_pos = sp;
+
+								state.setStackPointer(sp);
+								RubyMethod method;
+
+								if (opcode == INVOKESUPER) {
+									method = lexical_bindings
+											.get_super_method();
+								} else if (opcode == SELFSEND) {
+									method = self_methods[selector_pos].get();
+								} else {
+									Selector sel = lexical_bindings.selectors[selector_pos];
+									if (sel.getName().equals("to_s")) {
+										System.out.print("");
+									}
+									method = receiver.do_select(sel);
+								}
+
+								if ((flags & FLAG_SEND_EVAL) != 0) {
+									result = method.call_eval(receiver,
+											all_args, call_block, dvars);
+								} else {
+									result = method.call(receiver, all_args,
+											call_block);
+								}
+
+							} else {
+
+								// all the args are on the stack...
+								int receiver_pos = sp - nargs - 1;
+								IRubyObject receiver = (IRubyObject) stack[receiver_pos];
+
+								state.setStackPointer(sp);
+
+								result_pos = receiver_pos;
+
+								RubyMethod method;
+
+								if (opcode == INVOKESUPER) {
+									method = lexical_bindings
+											.get_super_method();
+								} else if (opcode == SELFSEND) {
+									method = self_methods[selector_pos].get();
+								} else {
+									Selector sel = lexical_bindings.selectors[selector_pos];
+									if (sel.getName().equals("[]=")) {
+										System.out.print("");
+									}
+									method = receiver.do_select(sel);
+								}
+
+								if ((flags & FLAG_SEND_EVAL) != 0) {
+									result = method.interp_call_eval(receiver,
+											state, nargs, call_block, dvars);
+								} else {
+									result = method.interp_call(receiver,
+											state, nargs, call_block);
+								}
+
+								sp = receiver_pos;
+							}
+
+						} catch (NewProcException ex) {
+
+							System.out.println(">> caught NewProc exception");
+
+							assert flags == code[pc - 6];
+							// mark this as a call to proc new
+							code[pc - 6] |= FLAG_PROC_NEW;
+
+							sp = result_pos;
+							result = getRuntime().newProc(block);
+
+						} catch (NonLocalReturn nlr) {
+							if (nlr.scope == dvars) {
+								// this will put the return value in the right
+								// place..
+								result = nlr.value;
+								return;
+
+							} else {
+								// this is someone else's return value
+								throw nlr;
+							}
+
+						} finally {
+
+							if ((flags & FLAG_PROC_NEW) == FLAG_PROC_NEW) {
+								state.setCallersBlock(old_block);
+							}
+
+						}
+
+						if ((flags & FLAG_PUSH_RESULT) != 0) {
+							stack[sp++] = result;
+						}
+
+						continue next_insn;
 					}
 
-					stack[sp++] = arr;
-					continue next_insn;
-				}
+						// arg1, arg2, ..., argN, ryby-array[M] ->
+						// EXPANDARRAY(N) ->
+						// java-array[N+M]
+					case EXPAND_REST_ARG: {
+						// compiler uses the operand to be able to generate code
+						// with known stack size.
+						int n_pre_args = code[pc++];
 
-					// convert array of size 1 to first element,
-					// array of size 0 to nil
-					// other value is left alone.
-				case MAKERETURN: {
-					Object val = stack[sp - 1];
-					val = make_return_value(val);
-					stack[sp - 1] = val;
-					continue next_insn;
-				}
+						IRubyObject rest_arg = (IRubyObject) stack[--sp];
 
-				case NONLOCAL_BREAK:
-					throw new NonLocalBreak();
+						IRubyArray arr;
+						if (rest_arg instanceof IRubyArray) {
+							arr = (IRubyArray) rest_arg;
 
-				case NONLOCAL_NEXT:
-					throw new NonLocalNext();
+						} else {
+							state.setStackPointer(sp);
+							arr = convert_rest_arg_to_array(rest_arg);
+						}
 
-				case NONLOCAL_REDO:
-					throw new NonLocalRedo();
+						IRubyObject[] args = new IRubyObject[n_pre_args
+								+ arr.int_size()];
+						sp = popinto(stack, sp, args, n_pre_args);
 
-				case LEAVE: {
-					result = stack[--sp];
-					return;
-				}
+						for (int i = 0; i < arr.int_size(); i++) {
+							args[n_pre_args + i] = arr.int_at(i);
+						}
 
-				case PUSHNIL: {
-					stack[sp++] = getRuntime().getNil();
-					continue next_insn;
-				}
-
-				case ARRAY_AT: {
-					int idx = code[pc++];
-					IRubyArray arr = (IRubyArray) stack[sp - 1];
-					stack[sp++] = arr.int_at(idx);
-					continue next_insn;
-				}
-
-				case ARRAY_REST: {
-					int idx = code[pc++];
-					IRubyArray arr = (IRubyArray) stack[sp - 1];
-					stack[sp++] = arr.int_rest(idx);
-					continue next_insn;
-				}
-
-				case JAVA_ARRAY_AT: {
-					int idx = code[pc++];
-					IRubyObject[] arr = (IRubyObject[]) stack[--sp];
-					stack[sp++] = java_array_at(arr, idx);
-					continue next_insn;
-				}
-
-				case JAVA_ARRAY_REST: {
-					int idx = code[pc++];
-					IRubyObject[] arr = (IRubyObject[]) stack[--sp];
-					stack[sp++] = java_array_rest(arr, idx);
-					continue next_insn;
-				}
-
-				case DUPN: {
-					int idx = code[pc++];
-					Object val = stack[sp - idx];
-					stack[sp++] = val;
-					continue next_insn;
-				}
-
-				case POPN: {
-					sp -= ui(code[pc++]);
-					continue next_insn;
-				}
-
-				case DEFINEMETHOD: {
-					boolean singleton = code[pc++] == 1;
-					int name_idx = ui(code[pc++], code[pc++]);
-					int iseq_idx = ui(code[pc++], code[pc++]);
-
-					IRubyString name = (IRubyString) cpool[name_idx];
-					ISeq body = (ISeq) cpool[iseq_idx];
-
-					MetaModule mc;
-					IRubyObject receiver = null;
-					boolean is_module_method;
-					if (singleton) {
-						receiver = (IRubyObject) stack[--sp];
-						mc = receiver.get_singleton_meta_class();
-						is_module_method = (receiver instanceof IRubyModule);
-					} else {
-						mc = this.dynamic_context;
-						is_module_method = false;
+						stack[sp++] = args;
+						continue next_insn;
 					}
 
-					BindingContext bound = new BindingContext(body, mc, mc,
-							state.getModuleStack(), is_module_method);
-					String method_name = name.asSymbol();
-
-					MethodISeq method = new MethodISeq(bound, dvars,
-							method_name);
-
-					RubyMethod cm = method;
-
-					if ((mc instanceof MetaClass) || is_module_method) {
-						// cm = new MethodCompiler(getRuntime()).compile(method);
+					case PUSHOBJECT: {
+						int op1 = ui(code[pc++]);
+						stack[sp++] = cpool[op1];
+						continue next_insn;
 					}
 
-					if (is_module_method) {
-						mc.register_module_method(method_name, cm);
-					} else {
-						mc.register_instance_method(method_name, cm);
-					}
-					continue next_insn;
-				}
-
-				case GETCONSTANT: {
-					int idx = ui(code[pc++], code[pc++]);
-					state.setStackPointer(sp);
-					stack[sp++] = lexical_bindings.constants[idx].get();
-					continue next_insn;
-				}
-
-				case SETCONSTANT: {
-					int idx = ui(code[pc++], code[pc++]);
-					IRubyObject value = (IRubyObject) stack[--sp];
-					state.setStackPointer(sp);
-					lexical_bindings.constants[idx].set(value);
-					continue next_insn;
-				}
-
-				case DEFINECLASS: {
-					IRubyObject super_class = null;
-					int flags = code[pc++];
-					boolean super_class_given = ((flags & FLAG_DEFINECLASS_SUPER_CLASS_GIVEN) != 0);
-					boolean is_singleton_def = ((flags & FLAG_DEFINECLASS_IS_SINGLETON) != 0);
-					int name_idx = ui(code[pc++], code[pc++]);
-					int iseq_idx = ui(code[pc++], code[pc++]);
-
-					if (super_class_given) {
-						super_class = (IRubyObject) stack[--sp];
+					case PUSHOBJECT2: {
+						int op1 = ui(code[pc++], code[pc++]);
+						stack[sp++] = cpool[op1];
+						continue next_insn;
 					}
 
-					IRubyString name = is_singleton_def ? null : (IRubyString) cpool[name_idx];
-					ISeq iseq = (ISeq) cpool[iseq_idx];
+					case CONCATSTRINGS: {
+						int howmany = ui(code[pc++]);
+						StringBuilder sb = new StringBuilder();
+						sp -= howmany;
+						for (int i = 0; i < howmany; i++) {
+							IRubyString string = (IRubyString) stack[sp + i];
+							sb.append(string.asSymbol());
+						}
+						stack[sp++] = getRuntime().newString(sb.toString());
+						continue next_insn;
+					}
 
-					state.setStackPointer(sp);
-					eval_defineclass(self, super_class, name, iseq, state,
-							is_singleton_def);
+					case PUSHSELF: {
+						stack[sp++] = self;
+						continue next_insn;
+					}
 
+					case NEWHASH: {
+						pc += 1; // unused size
+						stack[sp++] = getRuntime().newHash();
+						continue next_insn;
+					}
+
+						// "regex" -> NEWREGEX(flags) -> regex
+					case NEWREGEX: {
+						int flags = code[pc++];
+						IRubyString string = (IRubyString) stack[--sp];
+						IRubyRegexp regex = getRuntime().newRegexp(string,
+								flags);
+						stack[sp++] = regex;
+						continue next_insn;
+					}
+
+					case UNWRAP_RAISE: {
+						RaiseException val = (RaiseException) stack[sp - 1];
+						stack[sp - 1] = val.getRubyException();
+						continue next_insn;
+					}
+					
+					case DUP: {
+						Object val = stack[sp - 1];
+						stack[sp++] = val;
+						continue next_insn;
+					}
+
+					case POP: {
+						sp -= 1;
+						continue next_insn;
+					}
+
+						// evaluation of &x in argument context
+					case PROC2BLOCK: {
+						stack[sp - 1] = proc_to_block((IRubyObject) stack[sp - 1]);
+						continue next_insn;
+					}
+
+					case NEWSYMBOL: {
+						IRubyString string = (IRubyString) stack[sp - 1];
+						stack[sp - 1] = getRuntime().newSymbol(
+								string.asSymbol());
+						continue next_insn;
+					}
+
+					case NEWRANGE: {
+						boolean inclusive = code[pc++] == 1;
+						IRubyObject end = (IRubyObject) stack[--sp];
+						IRubyObject start = (IRubyObject) stack[--sp];
+						stack[sp++] = getRuntime().newRange(start, end, inclusive);
+						continue next_insn;
+					}
+					
+					case INTERNAL_TO_A: {
+						if (stack[sp - 1] instanceof IRubyArray) {
+							// do nothing
+						} else {
+							IRubyObject o = (IRubyObject) stack[sp - 1];
+							IRubyArray arr = getRuntime().newArray(1);
+							arr.int_at_put(0, o);
+							stack[sp - 1] = arr;
+						}
+						continue next_insn;
+					}
+
+						// arg1, arg2, ..., argN, (rest[M])? -> NEWARRAY(N,
+						// rest?)
+						// -> array[N+M]
+					case NEWARRAY: {
+						int size = code[pc++];
+						boolean has_rest_arg = (code[pc++] == 1);
+
+						// System.out.println("NEWARRAY " + size + ", " +
+						// has_rest_arg);
+
+						IRubyArray arr;
+						if (has_rest_arg) {
+							IRubyObject[] extra = (IRubyObject[]) stack[--sp];
+							if (size == 0) {
+								arr = getRuntime().newArray(extra);
+							} else {
+								arr = getRuntime()
+										.newArray(size + extra.length);
+								for (int i = 0; i < extra.length; i++) {
+									arr.int_at_put(size + i, extra[i]);
+								}
+							}
+						} else {
+							arr = getRuntime().newArray(size);
+						}
+
+						sp -= size;
+						for (int i = 0; i < size; i++) {
+							IRubyObject val = (IRubyObject) stack[sp + i];
+							arr.int_at_put(i, val);
+						}
+
+						stack[sp++] = arr;
+						continue next_insn;
+					}
+
+						// convert array of size 1 to first element,
+						// array of size 0 to nil
+						// other value is left alone.
+					case MAKERETURN: {
+						Object val = stack[sp - 1];
+						val = make_return_value(val);
+						stack[sp - 1] = val;
+						continue next_insn;
+					}
+
+					case NONLOCAL_BREAK:
+						throw new NonLocalBreak();
+
+					case NONLOCAL_NEXT:
+						throw new NonLocalNext();
+
+					case NONLOCAL_REDO:
+						throw new NonLocalRedo();
+
+					case LEAVE: {
+						result = stack[--sp];
+						return;
+					}
+
+					case PUSHNIL: {
+						stack[sp++] = getRuntime().getNil();
+						continue next_insn;
+					}
+
+					case ARRAY_AT: {
+						int idx = code[pc++];
+						IRubyArray arr = (IRubyArray) stack[sp - 1];
+						stack[sp++] = arr.int_at(idx);
+						continue next_insn;
+					}
+
+					case ARRAY_REST: {
+						int idx = code[pc++];
+						IRubyArray arr = (IRubyArray) stack[sp - 1];
+						stack[sp++] = arr.int_rest(idx);
+						continue next_insn;
+					}
+
+					case JAVA_ARRAY_AT: {
+						int idx = code[pc++];
+						IRubyObject[] arr = (IRubyObject[]) stack[--sp];
+						stack[sp++] = java_array_at(arr, idx);
+						continue next_insn;
+					}
+
+					case JAVA_ARRAY_REST: {
+						int idx = code[pc++];
+						IRubyObject[] arr = (IRubyObject[]) stack[--sp];
+						stack[sp++] = java_array_rest(arr, idx);
+						continue next_insn;
+					}
+
+					case DUPN: {
+						int idx = code[pc++];
+						Object val = stack[sp - idx];
+						stack[sp++] = val;
+						continue next_insn;
+					}
+
+					case POPN: {
+						sp -= ui(code[pc++]);
+						continue next_insn;
+					}
+
+					case DEFINEMETHOD: {
+						boolean singleton = code[pc++] == 1;
+						int name_idx = ui(code[pc++], code[pc++]);
+						int iseq_idx = ui(code[pc++], code[pc++]);
+
+						IRubyString name = (IRubyString) cpool[name_idx];
+						ISeq body = (ISeq) cpool[iseq_idx];
+
+						MetaModule mc;
+						IRubyObject receiver = null;
+						boolean is_module_method;
+						if (singleton) {
+							receiver = (IRubyObject) stack[--sp];
+							mc = receiver.get_singleton_meta_class();
+							is_module_method = (receiver instanceof IRubyModule);
+						} else {
+							mc = this.dynamic_context;
+							is_module_method = false;
+						}
+
+						BindingContext bound = new BindingContext(body, mc, mc,
+								state.getModuleStack(), is_module_method);
+						String method_name = name.asSymbol();
+
+						MethodISeq method = new MethodISeq(bound, dvars,
+								method_name);
+
+						RubyMethod cm = method;
+
+						if ((mc instanceof MetaClass) || is_module_method) {
+							cm = new
+								MethodCompiler(getRuntime()).compile(method);
+						}
+
+						if (is_module_method) {
+							mc.register_module_method(method_name, cm);
+						} else {
+							mc.register_instance_method(method_name, cm);
+						}
+						continue next_insn;
+					}
+
+					case GETCONSTANT: {
+						int idx = ui(code[pc++], code[pc++]);
+						state.setStackPointer(sp);
+						stack[sp++] = lexical_bindings.constants[idx].get();
+						continue next_insn;
+					}
+
+					case SETCONSTANT: {
+						int idx = ui(code[pc++], code[pc++]);
+						IRubyObject value = (IRubyObject) stack[--sp];
+						state.setStackPointer(sp);
+						lexical_bindings.constants[idx].set(value);
+						continue next_insn;
+					}
+
+					case DEFINECLASS: {
+						IRubyObject super_class = null;
+						int flags = code[pc++];
+						boolean super_class_given = ((flags & FLAG_DEFINECLASS_SUPER_CLASS_GIVEN) != 0);
+						boolean is_singleton_def = ((flags & FLAG_DEFINECLASS_IS_SINGLETON) != 0);
+						int name_idx = ui(code[pc++], code[pc++]);
+						int iseq_idx = ui(code[pc++], code[pc++]);
+
+						if (super_class_given) {
+							super_class = (IRubyObject) stack[--sp];
+						}
+
+						IRubyString name = is_singleton_def ? null
+								: (IRubyString) cpool[name_idx];
+						ISeq iseq = (ISeq) cpool[iseq_idx];
+
+						state.setStackPointer(sp);
+						eval_defineclass(self, super_class, name, iseq, state,
+								is_singleton_def);
+
+						continue next_insn;
+					}
+
+					case DEFINEMODULE: {
+						int name_idx = ui(code[pc++], code[pc++]);
+						int iseq_idx = ui(code[pc++], code[pc++]);
+
+						IRubyString name = (IRubyString) cpool[name_idx];
+						ISeq iseq = (ISeq) cpool[iseq_idx];
+
+						state.setStackPointer(sp);
+						eval_definemodule(self, name, iseq, state);
+
+						continue next_insn;
+					}
+
+					case FAST_LT: {
+						IRubyObject arg = (IRubyObject) stack[--sp];
+						IRubyObject rcv = (IRubyObject) stack[--sp];
+						Selector sel = lexical_bindings.selectors[ui(
+								code[pc++], code[pc++])];
+						state.setStackPointer(sp);
+						stack[sp++] = rcv.fast_lt(arg, sel);
+						continue next_insn;
+					}
+
+					case FAST_GT: {
+						IRubyObject arg = (IRubyObject) stack[--sp];
+						IRubyObject rcv = (IRubyObject) stack[--sp];
+						Selector sel = lexical_bindings.selectors[ui(
+								code[pc++], code[pc++])];
+						state.setStackPointer(sp);
+						stack[sp++] = rcv.fast_gt(arg, sel);
+						continue next_insn;
+					}
+
+					case FAST_EQ2: {
+						IRubyObject arg = (IRubyObject) stack[--sp];
+						IRubyObject rcv = (IRubyObject) stack[--sp];
+						Selector sel = lexical_bindings.selectors[ui(
+								code[pc++], code[pc++])];
+						state.setStackPointer(sp);
+						stack[sp++] = rcv.fast_eq2(arg, sel);
+						continue next_insn;
+					}
+
+					case FAST_BIT_OR: {
+						IRubyObject arg = (IRubyObject) stack[--sp];
+						IRubyObject rcv = (IRubyObject) stack[--sp];
+						Selector sel = lexical_bindings.selectors[ui(
+								code[pc++], code[pc++])];
+						state.setStackPointer(sp);
+						stack[sp++] = rcv.fast_bit_or(arg, sel);
+						continue next_insn;
+					}
+
+					case FAST_BIT_XOR: {
+						IRubyObject arg = (IRubyObject) stack[--sp];
+						IRubyObject rcv = (IRubyObject) stack[--sp];
+						Selector sel = lexical_bindings.selectors[ui(
+								code[pc++], code[pc++])];
+						state.setStackPointer(sp);
+						stack[sp++] = rcv.fast_bit_xor(arg, sel);
+						continue next_insn;
+					}
+
+					case FAST_RSHIFT: {
+						IRubyObject arg = (IRubyObject) stack[--sp];
+						IRubyObject rcv = (IRubyObject) stack[--sp];
+						Selector sel = lexical_bindings.selectors[ui(
+								code[pc++], code[pc++])];
+						state.setStackPointer(sp);
+						stack[sp++] = rcv.fast_rshift(arg, sel);
+						continue next_insn;
+					}
+
+					case FAST_BIT_AND: {
+						IRubyObject arg = (IRubyObject) stack[--sp];
+						IRubyObject rcv = (IRubyObject) stack[--sp];
+						Selector sel = lexical_bindings.selectors[ui(
+								code[pc++], code[pc++])];
+						state.setStackPointer(sp);
+						stack[sp++] = rcv.fast_bit_and(arg, sel);
+						continue next_insn;
+					}
+
+					case FAST_BIT_NOT: {
+						IRubyObject rcv = (IRubyObject) stack[--sp];
+						Selector sel = lexical_bindings.selectors[ui(
+								code[pc++], code[pc++])];
+						state.setStackPointer(sp);
+						stack[sp++] = rcv.fast_bit_not(sel);
+						continue next_insn;
+					}
+
+					case FAST_PLUS: {
+						IRubyObject arg = (IRubyObject) stack[--sp];
+						IRubyObject rcv = (IRubyObject) stack[--sp];
+						Selector sel = lexical_bindings.selectors[ui(
+								code[pc++], code[pc++])];
+						state.setStackPointer(sp);
+						stack[sp++] = rcv.fast_plus(arg, sel);
+						continue next_insn;
+					}
+
+					case FAST_LE: {
+						IRubyObject arg = (IRubyObject) stack[--sp];
+						IRubyObject rcv = (IRubyObject) stack[--sp];
+						Selector sel = lexical_bindings.selectors[ui(
+								code[pc++], code[pc++])];
+						state.setStackPointer(sp);
+						stack[sp++] = rcv.fast_le(arg, sel);
+						continue next_insn;
+					}
+
+					case FAST_MINUS: {
+						IRubyObject arg = (IRubyObject) stack[--sp];
+						IRubyObject rcv = (IRubyObject) stack[--sp];
+						Selector sel = lexical_bindings.selectors[ui(
+								code[pc++], code[pc++])];
+						state.setStackPointer(sp);
+						stack[sp++] = rcv.fast_minus(arg, sel);
+						continue next_insn;
+					}
+
+					case SETINSTANCEVARIABLE: {
+						int idx = ui(code[pc++], code[pc++]);
+						ivar_accessors[idx]
+								.set(self, (IRubyObject) stack[--sp]);
+						continue next_insn;
+					}
+
+					case GETINSTANCEVARIABLE: {
+						int idx = ui(code[pc++], code[pc++]);
+						stack[sp++] = ivar_accessors[idx].get(self);
+						continue next_insn;
+					}
+
+					case ALIAS: {
+						int new_idx = ui(code[pc++], code[pc++]);
+						int orig_idx = ui(code[pc++], code[pc++]);
+
+						IRubySymbol new_sym = (IRubySymbol) cpool[new_idx];
+						IRubySymbol orig_sym = (IRubySymbol) cpool[orig_idx];
+
+						self.get_meta_class().alias(new_sym, orig_sym,
+								self_is_module);
+
+						continue next_insn;
+					}
+
+					default:
+						throw new InternalError("unhandled insn: "
+								+ code[pc - 1]);
+					}
+					
+				} catch (RaiseException ex) {
+
+					if (empty_stack == -1) {
+						throw new InternalError("exception in arg setup");
+					}
+
+					// find exception handler...
+					int handler_pc = find_exception_handler(pc, template);
+					
+					if (handler_pc == -1) {
+						throw ex;
+					}
+					
+					pc = handler_pc;
+
+					// empty the stack
+					
+					sp = empty_stack;
+					
+					// push exception
+					stack[sp++] = ex;
+					
+					
 					continue next_insn;
-				}
-
-				case DEFINEMODULE: {
-					int name_idx = ui(code[pc++], code[pc++]);
-					int iseq_idx = ui(code[pc++], code[pc++]);
-
-					IRubyString name = (IRubyString) cpool[name_idx];
-					ISeq iseq = (ISeq) cpool[iseq_idx];
-
-					state.setStackPointer(sp);
-					eval_definemodule(self, name, iseq, state);
-
-					continue next_insn;
-				}
-
-				case FAST_LT: {
-					IRubyObject arg = (IRubyObject) stack[--sp];
-					IRubyObject rcv = (IRubyObject) stack[--sp];
-					Selector sel = lexical_bindings.selectors[ui(code[pc++],
-							code[pc++])];
-					state.setStackPointer(sp);
-					stack[sp++] = rcv.fast_lt(arg, sel);
-					continue next_insn;
-				}
-
-				case FAST_GT: {
-					IRubyObject arg = (IRubyObject) stack[--sp];
-					IRubyObject rcv = (IRubyObject) stack[--sp];
-					Selector sel = lexical_bindings.selectors[ui(code[pc++],
-							code[pc++])];
-					state.setStackPointer(sp);
-					stack[sp++] = rcv.fast_gt(arg, sel);
-					continue next_insn;
-				}
-
-				case FAST_EQ2: {
-					IRubyObject arg = (IRubyObject) stack[--sp];
-					IRubyObject rcv = (IRubyObject) stack[--sp];
-					Selector sel = lexical_bindings.selectors[ui(code[pc++],
-							code[pc++])];
-					state.setStackPointer(sp);
-					stack[sp++] = rcv.fast_eq2(arg, sel);
-					continue next_insn;
-				}
-
-				case FAST_BIT_OR: {
-					IRubyObject arg = (IRubyObject) stack[--sp];
-					IRubyObject rcv = (IRubyObject) stack[--sp];
-					Selector sel = lexical_bindings.selectors[ui(code[pc++],
-							code[pc++])];
-					state.setStackPointer(sp);
-					stack[sp++] = rcv.fast_bit_or(arg, sel);
-					continue next_insn;
-				}
-
-				case FAST_BIT_XOR: {
-					IRubyObject arg = (IRubyObject) stack[--sp];
-					IRubyObject rcv = (IRubyObject) stack[--sp];
-					Selector sel = lexical_bindings.selectors[ui(code[pc++],
-							code[pc++])];
-					state.setStackPointer(sp);
-					stack[sp++] = rcv.fast_bit_xor(arg, sel);
-					continue next_insn;
-				}
-
-				case FAST_RSHIFT: {
-					IRubyObject arg = (IRubyObject) stack[--sp];
-					IRubyObject rcv = (IRubyObject) stack[--sp];
-					Selector sel = lexical_bindings.selectors[ui(code[pc++],
-							code[pc++])];
-					state.setStackPointer(sp);
-					stack[sp++] = rcv.fast_rshift(arg, sel);
-					continue next_insn;
-				}
-
-				case FAST_BIT_AND: {
-					IRubyObject arg = (IRubyObject) stack[--sp];
-					IRubyObject rcv = (IRubyObject) stack[--sp];
-					Selector sel = lexical_bindings.selectors[ui(code[pc++],
-							code[pc++])];
-					state.setStackPointer(sp);
-					stack[sp++] = rcv.fast_bit_and(arg, sel);
-					continue next_insn;
-				}
-
-				case FAST_BIT_NOT: {
-					IRubyObject rcv = (IRubyObject) stack[--sp];
-					Selector sel = lexical_bindings.selectors[ui(code[pc++],
-							code[pc++])];
-					state.setStackPointer(sp);
-					stack[sp++] = rcv.fast_bit_not(sel);
-					continue next_insn;
-				}
-
-				case FAST_PLUS: {
-					IRubyObject arg = (IRubyObject) stack[--sp];
-					IRubyObject rcv = (IRubyObject) stack[--sp];
-					Selector sel = lexical_bindings.selectors[ui(code[pc++],
-							code[pc++])];
-					state.setStackPointer(sp);
-					stack[sp++] = rcv.fast_plus(arg, sel);
-					continue next_insn;
-				}
-
-				case FAST_LE: {
-					IRubyObject arg = (IRubyObject) stack[--sp];
-					IRubyObject rcv = (IRubyObject) stack[--sp];
-					Selector sel = lexical_bindings.selectors[ui(code[pc++],
-							code[pc++])];
-					state.setStackPointer(sp);
-					stack[sp++] = rcv.fast_le(arg, sel);
-					continue next_insn;
-				}
-
-				case FAST_MINUS: {
-					IRubyObject arg = (IRubyObject) stack[--sp];
-					IRubyObject rcv = (IRubyObject) stack[--sp];
-					Selector sel = lexical_bindings.selectors[ui(code[pc++],
-							code[pc++])];
-					state.setStackPointer(sp);
-					stack[sp++] = rcv.fast_minus(arg, sel);
-					continue next_insn;
-				}
-
-				case SETINSTANCEVARIABLE: {
-					int idx = ui(code[pc++], code[pc++]);
-					ivar_accessors[idx].set(self, (IRubyObject) stack[--sp]);
-					continue next_insn;
-				}
-
-				case GETINSTANCEVARIABLE: {
-					int idx = ui(code[pc++], code[pc++]);
-					stack[sp++] = ivar_accessors[idx].get(self);
-					continue next_insn;
-				}
-
-				case ALIAS: {
-					int new_idx = ui(code[pc++], code[pc++]);
-					int orig_idx = ui(code[pc++], code[pc++]);
-
-					IRubySymbol new_sym = (IRubySymbol) cpool[new_idx];
-					IRubySymbol orig_sym = (IRubySymbol) cpool[orig_idx];
-
-					self.get_meta_class().alias(new_sym, orig_sym,
-							self_is_module);
-
-					continue next_insn;
-
-				}
-
-				default:
-					throw new InternalError("unhandled insn: " + code[pc - 1]);
 				}
 			}
 
@@ -1002,6 +1081,17 @@ public class BindingContext implements Instructions {
 
 			state.popFrame();
 		}
+	}
+
+	private int find_exception_handler(int pc, ISeq template) {
+		ExceptionHandler[] handlers = template.getExceptionHandlers();
+		for (int i = handlers.length-1; i >= 0; i--) {
+			ExceptionHandler h = handlers[i];
+			if (h.start_pc <= pc && h.end_pc <= pc) {
+				return h.handler_pc;
+			}
+		}
+		return -1;
 	}
 
 	private void eval_definemodule(IRubyObject self, IRubyString name,

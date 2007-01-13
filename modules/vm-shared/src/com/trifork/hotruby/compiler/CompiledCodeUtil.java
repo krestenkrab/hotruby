@@ -2,6 +2,7 @@ package com.trifork.hotruby.compiler;
 
 import com.trifork.hotruby.objects.IRubyArray;
 import com.trifork.hotruby.objects.IRubyObject;
+import com.trifork.hotruby.objects.IRubyRange;
 import com.trifork.hotruby.runtime.RubyBlock;
 import com.trifork.hotruby.runtime.RubyRuntime;
 
@@ -45,5 +46,9 @@ public class CompiledCodeUtil {
 		}
 	}
 
+	public static IRubyRange newRange(IRubyObject first, IRubyObject last, boolean inclusive, RubyRuntime runtime)
+	{
+		return runtime.newRange(first, last, inclusive);
+	}
 
 }

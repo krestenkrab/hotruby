@@ -36,6 +36,7 @@ public class ISeq implements Instructions {
 		this.ivars = builder.getIvars();
 		this.super_access = builder.calls_super;
 		this.source = builder.source;
+		this.handlers = builder.getExceptionHanders();
 		num_locals = source.getNumLocals() + builder.getTemps();
 		num_dynamics = source.getNumDynamics();
 		min_parm_count = source.getMinParmCount();
@@ -81,6 +82,7 @@ public class ISeq implements Instructions {
 	}
 
 	final Loop[] loops;
+	final ExceptionHandler[] handlers;
 
 	int visibility;
 
@@ -235,6 +237,10 @@ public class ISeq implements Instructions {
 		} else {
 			return null;
 		}
+	}
+
+	public ExceptionHandler[] getExceptionHandlers() {
+		return handlers;
 	}
 
 }

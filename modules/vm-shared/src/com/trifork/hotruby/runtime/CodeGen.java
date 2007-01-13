@@ -128,10 +128,14 @@ public class CodeGen implements Opcodes, CompilerConsts {
 
 		byte[] bytes = cw.toByteArray();
 
+		debug_write_class(selfType, bytes);
+		
 		Class result = runtime.loader.doDefineClass(class_name, bytes);
 
 		// System.out.println("defined selector "+class_name);
 
+		
+		
 		return result;
 	}
 

@@ -7,7 +7,7 @@ public abstract class RubyBaseRange
 	extends RubyObject
 	implements IRubyRange
 {
-	interface SelectRange { RubyMethod get_RubyRange(); }
+	public interface SelectRange { RubyMethod get_RubyRange(); }
 	public RubyMethod select(Selector sel) {
 		if(sel instanceof SelectRange) { return ((SelectRange)sel).get_RubyRange(); }
 		else { return LoadedRubyRuntime.resolve_method((RubyObject)this,sel,SelectRange.class); }

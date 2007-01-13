@@ -99,6 +99,7 @@ public class ISeqBuilder implements ConstantPool, Instructions {
 			stack_depth -= 1;
 			return;
 		
+		case UNWRAP_RAISE:
 		case SWAP:
 		case FAST_BIT_NOT:
 		case DEFINEMODULE:
@@ -134,6 +135,12 @@ public class ISeqBuilder implements ConstantPool, Instructions {
 			stack_depth += 1;
 			return;
 
+		case NEWRANGE: {
+			stack_depth -= 2;
+			stack_depth += 1;
+			return;
+		}
+			
 		case NEWARRAY: {
 			int nelems = data[pos + 1];
 			boolean has_rest_arg = data[pos + 2] != 0;
@@ -299,6 +306,20 @@ public class ISeqBuilder implements ConstantPool, Instructions {
 			}
 			return;
 		}
+		
+		case LOCAL_JSR: {
+			// stack_depth += 1;
+			return;
+		}
+		
+		case LOCAL_RETURN: {
+			// stack_depth -= 1;
+			return;
+		}
+		
+		case NONLOCAL_BREAK: {
+			return;
+		}
 
 		default:
 			throw new InternalError("unhandled instruction: " + insn);
@@ -401,7 +422,7 @@ public class ISeqBuilder implements ConstantPool, Instructions {
 
 	private int add_cpool(Object value) {
 		if (parent_iseq != null) {
-			parent_iseq.add_cpool(value);
+			return parent_iseq.add_cpool(value);
 		}
 		int idx = cpool.indexOf(value);
 		if (idx != -1) {
@@ -465,6 +486,8 @@ public class ISeqBuilder implements ConstantPool, Instructions {
 	private String method_name;
 
 	boolean calls_super;
+
+	private List<ExceptionHandler> exceptionHandlers = new ArrayList<ExceptionHandler>();
 
 	public void add_control_context(ControlContext cc) {
 		loop_contexts.add(cc);
@@ -592,6 +615,15 @@ public class ISeqBuilder implements ConstantPool, Instructions {
 		} else {
 			return this.method_name;
 		}
+	}
+
+	void addExceptionHandler(ExceptionHandler handler)
+	{
+		exceptionHandlers.add(handler);
+	}
+	
+	public ExceptionHandler[] getExceptionHanders() {
+		return exceptionHandlers.toArray(new ExceptionHandler[exceptionHandlers.size()]);
 	}
 
 }

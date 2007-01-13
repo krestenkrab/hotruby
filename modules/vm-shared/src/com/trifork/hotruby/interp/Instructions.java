@@ -25,7 +25,7 @@ public interface Instructions {
     public static final int TOSTRING = 21;
     public static final int NEWREGEX = 22; // ok
     public static final int NEWARRAY = 23; // ok
-    public static final int DUPARRAY = 24;
+    public static final int UNWRAP_RAISE = 24;
     public static final int EXPAND_REST_ARG = 25;
     public static final int CONCATARRAY = 26;
     public static final int SPLATARRAY = 27;
@@ -51,7 +51,7 @@ public interface Instructions {
     public static final int SEND = 46; // ok
     public static final int INVOKESUPER = 47;
     public static final int INVOKEBLOCK = 48; // ok
-    public static final int RETURN = 49;
+    public static final int RETURN = 49; // non-local return from block
     public static final int LEAVE = 50; // last insn of code block
     public static final int THROW = 51;
     
@@ -104,6 +104,9 @@ public interface Instructions {
     public static final int FAST_RSHIFT = 81;
     public static final int FAST_EQ3 = 83;
     
+    public static final int LOCAL_JSR = 100;
+    public static final int LOCAL_RETURN = 101;
+
     // a call that has a *arg
     public static final int FLAG_REST_ARG = 0x01;
     

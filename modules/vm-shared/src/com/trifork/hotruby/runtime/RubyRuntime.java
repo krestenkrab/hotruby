@@ -33,6 +33,7 @@ import com.trifork.hotruby.objects.IRubyInteger;
 import com.trifork.hotruby.objects.IRubyModule;
 import com.trifork.hotruby.objects.IRubyObject;
 import com.trifork.hotruby.objects.IRubyProc;
+import com.trifork.hotruby.objects.IRubyRange;
 import com.trifork.hotruby.objects.IRubyRegexp;
 import com.trifork.hotruby.objects.IRubyString;
 import com.trifork.hotruby.objects.IRubySymbol;
@@ -684,4 +685,11 @@ public abstract class RubyRuntime {
 		
 		return newFixnum(ss.object_id);
 	}
+
+	public RaiseException newRuntimeError(IRubyString string) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public abstract IRubyRange newRange(IRubyObject start, IRubyObject end, boolean inclusive);
 }

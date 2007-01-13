@@ -3,6 +3,8 @@ import com.trifork.hotruby.callable.PublicMethod;
 import com.trifork.hotruby.callable.PublicMethod0;
 import com.trifork.hotruby.callable.PublicMethod1;
 import com.trifork.hotruby.objects.IRubyObject;
+import com.trifork.hotruby.objects.RubyClass;
+import com.trifork.hotruby.objects.RubyModule;
 import com.trifork.hotruby.objects.RubyString;
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
 import com.trifork.hotruby.runtime.MetaClass;
@@ -21,6 +23,38 @@ public class RubyClassObject
 				return meta.getRuntime().get_object_id(receiver);
 			}
 		});
+		
+		meta.register_instance_method("instance_of?", new PublicMethod1() {
+
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject arg, RubyBlock block) {
+				if (arg instanceof RubyClass) {
+					RubyClass self_type = (RubyClass) receiver.get_class();
+					boolean isa = self_type.get_meta_class().is_subclass_of(((RubyClass)arg).get_meta_class());
+					return bool(isa);
+				}
+				
+				return bool(false);
+			}
+			
+		});
+		
+		meta.register_instance_method("kind_of?", new PublicMethod1() {
+
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject arg, RubyBlock block) {
+				if (arg instanceof RubyModule) {
+					RubyClass self_type = (RubyClass) receiver.get_class();
+					boolean isa = self_type.get_meta_class().is_kind_of(((RubyModule)arg).get_meta_module());
+					return bool(isa);
+				}
+				
+				return bool(false);
+			}
+			
+		});
+		
+		meta.alias_instance_method("is_a?", "kind_of?");
 		
 		meta.register_instance_method("==", new PublicMethod1() {
 

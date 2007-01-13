@@ -2,8 +2,10 @@ package com.trifork.hotruby.runtime;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 
 import com.trifork.hotruby.objects.IRubyModule;
@@ -620,5 +622,25 @@ public class MetaModule implements CallContext {
 	public RubyMethodAccessor get_super_method(String methodName, boolean is_module_method) {
 		return this.getMethodAccessor(methodName, is_module_method);
 	}
+	
+	protected MetaModule[] get_included_modules(boolean b) {
+		Set<MetaModule> include_set = new HashSet<MetaModule>();
+
+		add_included_recursively(include_set, b);
+		
+		return include_set.toArray(new MetaModule[include_set.size()]);
+	}
+
+	protected void add_included_recursively(Set<MetaModule> include_set, boolean b) {
+		
+		for (MetaModule m : included) {
+			if (!include_set.contains(m)) {
+				include_set.add(m);
+				m.add_included_recursively(include_set, b);
+			}
+		}
+		
+	}
+
 
 }

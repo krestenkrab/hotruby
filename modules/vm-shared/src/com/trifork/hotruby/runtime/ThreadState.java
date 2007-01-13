@@ -2,6 +2,7 @@ package com.trifork.hotruby.runtime;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import com.trifork.hotruby.interp.ISeq;
 import com.trifork.hotruby.objects.IRubyArray;
@@ -24,6 +25,8 @@ public class ThreadState {
 	int sp = 0;
 	private RubyBlock callers_block;
 	private Frame frame;
+
+	public Stack<Integer> jsr_stack = new Stack<Integer>();
 	
 	public void push(IRubyObject receiver) {
 		stack[sp++] = receiver;

@@ -13,6 +13,7 @@ import com.trifork.hotruby.ast.RubyCode;
 import com.trifork.hotruby.interp.ISeq.Loop;
 import com.trifork.hotruby.runtime.MetaModule;
 import com.trifork.hotruby.runtime.RubyRuntime;
+import com.trifork.hotruby.runtime.ThreadState;
 import com.trifork.hotruby.runtime.ThreadState.ModuleFrame;
 
 public class InterpCompileContext implements CompileContext, Instructions {
@@ -27,7 +28,8 @@ public class InterpCompileContext implements CompileContext, Instructions {
 
 	public BindingContext compile(RubyCode source, MetaModule module,
 			ModuleFrame frame, boolean is_module_code) {
-		iseq = new ISeqBuilder(runtime, source, null, source.code_type(), source.getMethodName());
+		iseq = new ISeqBuilder(runtime, source, null, source.code_type(),
+				source.getMethodName());
 		source.compile(this);
 		ISeq is = iseq.finish();
 		return new BindingContext(is, module, module, frame, is_module_code);
@@ -48,15 +50,60 @@ public class InterpCompileContext implements CompileContext, Instructions {
 	}
 
 	public void emit_branch_unless(Label target) {
-		emit_branch(BRANCHUNLESS, target);
+		if (finallys.size() == 0) {
+			emit_branch(BRANCHUNLESS, target);
+		} else {
+			Label if_follow_branch = new_label();
+			Label if_goto_next_insn = new_label();
+			emit_branch(BRANCHUNLESS, if_follow_branch);
+			emit_branch(JUMP, if_goto_next_insn);
+			
+			mark(if_follow_branch);
+			emit_goto (target);
+			
+			mark(if_goto_next_insn);
+		}
 	}
 
 	public void emit_branch_if(Label target) {
-		emit_branch(BRANCHIF, target);
+		if (finallys.size() == 0) {
+			emit_branch(BRANCHIF, target);
+		} else {
+			Label if_follow_branch = new_label();
+			Label if_goto_next_insn = new_label();
+			emit_branch(BRANCHIF, if_follow_branch);
+			emit_branch(JUMP, if_goto_next_insn);
+			
+			mark(if_follow_branch);
+			emit_goto (target);
+			
+			mark(if_goto_next_insn);
+		}
+		
+		
 	}
 
-	public void emit_goto(Label label) {
-		emit_branch(JUMP, label);
+	public void emit_goto(Label target) {
+		do_finalizers_before_jump(target);
+		emit_branch(JUMP, target);
+	}
+
+	private void do_finalizers_before_jump(Label target) {
+		if (finallys.size() != 0) {
+			for (int i = finallys.size() - 1; i >= 0; i--) {
+				Label ensure_label = finallys.get(i).ensure_label;
+				if (target.level() <= ensure_label.level()) {
+					emit_local_jsr(ensure_label);
+				}
+			}
+		}
+	}
+	
+	private void do_finalizers_before_return() {
+		for (int i = finallys.size() - 1; i >= 0; i--) {
+			Label ensure_label = finallys.get(i).ensure_label;
+			emit_local_jsr(ensure_label);
+		}
 	}
 
 	public void emit_make_blockarg() {
@@ -72,6 +119,7 @@ public class InterpCompileContext implements CompileContext, Instructions {
 	}
 
 	public void emit_return() {
+		do_finalizers_before_return();
 		if (iseq.source.code_type() == ISEQ_TYPE_BLOCK) {
 			iseq.add_insn(RETURN);
 		} else {
@@ -90,7 +138,15 @@ public class InterpCompileContext implements CompileContext, Instructions {
 	public void emit_new_array(int size, boolean has_rest_arg) {
 		iseq.add_insn(NEWARRAY, size, has_rest_arg ? 1 : 0);
 	}
+	
+	public void emit_new_range(boolean inclusive) {
+		iseq.add_insn(NEWRANGE, inclusive ? 1 : 0);
+	}
 
+	public void emit_unwrap_raise() {
+		iseq.add_insn(UNWRAP_RAISE);
+	}
+	
 	// arr -> arr
 	// other -> [other]
 	public void emit_internal_to_a() {
@@ -135,7 +191,8 @@ public class InterpCompileContext implements CompileContext, Instructions {
 	private int compile_code(RubyCode code) {
 
 		ISeqBuilder save = iseq;
-		iseq = new ISeqBuilder(getRuntime(), code, null, code.code_type(), code.getMethodName());
+		iseq = new ISeqBuilder(getRuntime(), code, null, code.code_type(), code
+				.getMethodName());
 
 		code.compile((CompileContext) this);
 		ISeq method_iseq = iseq.finish();
@@ -204,8 +261,8 @@ public class InterpCompileContext implements CompileContext, Instructions {
 			blockpos = compile_block(block);
 		}
 
-		iseq.add_insn(SELFSEND, flags, n, upper16(selfm_pos), lower16(selfm_pos),
-				upper16(blockpos), lower16(blockpos));
+		iseq.add_insn(SELFSEND, flags, n, upper16(selfm_pos),
+				lower16(selfm_pos), upper16(blockpos), lower16(blockpos));
 	}
 
 	public void emit_new_hash(int count) {
@@ -235,6 +292,29 @@ public class InterpCompileContext implements CompileContext, Instructions {
 	public void mark(Label label) {
 		((LabelImpl) label).mark(iseq.position());
 	}
+	
+	public void add_exception_handler(final Label body_start, final Label body_end, final Label handler_label) {
+		final ExceptionHandler self = new ExceptionHandler();
+		iseq.addExceptionHandler(self);
+		
+		body_start.patch(new LabelPatch() {
+			public void defined(int label_pos) {
+				self.start_pc = label_pos;
+			}
+		});
+
+		body_end.patch(new LabelPatch() {
+			public void defined(int label_pos) {
+				self.end_pc = label_pos;
+			}
+		});
+
+		handler_label.patch(new LabelPatch() {
+			public void defined(int label_pos) {
+				self.handler_pc = label_pos;
+			}
+		});
+}
 
 	public Label new_label() {
 		return new LabelImpl();
@@ -259,6 +339,12 @@ public class InterpCompileContext implements CompileContext, Instructions {
 
 	class LabelImpl implements Label {
 		int pos = -1;
+
+		int level = finallys.size();
+		
+		public int level() {
+			return level;
+		}
 
 		List<LabelPatch> patches;
 
@@ -362,6 +448,7 @@ public class InterpCompileContext implements CompileContext, Instructions {
 			}
 		}
 
+		this.do_finalizers_before_return();
 		iseq.add_insn(NONLOCAL_BREAK);
 	}
 
@@ -374,6 +461,7 @@ public class InterpCompileContext implements CompileContext, Instructions {
 			}
 		}
 
+		this.do_finalizers_before_return();
 		iseq.add_insn(NONLOCAL_NEXT);
 	}
 
@@ -386,6 +474,7 @@ public class InterpCompileContext implements CompileContext, Instructions {
 			}
 		}
 
+		this.do_finalizers_before_return();
 		iseq.add_insn(NONLOCAL_REDO);
 	}
 
@@ -544,6 +633,12 @@ public class InterpCompileContext implements CompileContext, Instructions {
 
 	private int optional_idx = -1;
 
+	// the finallys that are current
+	private Stack<FinallyBlock> finallys = new Stack<FinallyBlock>();
+
+	// finallys which have been finishes
+	private Stack<FinallyBlock> finallys_done = new Stack<FinallyBlock>();
+
 	public void emit_trace(int event, int line) {
 		if (event == TRACE_LINE && last_was_line && line == last_line) {
 			return;
@@ -632,7 +727,7 @@ public class InterpCompileContext implements CompileContext, Instructions {
 				| (block != null ? FLAG_IMM_BLOCK : 0);
 
 		String method = iseq.getMethodName();
-		
+
 		if (RubyCode.is_eval_like(method)) {
 			flags |= FLAG_SEND_EVAL;
 		}
@@ -644,19 +739,20 @@ public class InterpCompileContext implements CompileContext, Instructions {
 			blockpos = compile_block(block);
 		}
 
-		iseq.add_insn(INVOKESUPER, flags, n,
-				upper16(blockpos), lower16(blockpos));
+		iseq.add_insn(INVOKESUPER, flags, n, upper16(blockpos),
+				lower16(blockpos));
 
 	}
 
 	public void set_is_compiling_default_value(int optional_idx) {
-		this.optional_idx  = optional_idx;
+		this.optional_idx = optional_idx;
 	}
 
 	// while compiling default values (rhs of an optional parm), this
 	// value equals the optional parameter number
 	public int get_is_compiling_default_values() {
-		return optional_idx == -1 ? -1 : iseq.source.getMinParmCount() + optional_idx;
+		return optional_idx == -1 ? -1 : iseq.source.getMinParmCount()
+				+ optional_idx;
 	}
 
 	public void emit_getclassvar(String name) {
@@ -665,6 +761,22 @@ public class InterpCompileContext implements CompileContext, Instructions {
 
 	public void emit_setclassvar(String name) {
 		throw new InternalError("not implemented: set classvar");
+	}
+
+	public void emit_local_jsr(Label ensure_label) {
+		emit_branch(LOCAL_JSR, ensure_label);
+	}
+
+	public void emit_local_return(int local_register) {
+		iseq.add_insn(LOCAL_RETURN, upper16(local_register), lower16(local_register));
+	}
+
+	public void pop_finally_handler() {
+		finallys_done.push(finallys.pop());
+	}
+
+	public void push_finally_handler(Label ensure_label) {
+		finallys.push(new FinallyBlock(iseq.position(), ensure_label));
 	}
 
 }

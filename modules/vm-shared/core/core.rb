@@ -22,7 +22,7 @@ class Exception
     if msg==self
       self
     else
-      self.class.new(to_str)
+      self.clone.initialize(msg.to_str)
     end
   end
   

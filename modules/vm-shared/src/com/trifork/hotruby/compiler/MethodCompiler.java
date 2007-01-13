@@ -17,6 +17,7 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
 
 import com.trifork.hotruby.interp.BindingContext;
+import com.trifork.hotruby.interp.ExceptionHandler;
 import com.trifork.hotruby.interp.ISeq;
 import com.trifork.hotruby.interp.Instructions;
 import com.trifork.hotruby.interp.MethodISeq;
@@ -26,6 +27,7 @@ import com.trifork.hotruby.objects.IRubyFixnum;
 import com.trifork.hotruby.objects.IRubyFloat;
 import com.trifork.hotruby.objects.IRubyNilClass;
 import com.trifork.hotruby.objects.IRubyProc;
+import com.trifork.hotruby.objects.IRubyRange;
 import com.trifork.hotruby.objects.IRubyRegexp;
 import com.trifork.hotruby.objects.IRubyString;
 import com.trifork.hotruby.objects.IRubySymbol;
@@ -35,7 +37,9 @@ import com.trifork.hotruby.runtime.ExposedLocals;
 import com.trifork.hotruby.runtime.Global;
 import com.trifork.hotruby.runtime.MetaClass;
 import com.trifork.hotruby.runtime.MetaModule;
+import com.trifork.hotruby.runtime.NonLocalBreak;
 import com.trifork.hotruby.runtime.NonLocalReturn;
+import com.trifork.hotruby.runtime.RaiseException;
 import com.trifork.hotruby.runtime.RubyIvarAccessor;
 import com.trifork.hotruby.runtime.RubyMethod;
 import com.trifork.hotruby.runtime.RubyRuntime;
@@ -247,6 +251,18 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 	private static final Method IRUBYARRAY_INT_AT = new Method("int_at", IRUBYOBJECT, new Type[] { Type.INT_TYPE } );
 
 	private static final Method PROC_TO_BLOCK = new Method("get_block", RUBYBLOCK, new Type[0]);
+
+	private static final Type IRUBYRANGE = Type.getType(IRubyRange.class);
+
+	private static final Method UTIL_NEWRANGE = new Method("newRange", IRUBYRANGE, new Type[] { IRUBYOBJECT, IRUBYOBJECT, Type.BOOLEAN_TYPE, RUBY_RUNTIME_TYPE} );
+
+	private static final Type NONLOCAL_BREAK_EXCEPTION = Type.getType(NonLocalBreak.class);
+
+	private static final Method NONLOCAL_BREAK_CONSTRUCTOR = new Method("<init>", Type.VOID_TYPE, new Type[] { IRUBYOBJECT });
+
+	private static final Type RAISEEXCEPTION_TYPE = Type.getType(RaiseException.class);
+
+	private static final Method GET_RUBY_EXCEPTION = new Method("getRubyException", IRUBYOBJECT, new Type[0]);
 	
 	private final RubyRuntime runtime;
 
@@ -1046,6 +1062,35 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 				continue next_insn;
 			}
 			
+			case NEWRANGE: {
+				boolean inclusive = (code[pc++] == 1);
+				call.push(inclusive);
+				emit_load_runtime(call);
+				call.invokeStatic(COMPILEDCODEUTIL, UTIL_NEWRANGE);
+				continue next_insn;
+			}
+			
+
+			case LOCAL_JSR: {
+				int offset = si(code[pc++], code[pc++]);
+				int target = pc - 3 + offset;
+				Label t = getLabel(labels, target, call);
+				call.visitJumpInsn(JSR, t);
+				continue next_insn;
+			}
+			
+			case LOCAL_RETURN: {
+				int reg = local0_idx + ui(code[pc++], code[pc++]);
+				call.ret(reg);
+				continue next_insn;
+			}
+			
+			case UNWRAP_RAISE: {
+				call.invokeVirtual(RAISEEXCEPTION_TYPE, GET_RUBY_EXCEPTION);
+				continue next_insn;
+				
+			}
+			
 			// arg1, arg2, ..., argN, (rest[M])? -> NEWARRAY(N, rest?)
 			// -> array[N+M]
 		case Instructions.NEWARRAY: {
@@ -1518,12 +1563,32 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 				continue next_insn;
 			}
 			
+			
+			case Instructions.NONLOCAL_BREAK: {
+				call.newInstance(NONLOCAL_BREAK_EXCEPTION);
+				call.dup();
+				call.push((String)null);
+				call.invokeConstructor(NONLOCAL_BREAK_EXCEPTION, NONLOCAL_BREAK_CONSTRUCTOR);
+				call.throwException();
+				continue next_insn;
+			}
+			
 			default:
 				throw new InternalError("unhandled opcode in compiler: "
 						+ opcode + "; last_pc:" + last_insn_pc
 						+ "; last_opcode:" + last_opcode);
 
 			}
+		}
+		
+		ExceptionHandler[] handlers = iseq.getExceptionHandlers();
+		for (int i = handlers.length-1; i >= 0; i--) {
+			ExceptionHandler h = handlers[i];
+			call.visitTryCatchBlock(
+					getLabel(labels, h.start_pc, call),
+					getLabel(labels, h.end_pc, call),
+					getLabel(labels, h.handler_pc, call),
+					RAISEEXCEPTION_TYPE.getInternalName());
 		}
 	}
 

@@ -36,6 +36,26 @@ public class BinaryExpression extends Expression {
 			new LogicalAndExpression(left, right).compile(ctx, push);
 			return;
 		}
+		
+		if (operator.equals("..")) {
+			left.compile(ctx, true);
+			right.compile(ctx, true);
+			ctx.emit_new_range(true);
+			if (!push) {
+				ctx.emit_pop();
+			}
+			return;
+		}
+
+		if (operator.equals("...")) {
+			left.compile(ctx, true);
+			right.compile(ctx, true);
+			ctx.emit_new_range(false);
+			if (!push) {
+				ctx.emit_pop();
+			}
+			return;
+		}
 
 		SequenceExpression args = new SequenceExpression();
 		args.addExpression(right);

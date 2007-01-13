@@ -127,6 +127,10 @@ public class RubyObject extends RubyBaseObject {
 		return do_select(selector).call(this, arg);
 	}
 
+	public IRubyObject fast_cmp(IRubyObject arg, Selector selector) {
+		return do_select(selector).call(this, arg);
+	}
+
 	public IRubyObject fast_plus(IRubyObject arg, Selector selector) {
 		return do_select(selector).call(this, arg);
 	}

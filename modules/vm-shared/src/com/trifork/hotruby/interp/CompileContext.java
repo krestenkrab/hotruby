@@ -182,4 +182,18 @@ public interface CompileContext {
 	void emit_setclassvar(String name);
 
 	void emit_eq3();
+
+	void push_finally_handler(Label ensure_label);
+
+	void pop_finally_handler();
+
+	void emit_local_jsr(Label ensure_label);
+
+	void emit_local_return(int local_register);
+
+	void add_exception_handler(Label body_start, Label body_end, Label handler_label);
+
+	void emit_new_range(boolean inclusive);
+
+	void emit_unwrap_raise();
 }

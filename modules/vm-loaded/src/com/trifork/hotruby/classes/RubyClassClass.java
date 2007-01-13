@@ -32,6 +32,15 @@ public final class RubyClassClass extends RubyBaseClassClass {
 		initialize = meta.getRuntime().getSelector(meta, "initialize");
 		meta_class_class = meta;
 
+		meta.register_module_method("<", new PublicMethod1() {
+
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject arg, RubyBlock block) {
+				return ((RubyClass)receiver).op_lt(arg);
+			}
+			
+		});
+		
 		meta.register_module_method("new", new PublicMethod1() {
 			public IRubyObject call(IRubyObject receiver,
 					IRubyObject superClass, RubyBlock block) {

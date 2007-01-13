@@ -12,6 +12,7 @@ import com.trifork.hotruby.objects.IRubyFloat;
 import com.trifork.hotruby.objects.IRubyHash;
 import com.trifork.hotruby.objects.IRubyInteger;
 import com.trifork.hotruby.objects.IRubyObject;
+import com.trifork.hotruby.objects.IRubyRange;
 import com.trifork.hotruby.objects.IRubyRegexp;
 import com.trifork.hotruby.objects.IRubyString;
 import com.trifork.hotruby.objects.IRubySymbol;
@@ -27,6 +28,7 @@ import com.trifork.hotruby.objects.RubyModule;
 import com.trifork.hotruby.objects.RubyNilClass;
 import com.trifork.hotruby.objects.RubyObject;
 import com.trifork.hotruby.objects.RubyProc;
+import com.trifork.hotruby.objects.RubyRange;
 import com.trifork.hotruby.objects.RubyRegexp;
 import com.trifork.hotruby.objects.RubyString;
 import com.trifork.hotruby.objects.RubyStruct;
@@ -102,6 +104,7 @@ public class LoadedRubyRuntime extends RubyRuntime {
 		new_system_class("Hash");
 		new_system_class("Time");
 		new_system_class("Binding");
+		new_system_class("Range");
 		
 		RubyString.init(string_class);
 	}
@@ -232,6 +235,11 @@ public class LoadedRubyRuntime extends RubyRuntime {
 	@Override
 	public IRubyArray newArray() {
 		return new RubyArray();
+	}
+	
+	@Override
+	public IRubyRange newRange(IRubyObject start, IRubyObject end, boolean inclusive) {
+		return new RubyRange().init(start, end, inclusive ? TRUE : FALSE);
 	}
 	
 	@Override

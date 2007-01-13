@@ -40,6 +40,8 @@ public interface IRubyObject
 	IRubyObject fast_gt(IRubyObject arg, Selector selector);
 	IRubyObject fast_lt(IRubyObject arg, Selector selector);
 	IRubyObject fast_le(IRubyObject arg, Selector selector);
+	IRubyObject fast_cmp(IRubyObject arg, Selector selector);
+	
 
 	IRubyObject fast_plus(IRubyObject arg, Selector selector);
 	IRubyObject fast_minus(IRubyObject arg, Selector selector);
@@ -49,7 +51,6 @@ public interface IRubyObject
 	IRubyObject fast_bit_xor(IRubyObject arg, Selector sel);
 	IRubyObject fast_rshift(IRubyObject arg, Selector sel);
 
-	
 	String inspect();
 	void setInstanceVariable(String string, IRubyObject object);
 	

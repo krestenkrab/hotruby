@@ -6,20 +6,25 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import com.trifork.hotruby.callable.PublicMethod;
 import com.trifork.hotruby.callable.PublicMethod2;
 import com.trifork.hotruby.classes.RubyClassModule;
+import com.trifork.hotruby.objects.IRubyClass;
 import com.trifork.hotruby.objects.IRubyInteger;
 import com.trifork.hotruby.objects.IRubyObject;
 import com.trifork.hotruby.objects.IRubyString;
 import com.trifork.hotruby.objects.RubyClass;
+import com.trifork.hotruby.objects.RubyException;
 import com.trifork.hotruby.objects.RubyInteger;
 import com.trifork.hotruby.objects.RubyModule;
 import com.trifork.hotruby.objects.RubyString;
 import com.trifork.hotruby.runtime.EvalContext;
 import com.trifork.hotruby.runtime.EvalMissingEnvironException;
+import com.trifork.hotruby.runtime.Global;
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
 import com.trifork.hotruby.runtime.MetaModule;
 import com.trifork.hotruby.runtime.PublicMethodN;
+import com.trifork.hotruby.runtime.RaiseException;
 import com.trifork.hotruby.runtime.RubyBlock;
 import com.trifork.hotruby.runtime.RubyMethod;
 import com.trifork.hotruby.runtime.Selector;
@@ -193,6 +198,64 @@ public final class RubyModuleKernel extends RubyModule {
 
 		});
 
+		final Global curr_exception = getRuntime().getGlobal("$!");
+		final Global curr_trace = getRuntime().getGlobal("$@");
+		final Selector selector_to_str = getRuntime().getSelector(meta, "to_str");
+		final Selector selector_new = getRuntime().getSelector(meta, "new");
+		final Selector selector_set_backtrace = getRuntime().getSelector(meta, "set_backtrace");
+		
+		meta.register_instance_method("raise", new PublicMethod() {
+
+			@Override
+			public IRubyObject call(IRubyObject receiver, RubyBlock block) {
+				// re-raise current exception
+				throw new RaiseException(curr_exception.get());
+			}
+
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject arg, RubyBlock block) {
+				if (arg instanceof RubyString) {
+					throw getRuntime().newRuntimeError((IRubyString)arg.fast_to_str(selector_to_str));
+				} 
+
+				throw new RaiseException(arg);
+			}
+
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject arg1, IRubyObject arg2, RubyBlock block) {
+				return call(receiver, arg1, arg2, getRuntime().caller(1), block);
+			}
+
+			public IRubyObject call(IRubyObject receiver, IRubyObject arg1, IRubyObject arg2, IRubyObject arg3, RubyBlock block) {
+				
+				if (!(arg1 instanceof IRubyClass)) {
+					throw getRuntime().newArgumentError("argument to `raise' is not a class");
+				}
+				
+				IRubyObject exception = arg1.do_select(selector_new).call(receiver, arg2, (RubyBlock)null);
+				
+				exception.do_select(selector_set_backtrace).call(receiver, arg3, (RubyBlock)null);
+				
+				throw new RaiseException(exception);
+			}
+
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject[] args, RubyBlock block) {
+				switch (args.length) {
+				case 0: return call(receiver, block);
+				case 1: return call(receiver, args[0], block);
+				case 2: return call(receiver, args[0], args[1], block);
+				case 3: return call(receiver, args[0], args[1], args[2], block);
+				default: throw wrongArgs(args.length);
+				}
+			}
+
+			@Override
+			public int getArity() {
+				return -2;
+			}
+			
+		});
 	}
 
 	public interface SelectKernelMethod {

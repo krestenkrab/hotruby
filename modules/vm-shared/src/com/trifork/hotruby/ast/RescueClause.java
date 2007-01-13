@@ -2,10 +2,10 @@ package com.trifork.hotruby.ast;
 
 public class RescueClause {
 
-	private final int line;
-	private final SequenceExpression args;
-	private final Expression body;
-	private String name;
+	final int line;
+	final SequenceExpression args;
+	final Expression body;
+	String name;
 
 	public RescueClause(int line, SequenceExpression args, String name, Expression body)
 	{

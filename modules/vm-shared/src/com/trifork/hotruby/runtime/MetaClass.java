@@ -3,6 +3,7 @@ package com.trifork.hotruby.runtime;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import com.trifork.hotruby.objects.IRubyClass;
 import com.trifork.hotruby.objects.IRubyModule;
@@ -222,6 +223,40 @@ public final class MetaClass extends MetaModule {
 		
 		return new MissingMethodAccessor(this, methodName, is_module_method);
 	}
+
+
+	public boolean is_subclass_of(MetaClass super_class_candidate) {
+		for (MetaClass mc = this; mc != null; mc = mc.get_super_class()) {
+			if (mc == super_class_candidate) return true;
+		}
+		
+		return false;
+	}
+
+
+	public boolean is_kind_of(MetaModule candidate_kind) {
+		if (candidate_kind.isClass()) {
+			return is_subclass_of((MetaClass) candidate_kind);
+		}
+
+		MetaModule[] included_modules = get_included_modules(true);
+		for (int i = 0; i < included_modules.length; i++) {
+			if (included_modules[i] == candidate_kind) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+
+
+	protected void add_included_recursively(Set<MetaModule> include_set, boolean b) {
+		super.add_included_recursively(include_set, b);
+		if (super_meta != null) {
+			super_meta.add_included_recursively(include_set, b);
+		}
+	}
+
 
 
 }

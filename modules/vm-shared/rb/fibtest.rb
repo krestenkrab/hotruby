@@ -42,7 +42,7 @@ def run2
   if val == FIB30000 
     p "OK"
   else 
-    p val
+    # p val
   end
 end
 

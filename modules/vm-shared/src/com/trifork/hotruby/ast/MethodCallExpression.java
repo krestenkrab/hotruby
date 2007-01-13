@@ -97,16 +97,20 @@ public class MethodCallExpression extends Expression {
 			// ("return"|"break"|"next"|"retry"|"redo")
 
 			if ("break".equals(method)) {
+				if (push) { ctx.emit_push_nil(); }
 				ctx.emit_break();
 				return;
 			} else if ("next".equals(method)) {
 				ctx.emit_next();
+				if (push) { ctx.emit_push_nil(); }
 				return;
 			} else if ("retry".equals(method)) {
 				ctx.emit_retry();
+				if (push) { ctx.emit_push_nil(); }
 				return;
 			} else if ("redo".equals(method)) {
 				ctx.emit_redo();
+				if (push) { ctx.emit_push_nil(); }
 				return;
 			} else if ("yield".equals(method)) {
 				is_yield = true;
