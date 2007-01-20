@@ -77,6 +77,7 @@ public interface CompilerConsts {
 	public static final Type STRING_TYPE = Type.getType(String.class);
 	
 	public static final Method GET_METHOD_ACCESSOR = new Method("getMethodAccessor", METHODACCESSOR_TYPE, new Type[] { STRING_TYPE, Type.BOOLEAN_TYPE });
+	public static final Method GET_SUPER_METHOD_ACCESSOR = new Method("getSuperMethodAccessor", METHODACCESSOR_TYPE, new Type[] { STRING_TYPE, Type.BOOLEAN_TYPE });
 	public static final Method GET_SELECTOR = new Method("getSelector", SELECTOR_TYPE, new Type[] { STRING_TYPE });
 
 	public static final Type RUBY_RUNTIME_TYPE = Type.getType(RubyRuntime.class);

@@ -80,7 +80,7 @@ public abstract class RubyRuntime {
 	}
 
 	@SuppressWarnings("unchecked")
-	static public RubyRuntime newRuntime() {
+	static public RubyRuntime newRuntime(RubyConfig cfg) {
 		RubyClassLoader loader = new RubyClassLoader();
 		try {
 			Class<RubyRuntime> klass = (Class<RubyRuntime>) loader
@@ -91,19 +91,6 @@ public abstract class RubyRuntime {
 		} catch (Exception e) {
 			throw new RuntimeException("unable to load RubyRuntime", e);
 		}
-	}
-
-	public static void main(String[] args) throws IOException {
-		RubyRuntime rt = newRuntime();
-
-		FileInputStream fis = new FileInputStream("rb/richards.rbc");
-		BufferedInputStream bis = new BufferedInputStream(fis);
-		bis.skip(4); // RBCM
-		UnmarshalStream ums = new UnmarshalStream(rt, bis);
-
-		IRubyObject obj = ums.unmarshalObject(CallContext.NULL);
-
-		System.out.println(obj.inspect());
 	}
 
 	protected RubyRuntime() {
@@ -342,11 +329,26 @@ public abstract class RubyRuntime {
 	public abstract RuntimeException newLocalJumpError(String string,
 			NonLocalJump ex);
 
-	public abstract RuntimeException newNoMethodError(String string);
+	
+	public RaiseException newNoMethodError(String string)
+	{	
+		ConstantAccessor ca = NO_METHOD_ERROR;
+		return newRaiseException(ca, string);
+	}
 
-	public abstract RuntimeException newArgumentError(String string);
+	private RaiseException newRaiseException(ConstantAccessor ca, String string) {
+		IRubyObject rc = ca.get();
+		IRubyObject ex = rc.select(select_new).call(rc, newString(string));
+		return new RaiseException(ex);
+	}
 
-	public abstract RuntimeException newTypeError(String string);
+	public  RaiseException newArgumentError(String string) {
+		return newRaiseException(ARGUMENT_ERROR, string);
+	}
+
+	public RaiseException newTypeError(String string) {
+		return newRaiseException(TYPE_ERROR, string);
+	}
 
 	public abstract IRubyHash newHash();
 
@@ -464,6 +466,16 @@ public abstract class RubyRuntime {
 
 	IRubyString empty_string;
 
+	private Selector select_new;
+	private Selector select_to_str;
+
+
+	private ConstantAccessor NO_METHOD_ERROR;
+	private ConstantAccessor ARGUMENT_ERROR;
+	private ConstantAccessor NAME_ERROR;
+	private ConstantAccessor STANDARD_ERROR;
+	private ConstantAccessor TYPE_ERROR;
+
 	private void shared_init() {
 		trace_func = null;
 		event_names = new IRubyString[6];
@@ -480,7 +492,16 @@ public abstract class RubyRuntime {
 		init_properties();
 
 		load("core.rb", getObject());
-
+		
+		this.select_new = getSelector(meta_Object(), "new");
+		this.select_to_str = getSelector(meta_Object(), "to_str");
+		
+		// create state variables for known classes
+		NO_METHOD_ERROR = meta_Object().getConstantAccessor("NoMethodError");
+		NAME_ERROR = meta_Object().getConstantAccessor("NameError");
+		STANDARD_ERROR = meta_Object().getConstantAccessor("StandardError");
+		ARGUMENT_ERROR = meta_Object().getConstantAccessor("ArgumentError");
+		TYPE_ERROR = meta_Object().getConstantAccessor("TypeError");
 	}
 
 	private void init_properties() {
@@ -692,4 +713,8 @@ public abstract class RubyRuntime {
 	}
 
 	public abstract IRubyRange newRange(IRubyObject start, IRubyObject end, boolean inclusive);
+
+	public IRubyObject call_to_str(IRubyObject obj) {
+		return obj.fast_to_s(select_to_str);
+	}
 }

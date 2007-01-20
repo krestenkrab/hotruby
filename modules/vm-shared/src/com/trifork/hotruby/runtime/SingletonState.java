@@ -3,6 +3,7 @@ package com.trifork.hotruby.runtime;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.trifork.hotruby.objects.IRubyClass;
 import com.trifork.hotruby.objects.IRubyObject;
 
 public class SingletonState {
@@ -21,12 +22,17 @@ public class SingletonState {
 		}
 	}
 
-	public MetaClass get_meta_class(IRubyObject object) {
-		if (meta == null) {
-			return object.get_class().get_meta_class();
-		} else {
-			return meta;
+	public MetaClass get_meta_class(IRubyObject object, boolean create) {
+		
+		assert !(object instanceof IRubyClass);
+		
+		if (meta == null && !create) {
+			return (MetaClass) object.get_class().get_meta_module();
+		} else if (meta == null) {
+			meta = object.get_meta_class().create_singleton_subclass();
 		}
+
+		return meta;
 	}
 
 	public IRubyObject get_dynamic_ivar_or_null(String name) {

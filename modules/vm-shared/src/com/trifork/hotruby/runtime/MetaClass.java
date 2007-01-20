@@ -216,7 +216,7 @@ public final class MetaClass extends MetaModule {
 			+ (base_name.startsWith("#") ? "Instance" : base_name);
 	}
 
-	public RubyMethodAccessor get_super_method(String methodName, boolean is_module_method) {
+	public RubyMethodAccessor getSuperMethodAccessor(String methodName, boolean is_module_method) {
 		if (this.super_meta != null) {
 			return super_meta.getMethodAccessor(methodName, is_module_method);
 		}
@@ -255,6 +255,12 @@ public final class MetaClass extends MetaModule {
 		if (super_meta != null) {
 			super_meta.add_included_recursively(include_set, b);
 		}
+	}
+
+	public MetaClass create_singleton_subclass() {
+		MetaClass mc = new MetaClass(getRuntime(), null, null, (MetaClass) this);
+		
+		return mc;
 	}
 
 

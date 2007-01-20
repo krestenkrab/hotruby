@@ -40,11 +40,11 @@ public class MetaModule implements CallContext {
 	}
 
 	public void include(MetaModule module) {
-		
+
 		if (this.includes_recursively(module)) {
 			return;
 		}
-		
+
 		// TODO: eliminate duplicates
 		included.add(module);
 		module.descendents.add(this);
@@ -52,10 +52,12 @@ public class MetaModule implements CallContext {
 
 	protected boolean includes_recursively(MetaModule module) {
 		for (MetaModule mod : included) {
-			if (mod == module) return true;
-			if (mod.includes_recursively(module)) return true;
+			if (mod == module)
+				return true;
+			if (mod.includes_recursively(module))
+				return true;
 		}
-		
+
 		return false;
 	}
 
@@ -78,12 +80,12 @@ public class MetaModule implements CallContext {
 	}
 
 	Map<String, RubyMethod> instance_methods = new HashMap<String, RubyMethod>();
+
 	Map<String, RubyMethod> module_methods = new HashMap<String, RubyMethod>();
 
 	public void register_instance_method(String name, RubyMethod method) {
 		instance_methods.put(name, method);
 		runtime.register_method(method, name);
-		
 
 		notify_new_instance_method(name, method, false, method.getIVarNames());
 	}
@@ -166,17 +168,14 @@ public class MetaModule implements CallContext {
 
 	public String getBaseName() {
 		if (name == null) {
-			
+
 			return "";
-/*			if (isClass()) {
-				return "#<Class:0x"
-						+ Integer.toHexString(System.identityHashCode(this))
-						+ ">";
-			} else {
-				return "#<Module:0x"
-						+ Integer.toHexString(System.identityHashCode(this))
-						+ ">";
-			} */
+			/*
+			 * if (isClass()) { return "#<Class:0x" +
+			 * Integer.toHexString(System.identityHashCode(this)) + ">"; } else {
+			 * return "#<Module:0x" +
+			 * Integer.toHexString(System.identityHashCode(this)) + ">"; }
+			 */
 		}
 
 		return name;
@@ -259,19 +258,22 @@ public class MetaModule implements CallContext {
 	}
 
 	Map<String, RubyMethodAccessor> ctx_ins_access_method = new WeakHashMap<String, RubyMethodAccessor>();
+
 	Map<String, RubyMethodAccessor> ctx_mod_access_method = new WeakHashMap<String, RubyMethodAccessor>();
 
-	public RubyMethodAccessor getMethodAccessor(String name, boolean is_module_method) {
-		
-		if ("attr_reader".equals(name) ) {
+	public RubyMethodAccessor getMethodAccessor(String name,
+			boolean is_module_method) {
+
+		if ("attr_reader".equals(name)) {
 			System.out.println("here");
 		}
-		
-		Map<String, RubyMethodAccessor> map = is_module_method ? ctx_mod_access_method : ctx_ins_access_method;
+
+		Map<String, RubyMethodAccessor> map = is_module_method ? ctx_mod_access_method
+				: ctx_ins_access_method;
 		RubyMethodAccessor result = map.get(name);
 		if (result == null) {
-			map.put(name, result = new RubyMethodAccessor(this,
-					name, is_module_method));
+			map.put(name, result = new RubyMethodAccessor(this, name,
+					is_module_method));
 		}
 
 		return result;
@@ -279,23 +281,24 @@ public class MetaModule implements CallContext {
 
 	@Override
 	public String toString() {
-		return "meta:"+getName();
+		return "meta:" + getName();
 	}
-	
+
 	public void const_set(String name, MetaModule module) {
 		Constant constant = constants.get(name);
 		if (constant == null) {
-			ModuleRuntimeConstant mm_constant = new ModuleRuntimeConstant(this, name);
+			ModuleRuntimeConstant mm_constant = new ModuleRuntimeConstant(this,
+					name);
 			mm_constant.set_meta(module);
 			constants.put(name, mm_constant);
 			notify_new_constant(name, mm_constant, false);
 		} else if (constant instanceof ModuleRuntimeConstant) {
-			((ModuleRuntimeConstant)constant).set_meta(module);
+			((ModuleRuntimeConstant) constant).set_meta(module);
 		} else {
 			constant.set(module.get_base_module());
 		}
 	}
-	
+
 	public void const_set(String name, IRubyObject value) {
 		Constant constant = constants.get(name);
 
@@ -339,17 +342,19 @@ public class MetaModule implements CallContext {
 				return true;
 			}
 			method = null;
-		} 
+		}
 
 		register_instance_ivars(ivarNames);
-		
+
 		RubyMethodAccessor acc = ctx_ins_access_method.get(method_name);
 		if (acc != null) {
 			acc.set(method);
 		}
 
 		for (MetaModule mod : descendents) {
-			mod.notify_new_instance_method(method_name, method, true, ivarNames);
+			mod
+					.notify_new_instance_method(method_name, method, true,
+							ivarNames);
 		}
 
 		return false;
@@ -366,7 +371,7 @@ public class MetaModule implements CallContext {
 		}
 
 		register_module_ivars(ivarNames);
-		
+
 		RubyMethodAccessor acc = ctx_mod_access_method.get(method_name);
 		if (acc != null) {
 			acc.set(method);
@@ -382,7 +387,7 @@ public class MetaModule implements CallContext {
 	protected Constant find_constant(String name) {
 		return find_constant(name, false);
 	}
-	
+
 	protected Constant find_constant(String name, boolean recurse) {
 		Constant result = constants.get(name);
 		if (result != null) {
@@ -401,7 +406,8 @@ public class MetaModule implements CallContext {
 
 	// overridden in MetaClass
 	protected Constant find_super_constant(String name, boolean recurse) {
-		if (recurse) return null;
+		if (recurse)
+			return null;
 		MetaClass module = getRuntime().meta_Module();
 		return module.find_constant(name, true);
 	}
@@ -452,7 +458,8 @@ public class MetaModule implements CallContext {
 			}
 		}
 		if (!recurse && !this.isClass() && true) {
-			return getRuntime().meta_Module().lookup_instance_method(name, true);
+			return getRuntime().meta_Module()
+					.lookup_instance_method(name, true);
 		} else {
 			return null;
 		}
@@ -492,8 +499,11 @@ public class MetaModule implements CallContext {
 
 		m = m.specialize_for(this);
 
-		getRuntime().gen.make_special_selector(sel, selectorClass, getMethodAccessor(name, is_module));
-		
+		if (selectorClass != null) {
+			getRuntime().gen.make_special_selector(sel, selectorClass,
+					getMethodAccessor(name, is_module));
+		}
+
 		return m;
 	}
 
@@ -513,9 +523,10 @@ public class MetaModule implements CallContext {
 		}
 	}
 
-	Map<String,RubyIvarAccessor> ivar_accessors = new HashMap<String, RubyIvarAccessor>();
-	Map<String,RubyIvarAccessor> module_ivar_accessors = new HashMap<String, RubyIvarAccessor>();
-	
+	Map<String, RubyIvarAccessor> ivar_accessors = new HashMap<String, RubyIvarAccessor>();
+
+	Map<String, RubyIvarAccessor> module_ivar_accessors = new HashMap<String, RubyIvarAccessor>();
+
 	/** a method is added that references ivars in this class */
 	private void register_instance_ivars(String[] varNames) {
 		for (int i = 0; i < varNames.length; i++) {
@@ -531,16 +542,17 @@ public class MetaModule implements CallContext {
 	}
 
 	boolean instance_class_is_compiled = true;
+
 	boolean module_class_is_compiled = true;
-	
+
 	public void set_instance_class_compiled(boolean value) {
 		instance_class_is_compiled = value;
 	}
-	
+
 	private void register_instance_ivar(String name) {
-		if (ivar_accessors.containsKey(name)) 
+		if (ivar_accessors.containsKey(name))
 			return;
-		
+
 		if (instance_class_is_compiled) {
 			ivar_accessors.put(name, new DynamicIVarAccessor(name));
 		} else {
@@ -549,9 +561,9 @@ public class MetaModule implements CallContext {
 	}
 
 	private void register_module_ivar(String name) {
-		if (module_ivar_accessors.containsKey(name)) 
+		if (module_ivar_accessors.containsKey(name))
 			return;
-		
+
 		if (module_class_is_compiled) {
 			module_ivar_accessors.put(name, new DynamicIVarAccessor(name));
 		} else {
@@ -561,39 +573,39 @@ public class MetaModule implements CallContext {
 
 	public RubyIvarAccessor getInstanceIVarAccessor(String name, boolean create) {
 		RubyIvarAccessor result = ivar_accessors.get(name);
-		
+
 		if (result == null && create) {
 			register_instance_ivar(name);
 			result = ivar_accessors.get(name);
 		}
-		
+
 		return result;
 	}
 
 	public RubyIvarAccessor getModuleIVarAccessor(String name) {
 		RubyIvarAccessor result = module_ivar_accessors.get(name);
-		
+
 		if (result == null) {
 			register_module_ivar(name);
 			result = module_ivar_accessors.get(name);
 		}
-		
+
 		return result;
 	}
 
 	public void set_instance_class(Class result) {
 		for (RubyIvarAccessor acc : ivar_accessors.values()) {
 			if (acc instanceof CompiledIVarAccessor) {
-				((CompiledIVarAccessor)acc).setBaseClass(result);
+				((CompiledIVarAccessor) acc).setBaseClass(result);
 			}
 		}
 	}
-	
+
 	public String[] getCompiledIvars() {
 		List<String> result = new ArrayList<String>();
 		for (RubyIvarAccessor acc : ivar_accessors.values()) {
 			if (acc instanceof CompiledIVarAccessor) {
-				result.add (((CompiledIVarAccessor)acc).getFieldName());
+				result.add(((CompiledIVarAccessor) acc).getFieldName());
 			}
 		}
 		return result.toArray(new String[result.size()]);
@@ -602,15 +614,17 @@ public class MetaModule implements CallContext {
 	public void alias_instance_method(String new_name, String original_name) {
 		RubyMethod m = lookup_instance_method(original_name, true);
 		if (m == null) {
-			throw getRuntime().newNameError("undefined "+original_name+" in "+this.getName());
+			throw getRuntime().newNameError(
+					"undefined " + original_name + " in " + this.getName());
 		}
 		register_instance_method(new_name, m);
 	}
 
-	public void alias(IRubySymbol new_sym, IRubySymbol orig_sym, boolean self_is_module) {
+	public void alias(IRubySymbol new_sym, IRubySymbol orig_sym,
+			boolean self_is_module) {
 		String new_name = new_sym.asSymbol();
 		String orig_name = orig_sym.asSymbol();
-		
+
 		if (new_name.charAt(0) == '$') {
 			getRuntime().alias_global(new_name, orig_name);
 		} else {
@@ -619,28 +633,33 @@ public class MetaModule implements CallContext {
 		}
 	}
 
-	public RubyMethodAccessor get_super_method(String methodName, boolean is_module_method) {
+	public RubyMethodAccessor getSuperMethodAccessor(String methodName,
+			boolean is_module_method) {
 		return this.getMethodAccessor(methodName, is_module_method);
 	}
-	
+
 	protected MetaModule[] get_included_modules(boolean b) {
 		Set<MetaModule> include_set = new HashSet<MetaModule>();
 
 		add_included_recursively(include_set, b);
-		
+
 		return include_set.toArray(new MetaModule[include_set.size()]);
 	}
 
-	protected void add_included_recursively(Set<MetaModule> include_set, boolean b) {
-		
+	protected void add_included_recursively(Set<MetaModule> include_set,
+			boolean b) {
+
 		for (MetaModule m : included) {
 			if (!include_set.contains(m)) {
 				include_set.add(m);
 				m.add_included_recursively(include_set, b);
 			}
 		}
-		
+
 	}
 
+	public MetaClass create_singleton_subclass() {
+		throw new InternalError("should not happen");
+	}
 
 }

@@ -433,6 +433,21 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 			ga.putStatic(self_type, "DVAR_NAMES", STRING_ARRAY_TYPE);
 		}
 		
+		if (ctx.getISeq().callsSuper()) {
+			String field_name = this.superSendMethodAccessorName();
+			
+			FieldVisitor fv = cw.visitField(ACC_STATIC, field_name,
+					METHODACCESSOR_TYPE.getDescriptor(), null, null);
+			fv.visitEnd();
+
+			ga.loadArg(0); // lex ctx
+			ga.push(ctx.getISeq().getMethod());
+			ga.push(ctx.selfIsModule());
+			ga.invokeVirtual(METAMODULE_TYPE, GET_SUPER_METHOD_ACCESSOR);
+
+			ga.putStatic(self_type, field_name, METHODACCESSOR_TYPE);
+		}
+		
 		// prepare method accessors for self-methods
 		String[] self_methods = ctx.getISeq().getSelfMethods();
 		for (int i = 0; i < self_methods.length; i++) {
@@ -1250,6 +1265,7 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 				continue next_insn;
 			}
 
+			case INVOKESUPER:
 			case SELFSEND:
 			case SEND: {
 				int save = locals_in_use;
@@ -1261,7 +1277,7 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 				int nargs = ui(code[pc++]);
 
 				// the selector sits here...
-				int selector_pos = ui(code[pc++], code[pc++]);
+				int selector_pos = (opcode == INVOKESUPER) ? -1 : ui(code[pc++], code[pc++]);
 
 				int imm_block_pos = ui(code[pc++], code[pc++]);
 
@@ -1286,6 +1302,22 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 							new Type[] { IRUBYOBJECT, RUBYBLOCK })
 					    : new Method("<init>", Type.VOID_TYPE,
 								new Type[] { IRUBYOBJECT, RUBYBLOCK, EXPOSED_LOCALS_TYPE });
+				
+				} else if (opcode == INVOKESUPER && call_block_idx == -1) {
+					
+					// for invokesuper, the invoke block defaults to
+					// the block of the currenct context.
+					
+					if (iseq.getCodeType() != ISEQ_TYPE_BLOCK) {
+						call_block_idx = block_idx;
+					} else {
+						// if this is a block, get the value of block
+						// in the context
+						call.loadThis();
+						call.getField(self_type, "block", RUBYBLOCK);
+						call_block_idx = locals_in_use++;
+						call.rbLoadLocal(call_block_idx, RUBYBLOCK);
+					}
 				}
 
 				Label handler_start = call.mark();
@@ -1322,6 +1354,14 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 						call.rbStoreLocal(receiver_loc, IRUBYOBJECT);
 						call.getStatic(self_type,
 								selfSendMethodAccessorName(selector_pos),
+								METHODACCESSOR_TYPE);
+						call.invokeVirtual(METHODACCESSOR_TYPE,
+								METHODACCESSOR_GET);
+						call.rbLoadLocal(receiver_loc, IRUBYOBJECT);
+					} else if (opcode == INVOKESUPER) {
+						call.rbStoreLocal(receiver_loc, IRUBYOBJECT);
+						call.getStatic(self_type,
+								superSendMethodAccessorName(),
 								METHODACCESSOR_TYPE);
 						call.invokeVirtual(METHODACCESSOR_TYPE,
 								METHODACCESSOR_GET);
@@ -1590,6 +1630,10 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 					getLabel(labels, h.handler_pc, call),
 					RAISEEXCEPTION_TYPE.getInternalName());
 		}
+	}
+
+	private String superSendMethodAccessorName() {
+		return "super_method";
 	}
 
 	private void emit_push_selector(RubyAdapter call, int sel_idx) {
