@@ -33,14 +33,11 @@ public class RubyRegexp extends RubyBaseRegexp {
 
 		Matcher match = pattern.matcher(value);
 
-		if (match.matches()) {
-			return new RubyMatchData().initialize(match, value);
-		} else {
+		if (!match.matches()) {
 			return LoadedRubyRuntime.NIL;
 		}
-
+		return new RubyMatchData().initialize(match, value);
 	}
-
 	
 	public IRubyObject op_eqmatch(IRubyObject expr) {
 		IRubyString string = RubyString.induce_from(expr);
@@ -48,12 +45,9 @@ public class RubyRegexp extends RubyBaseRegexp {
 
 		Matcher match = pattern.matcher(value);
 
-		if (match.matches()) {
-			return new RubyFixnum(match.start());
-		} else {
+		if (!match.matches()) {
 			return LoadedRubyRuntime.NIL;
 		}
-
+		return new RubyFixnum(match.start());
 	}
-
 }

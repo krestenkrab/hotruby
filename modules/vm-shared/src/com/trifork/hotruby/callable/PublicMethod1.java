@@ -24,13 +24,9 @@ public abstract class PublicMethod1 extends PublicMethod {
 	@Override
 	public IRubyObject call(IRubyObject receiver, IRubyObject[] args,
 			RubyBlock block) {
-		if (args.length == 1) {
-			return call(receiver, args[0]);
-		} else {
+		if (args.length != 1) {
 			throw wrongArgs(args.length);
 		}
+		return call(receiver, args[0]);
 	}
-
-
-
 }

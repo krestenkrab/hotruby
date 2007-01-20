@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="gen"/>
-	<classpathentry kind="src" path="ruby"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.launching.macosx.MacOSXType/JVM 1.5.0 (MacOS X Default)"/>
-	<classpathentry kind="var" path="ANTLR_HOME/antlr.jar" sourcepath="ANTLR_HOME/antlrsrc.zip"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3.8.1"/>
-	<classpathentry kind="lib" path="lib/asm-commons-2.2.3.jar" sourcepath="/Users/krab/source/asm-2.2.3/src"/>
-	<classpathentry kind="lib" path="lib/asm-2.2.3.jar" sourcepath="/Users/krab/source/asm-2.2.3/src"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry path="src" kind="src"/>
+	<classpathentry path="gen" kind="src"/>
+	<classpathentry path="ruby" kind="src"/>
+	<classpathentry path="test" kind="src"/>
+	<classpathentry path="org.eclipse.jdt.launching.JRE_CONTAINER" kind="con"/>
+	<classpathentry sourcepath="ANTLR_HOME/antlrsrc.zip" path="ANTLR_HOME/antlr.jar" kind="var"/>
+	<classpathentry sourcepath="/Users/krab/source/asm-2.2.3/src" path="lib/asm-commons-2.2.3.jar" kind="lib"/>
+	<classpathentry sourcepath="/Users/krab/source/asm-2.2.3/src" path="lib/asm-2.2.3.jar" kind="lib"/>
+	<classpathentry path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4" kind="con"/>
+	<classpathentry path="bin" kind="output"/>
 </classpath>

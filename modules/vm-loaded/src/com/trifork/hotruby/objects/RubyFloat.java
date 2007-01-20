@@ -14,6 +14,12 @@ public class RubyFloat extends RubyBaseFloat {
 	private static final Selector TO_F = LoadedRubyRuntime.instance
 			.getSelector(RubyClassFloat.instance.get_meta_module(), "to_f");
 
+	public IRubyFixnum inverse_cmp(int i)
+	{
+		// TODO: Kresten
+		throw new UnsupportedOperationException("Not implemented yet");
+	}
+	
 	@Override
 	public String inspect() {
 		return String.valueOf(value);
@@ -92,8 +98,7 @@ public class RubyFloat extends RubyBaseFloat {
 	public IRubyObject eql_p(IRubyObject other) {
 		if (other instanceof RubyFloat)
 			return op_eq(other);
-		else
-			return LoadedRubyRuntime.FALSE;
+		return LoadedRubyRuntime.FALSE;
 	}
 
 	public IRubyObject im_divmod(IRubyObject y_val) {

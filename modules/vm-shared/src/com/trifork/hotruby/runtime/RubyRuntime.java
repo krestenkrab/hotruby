@@ -288,7 +288,7 @@ public abstract class RubyRuntime {
 			cls.set_base_level_class((Class<IRubyModule>) loader
 					.loadClass("com.trifork.hotruby.classes.RubyClass" + name));
 		} catch (ClassNotFoundException e) {
-			throw new RuntimeException("unable to locate class", e);
+			throw new RuntimeException("Unable to locate class " + name, e);
 		}
 		meta_object.const_set(name, cls.get_base_class());
 		return cls;
@@ -303,7 +303,7 @@ public abstract class RubyRuntime {
 							.loadClass("com.trifork.hotruby.modules.RubyModule"
 									+ name));
 		} catch (ClassNotFoundException e) {
-			throw new RuntimeException("unable to locate module", e);
+			throw new RuntimeException("Unable to locate module " + name, e);
 		}
 		meta_object.const_set(name, module.get_base_module());
 		return module;
