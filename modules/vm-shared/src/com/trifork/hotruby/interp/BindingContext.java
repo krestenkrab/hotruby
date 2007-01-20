@@ -483,9 +483,6 @@ public class BindingContext implements Instructions {
 									method = self_methods[selector_pos].get();
 								} else {
 									Selector sel = lexical_bindings.selectors[selector_pos];
-									if (sel.getName().equals("to_s")) {
-										System.out.print("");
-									}
 									method = receiver.do_select(sel);
 								}
 
@@ -1168,13 +1165,13 @@ public class BindingContext implements Instructions {
 		IRubyModule decl_context = (IRubyModule) self;
 		MetaModule decl_meta = decl_context.get_meta_module();
 
-		IRubyClass decl_super = (IRubyClass) super_class;
-		MetaClass decl_super_meta = super_class == null ? null : decl_super
-				.get_meta_class();
-
 		if (is_singleton) {
-
+			
 		} else {
+			IRubyClass decl_super = (IRubyClass) super_class;
+			MetaClass decl_super_meta = super_class == null ? null : decl_super
+					.get_meta_class();
+
 			String newName = name.asSymbol();
 			new_class_meta = decl_meta.get_class(newName, false);
 

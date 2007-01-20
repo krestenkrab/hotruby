@@ -122,6 +122,10 @@ public class ISeq implements Instructions {
 
 	private boolean super_access;
 
+	public boolean callsSuper() {
+		return super_access;
+	}
+	
 	public int getArity() {
 		if (default_parm_count > 0 || has_rest_parm) {
 			return -1 - min_parm_count;
@@ -233,7 +237,7 @@ public class ISeq implements Instructions {
 
 	public RubyMethodAccessor getSuperMethod(MetaModule lexical_context, boolean self_is_module) {
 		if (super_access) {
-			return lexical_context.get_super_method(methodName, self_is_module);
+			return lexical_context.getSuperMethodAccessor(methodName, self_is_module);
 		} else {
 			return null;
 		}
