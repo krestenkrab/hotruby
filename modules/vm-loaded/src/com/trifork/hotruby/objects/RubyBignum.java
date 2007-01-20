@@ -124,4 +124,10 @@ public class RubyBignum extends RubyBaseBignum {
 		return null;
 	}
 
+	@Override
+	public IRubyFixnum inverse_cmp(int value) {
+		int cmp = BigInteger.valueOf(value).compareTo(this.value);
+		return new RubyFixnum(cmp);
+	}
+
 }

@@ -17,6 +17,11 @@ public final class RubyClassClass extends RubyBaseClassClass {
 
 	static MetaClass meta_class_class = null;
 
+	@Override
+	public IRubyObject fast_to_str(Selector selector) {
+		return new RubyString("Class");
+	}
+	
 	public void init(final MetaClass meta) {
 		super.init(meta);
 

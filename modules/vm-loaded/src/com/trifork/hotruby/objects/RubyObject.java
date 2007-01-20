@@ -191,7 +191,7 @@ public class RubyObject extends RubyBaseObject {
 		if (singleton == null) {
 			return get_class().get_meta_class();
 		} else {
-			return singleton.get_meta_class(this);
+			return singleton.get_meta_class(this, false);
 		}
 	}
 
@@ -200,7 +200,7 @@ public class RubyObject extends RubyBaseObject {
 			singleton = new SingletonState();
 		}
 
-		return singleton.get_meta_class(this);
+		return singleton.get_meta_class(this, true);
 	}
 
 	public RubyRuntime getRuntime() {

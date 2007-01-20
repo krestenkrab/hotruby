@@ -14,7 +14,7 @@ public abstract class RubyBaseClassNilClass
 		instance = (RubyClassNilClass)this; 
 		super.init(meta);
 	}
-	interface SelectNilClass { RubyMethod get_RubyClassNilClass(); }
+	public interface SelectNilClass { RubyMethod get_RubyClassNilClass(); }
 	public RubyMethod select(Selector sel) {
 		if(sel instanceof SelectNilClass) { return ((SelectNilClass)sel).get_RubyClassNilClass(); }
 		else { return LoadedRubyRuntime.resolve_method((RubyClass)this,sel,SelectNilClass.class); }

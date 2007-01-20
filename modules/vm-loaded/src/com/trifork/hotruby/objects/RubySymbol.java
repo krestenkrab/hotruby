@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.trifork.hotruby.marshal.UnmarshalStream;
+import com.trifork.hotruby.runtime.Selector;
 
 public class RubySymbol
 	extends RubyBaseSymbol
@@ -13,6 +14,11 @@ public class RubySymbol
 	
 	private RubySymbol(String value) {
 		this.name = value;
+	}
+	
+	@Override
+	public IRubyObject fast_to_str(Selector selector) {
+		return new RubyString(name);
 	}
 	
 	@Override

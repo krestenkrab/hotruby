@@ -14,12 +14,12 @@ public class RubyFloat extends RubyBaseFloat {
 	private static final Selector TO_F = LoadedRubyRuntime.instance
 			.getSelector(RubyClassFloat.instance.get_meta_module(), "to_f");
 
-	public IRubyFixnum inverse_cmp(int i)
-	{
-		// TODO: Kresten
-		throw new UnsupportedOperationException("Not implemented yet");
-	}
-	
+	private static final IRubyFixnum FIX_MINUS_1 = new RubyFixnum(-1);
+
+	private static final IRubyFixnum FIX_PLUS_1 = new RubyFixnum(1);
+
+	private static final IRubyFixnum FIX_ZERO = new RubyFixnum(0);
+
 	@Override
 	public String inspect() {
 		return String.valueOf(value);
@@ -149,13 +149,23 @@ public class RubyFloat extends RubyBaseFloat {
 	}
 
 	public IRubyObject inverse_plus(double float1) {
-		// TODO Auto-generated method stub
-		return null;
+		return new RubyFloat(float1 + value);
 	}
 
 	public static IRubyObject unmarshalFrom(UnmarshalStream stream) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public IRubyFixnum inverse_cmp(int ivalue) {
+		if (ivalue < value) { 
+			return FIX_MINUS_1;
+		} else if (ivalue > value) {
+			return FIX_PLUS_1;
+		} else {
+			return FIX_ZERO;
+		}
 	}
 
 }
