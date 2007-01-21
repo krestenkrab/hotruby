@@ -29,6 +29,7 @@ public class RegularExpressionTranslator {
 	
 	private final StringBuilder newExp;
 	private final String originalExp;
+	private final Pattern pattern;
 	private int pos;
 	private boolean valid;
 
@@ -52,21 +53,41 @@ public class RegularExpressionTranslator {
 		return result;
 	}
 
-	private RegularExpressionTranslator(String regex)
+	public RegularExpressionTranslator(String regex)
 	{
-		originalExp = regex;
-		newExp = new StringBuilder();
-		valid = parseRegularExpression(false);
+		try {
+			originalExp = regex;
+			newExp = new StringBuilder();
+			valid = parseRegularExpression(false);
+			if (valid)
+			{
+				pattern = Pattern.compile(newExp.toString());
+			}
+			else
+			{
+				pattern = null;
+			}
+		}
+		catch (IllegalRegularExpressionException e)
+		{
+			System.out.println("Error: " + e.getMessage());
+			throw e;
+		}
+	}
+
+	public boolean isValid()
+	{
+		return valid;
+	}
+	
+	public Pattern getPattern()
+	{
+		return pattern;
 	}
 
 	private String getParsedExpression()
 	{
 		return newExp.toString();
-	}
-
-	private boolean isValid()
-	{
-		return valid;
 	}
 
 	private boolean parseRegularExpression(boolean inGroup)
@@ -155,9 +176,10 @@ public class RegularExpressionTranslator {
 					// Closing bracket, minus sign
 				case ']':
 				case '-':
+				case '.':
 					break;
 				default:
-					throw new IllegalRegularExpressionException("Unknown escape sequence");
+					throw new IllegalRegularExpressionException("Unknown escape sequence: \\" + current());
 				}
 			}
 			else if (current() == '-')

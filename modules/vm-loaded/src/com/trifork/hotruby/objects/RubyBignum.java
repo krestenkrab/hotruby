@@ -12,11 +12,6 @@ public class RubyBignum extends RubyBaseBignum {
 
 	java.math.BigInteger value;
 
-	public IRubyFixnum inverse_cmp(int i) {
-		// TODO: Kresten
-		throw new UnsupportedOperationException("Not implemented yet");
-	}
-	
 	public long longValue() {
 		return value.longValue();
 	}

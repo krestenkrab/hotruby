@@ -1,5 +1,6 @@
 package com.trifork.hotruby.classes;
 
+import com.trifork.hotruby.callable.PublicMethod0;
 import com.trifork.hotruby.objects.IRubyObject;
 import com.trifork.hotruby.objects.RubyMatchData;
 import com.trifork.hotruby.runtime.MetaClass;
@@ -17,6 +18,13 @@ public class RubyClassMatchData
 			@Override
 			public IRubyObject call(IRubyObject receiver, IRubyObject[] args, RubyBlock block) {
 				return ((RubyMatchData)receiver).array_access(args);
+			}
+		});
+		
+		meta.register_instance_method("to_a", new PublicMethod0() {
+			@Override
+			public IRubyObject call(IRubyObject receiver, RubyBlock block) {
+				return ((RubyMatchData)receiver).to_a();
 			}
 		});
 	}

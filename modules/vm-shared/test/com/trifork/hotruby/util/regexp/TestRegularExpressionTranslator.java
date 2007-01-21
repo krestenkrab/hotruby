@@ -20,6 +20,9 @@ public class TestRegularExpressionTranslator {
 	public void specialCharacters()
 	{
 		assertMatch("%&", "!@%&-_=+").withResult("%&");
+		
+		// TODO: Hvaba?
+		assertMatch("((.*)\\.)?([^\\.]*)", "").withResult("", null, null, "");
 	}
 	
 	@Test
@@ -44,6 +47,8 @@ public class TestRegularExpressionTranslator {
 		assertMatch("ab(cd)ef", "12abcdef34").withResult("abcdef", "cd");
 		assertMatch("ab(cd)ef(gh)ij", "12abcdefghij34").withResult("abcdefghij", "cd", "gh");
 		assertMatch("a(b(c))d", "12abcd34").withResult("abcd", "bc", "c");
+		assertMatch("a(b(c)?)d", "12abd34").withResult("abd", "b", null);
+		assertMatch("a(b(c)?)?d", "12ad34").withResult("ad", null, null);
 	}
 	
 	@Test
@@ -191,12 +196,18 @@ public class TestRegularExpressionTranslator {
 		assertMatch("a[^^^^^bc]c", "12a3c45").withResult("a3c");
 		assertNoMatch("a[^^^^^bc]c", "12a^c45");
 		assertNoMatch("a[^-bc]c", "12a-c45");
+		
+		// Escapes
+		assertMatch("a[a-c\\d]c", "12a3c45").withResult("a3c");
+		assertNoMatch("a[a-c\\d]c", "12aec45");
 		try {
 			assertMatch("a[a-c\\F]c", "12aFc45").withResult("aFc");
 		} catch (IllegalRegularExpressionException e) {
 			// Should go here
 		}
 		assertMatch("a[a-c\\-]c", "12a-c45").withResult("a-c");
+		assertMatch("a[abc\\.]c", "12a.c45").withResult("a.c");
+		assertMatch("a[abc.]c", "12a.c45").withResult("a.c");
 
 		// POSIX character classes
 		assertMatch("a[b[:digit:]]c", "12a3c45").withResult("a3c");

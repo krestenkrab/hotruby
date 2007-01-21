@@ -10,7 +10,7 @@ import com.trifork.hotruby.runtime.RubyRuntime;
 import com.trifork.hotruby.runtime.Selector;
 import com.trifork.hotruby.runtime.SingletonState;
 
-public class RubyObject extends RubyBaseObject {
+public class RubyObject extends RubyBaseObject implements IRubyObject {
 	SingletonState singleton;
 
 	public boolean isFrozen() {

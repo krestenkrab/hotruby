@@ -19,31 +19,29 @@ public class RubyMatchData extends RubyBaseMatchData {
 		IRubyArray result = LoadedRubyRuntime.instance.newArray();
 
 		for (int i = 0; i < args.length; i++) {
-			result.add(get_match(args[i]));
+			int val = RubyInteger.mm_induced_from(args[i]).intValue();
+			result.add(get_match(val));
 		}
 
 		return result;
 	}
+	
+	public IRubyObject to_a() {
+		IRubyArray result = LoadedRubyRuntime.instance.newArray();
 
-	private IRubyObject get_match(IRubyObject object) {
-
-		int val = RubyInteger.mm_induced_from(object).intValue();
-
-		if (val < 0 || val > match.groupCount()) {
-			return LoadedRubyRuntime.NIL;
+		for (int i = 0; i <= match.groupCount(); i++) {
+			result.add(get_match(i));
 		}
 
-		try {
-			int start = match.start(val);
-			int end = match.end(val);
-			
-			CharSequence result_sequence = source.subSequence(start, end);
-			
-			return LoadedRubyRuntime.instance.newString(result_sequence);
-
-		} catch (IndexOutOfBoundsException ex) {
-			return LoadedRubyRuntime.NIL;
-		}
+		return result;
 	}
-
+	
+	private IRubyObject get_match(int val) {
+		if (val < 0 || val > match.groupCount())
+		{
+			return LoadedRubyRuntime.NIL;
+		}
+		CharSequence result_sequence = match.group(val);
+		return LoadedRubyRuntime.instance.newString(result_sequence);
+	}
 }

@@ -150,7 +150,7 @@ public class LoadedRubyRuntime extends RubyRuntime {
 	}
 
 	@Override
-	public RuntimeException newArgumentError(String string) {
+	public RaiseException newArgumentError(String string) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -161,7 +161,7 @@ public class LoadedRubyRuntime extends RubyRuntime {
 	}
 
 	@Override
-	public RuntimeException newTypeError(String string) {
+	public RaiseException newTypeError(String string) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -279,7 +279,7 @@ public class LoadedRubyRuntime extends RubyRuntime {
 	}
 
 	@Override
-	public RuntimeException newNoMethodError(String string) {
+	public RaiseException newNoMethodError(String string) {
 		// TODO Auto-generated method stub
 		throw new RuntimeException(string);
 	}

@@ -4,26 +4,29 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
+import com.trifork.hotruby.util.regexp.RegularExpressionTranslator;
 
 public class RubyRegexp extends RubyBaseRegexp {
-	Pattern pattern;
+	String originalExpression;
+	RegularExpressionTranslator translator;
 
 	@Override
 	public String asSymbol() {
-		return pattern.toString();
+		return originalExpression;
 	}
 	
 	public int flags() {
-		return pattern.flags();
+		return translator.getPattern().flags();
 	}
 	
 	public RubyRegexp(String string, int flags) {
-		pattern = Pattern.compile(string, flags);
+		originalExpression = string;
+		translator = new RegularExpressionTranslator(string);
 	}
 
 	@Override
 	public String inspect() {
-		return "/" + pattern.toString() + "/";
+		return "/" + originalExpression + "/";
 	}
 
 	public IRubyObject match(IRubyObject expr) {
@@ -31,9 +34,9 @@ public class RubyRegexp extends RubyBaseRegexp {
 		IRubyString string = RubyString.induce_from(expr);
 		String value = string.asSymbol();
 
-		Matcher match = pattern.matcher(value);
+		Matcher match = translator.getPattern().matcher(value);
 
-		if (!match.matches()) {
+		if (!match.find()) {
 			return LoadedRubyRuntime.NIL;
 		}
 		return new RubyMatchData().initialize(match, value);
@@ -43,9 +46,9 @@ public class RubyRegexp extends RubyBaseRegexp {
 		IRubyString string = RubyString.induce_from(expr);
 		String value = string.asSymbol();
 
-		Matcher match = pattern.matcher(value);
+		Matcher match = translator.getPattern().matcher(value);
 
-		if (!match.matches()) {
+		if (!match.find()) {
 			return LoadedRubyRuntime.NIL;
 		}
 		return new RubyFixnum(match.start());

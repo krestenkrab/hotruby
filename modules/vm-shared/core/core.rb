@@ -67,23 +67,21 @@ end
 module Kernel
   
   def load(filename, wrap=false)
-    
     if (File.absolute? filename)
       Kernel.eval_file filename, (wrap ? Module.new() : Object::MAIN)
       return true
     end
     
-     ($:).each {|path_elem| 
+    ($:).each do |path_elem| 
       full_name = File.join(path_elem, filename)
       
       if (File.file? full_name) 
         Kernel.eval_file full_name, (wrap ? Module.new() : Object::MAIN)
         return true
       end
-    }
+    end
     
     throw LoadError.new "No such file to load -- #{filename}"
-    
   end
   
   def require(filename)
@@ -95,25 +93,22 @@ module Kernel
       return true
     end
   
-   ($:).each {|path_elem| 
-    full_name = File.join(path_elem, filename)
+    ($:).each do |path_elem| 
+      full_name = File.join(path_elem, filename)
     
-    if (File.file? full_name) 
-      $" << filename
-      Kernel.eval_file full_name, (wrap ? Module.new() : Object::MAIN)
-      return true
+      if (File.file? full_name)
+        $" << filename
+        Kernel.eval_file full_name, (wrap ? Module.new() : Object::MAIN)
+        return true
+      end
     end
-  }
 
-  if (/.rb$/ !~ file) 
-    require(filename + ".rb")
-  end
+    if (/.rb$/ !~ file) 
+      require(filename + ".rb")
+    end
   
-  throw LoadError.new "No such file to load -- #{filename}"
-    
-    
+    throw LoadError.new "No such file to load -- #{filename}"
   end
-  
 end  
 
 class Array

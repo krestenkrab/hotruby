@@ -3,6 +3,7 @@
 	<name>hotruby-shared</name>
 	<comment></comment>
 	<projects>
+		<project>hotruby-loaded</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
