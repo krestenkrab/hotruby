@@ -1,9 +1,7 @@
 package com.trifork.hotruby.runtime;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -469,7 +467,7 @@ public abstract class RubyRuntime {
 	private Selector select_new;
 	private Selector select_to_str;
 
-
+	private ConstantAccessor RUNTIME_ERROR;
 	private ConstantAccessor NO_METHOD_ERROR;
 	private ConstantAccessor ARGUMENT_ERROR;
 	private ConstantAccessor NAME_ERROR;
@@ -502,6 +500,7 @@ public abstract class RubyRuntime {
 		STANDARD_ERROR = meta_Object().getConstantAccessor("StandardError");
 		ARGUMENT_ERROR = meta_Object().getConstantAccessor("ArgumentError");
 		TYPE_ERROR = meta_Object().getConstantAccessor("TypeError");
+		RUNTIME_ERROR = meta_Object().getConstantAccessor("RuntimeError");
 	}
 
 	private void init_properties() {
@@ -708,8 +707,7 @@ public abstract class RubyRuntime {
 	}
 
 	public RaisedException newRuntimeError(IRubyString string) {
-		// TODO Auto-generated method stub
-		return null;
+		throw newRaiseException(RUNTIME_ERROR, string.asSymbol());
 	}
 
 	public abstract IRubyRange newRange(IRubyObject start, IRubyObject end, boolean inclusive);

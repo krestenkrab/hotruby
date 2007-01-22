@@ -24,7 +24,7 @@ import com.trifork.hotruby.runtime.Global;
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
 import com.trifork.hotruby.runtime.MetaModule;
 import com.trifork.hotruby.runtime.PublicMethodN;
-import com.trifork.hotruby.runtime.RaiseException;
+import com.trifork.hotruby.runtime.RaisedException;
 import com.trifork.hotruby.runtime.RubyBlock;
 import com.trifork.hotruby.runtime.RubyMethod;
 import com.trifork.hotruby.runtime.Selector;
@@ -209,7 +209,7 @@ public final class RubyModuleKernel extends RubyModule {
 			@Override
 			public IRubyObject call(IRubyObject receiver, RubyBlock block) {
 				// re-raise current exception
-				throw new RaiseException(curr_exception.get());
+				throw new RaisedException(curr_exception.get());
 			}
 
 			@Override
@@ -218,7 +218,7 @@ public final class RubyModuleKernel extends RubyModule {
 					throw getRuntime().newRuntimeError((IRubyString)arg.fast_to_str(selector_to_str));
 				} 
 
-				throw new RaiseException(arg);
+				throw new RaisedException(arg);
 			}
 
 			@Override
@@ -236,7 +236,7 @@ public final class RubyModuleKernel extends RubyModule {
 				
 				exception.do_select(selector_set_backtrace).call(receiver, arg3, (RubyBlock)null);
 				
-				throw new RaiseException(exception);
+				throw new RaisedException(exception);
 			}
 
 			@Override
