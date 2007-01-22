@@ -487,7 +487,7 @@ public class ISeqBuilder implements ConstantPool, Instructions {
 
 	boolean calls_super;
 
-	private List<ExceptionHandler> exceptionHandlers = new ArrayList<ExceptionHandler>();
+	private List<ExceptionHandlerInfo> exceptionHandlers = new ArrayList<ExceptionHandlerInfo>();
 
 	public void add_control_context(ControlContext cc) {
 		loop_contexts.add(cc);
@@ -617,13 +617,13 @@ public class ISeqBuilder implements ConstantPool, Instructions {
 		}
 	}
 
-	void addExceptionHandler(ExceptionHandler handler)
+	void addExceptionHandler(ExceptionHandlerInfo handler)
 	{
 		exceptionHandlers.add(handler);
 	}
 	
-	public ExceptionHandler[] getExceptionHanders() {
-		return exceptionHandlers.toArray(new ExceptionHandler[exceptionHandlers.size()]);
+	public ExceptionHandlerInfo[] getExceptionHanders() {
+		return exceptionHandlers.toArray(new ExceptionHandlerInfo[exceptionHandlers.size()]);
 	}
 
 }

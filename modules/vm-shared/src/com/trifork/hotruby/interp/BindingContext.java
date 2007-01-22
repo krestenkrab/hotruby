@@ -21,7 +21,7 @@ import com.trifork.hotruby.runtime.NonLocalJump;
 import com.trifork.hotruby.runtime.NonLocalNext;
 import com.trifork.hotruby.runtime.NonLocalRedo;
 import com.trifork.hotruby.runtime.NonLocalReturn;
-import com.trifork.hotruby.runtime.RaiseException;
+import com.trifork.hotruby.runtime.RaisedException;
 import com.trifork.hotruby.runtime.RubyBlock;
 import com.trifork.hotruby.runtime.RubyIvarAccessor;
 import com.trifork.hotruby.runtime.RubyMethod;
@@ -645,7 +645,7 @@ public class BindingContext implements Instructions {
 					}
 
 					case UNWRAP_RAISE: {
-						RaiseException val = (RaiseException) stack[sp - 1];
+						RaisedException val = (RaisedException) stack[sp - 1];
 						stack[sp - 1] = val.getRubyException();
 						continue next_insn;
 					}
@@ -1032,7 +1032,7 @@ public class BindingContext implements Instructions {
 								+ code[pc - 1]);
 					}
 					
-				} catch (RaiseException ex) {
+				} catch (RaisedException ex) {
 
 					if (empty_stack == -1) {
 						throw new InternalError("exception in arg setup");
@@ -1081,9 +1081,9 @@ public class BindingContext implements Instructions {
 	}
 
 	private int find_exception_handler(int pc, ISeq template) {
-		ExceptionHandler[] handlers = template.getExceptionHandlers();
+		ExceptionHandlerInfo[] handlers = template.getExceptionHandlers();
 		for (int i = handlers.length-1; i >= 0; i--) {
-			ExceptionHandler h = handlers[i];
+			ExceptionHandlerInfo h = handlers[i];
 			if (h.start_pc <= pc && h.end_pc <= pc) {
 				return h.handler_pc;
 			}

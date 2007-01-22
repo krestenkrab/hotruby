@@ -42,6 +42,22 @@ class Exception
   
 end
 
+class StandardError < Exception
+end
+
+class ArgumentError < StandardError
+end
+
+class NameError < StandardError
+end
+
+class NoMethodError < NameError
+end
+
+class TypeError < StandardError
+end
+
+
 class File
  # JavaIOFile = include_class('java.io.File') 
 

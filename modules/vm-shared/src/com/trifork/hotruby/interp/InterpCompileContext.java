@@ -294,7 +294,7 @@ public class InterpCompileContext implements CompileContext, Instructions {
 	}
 	
 	public void add_exception_handler(final Label body_start, final Label body_end, final Label handler_label) {
-		final ExceptionHandler self = new ExceptionHandler();
+		final ExceptionHandlerInfo self = new ExceptionHandlerInfo();
 		iseq.addExceptionHandler(self);
 		
 		body_start.patch(new LabelPatch() {
@@ -634,10 +634,10 @@ public class InterpCompileContext implements CompileContext, Instructions {
 	private int optional_idx = -1;
 
 	// the finallys that are current
-	private Stack<FinallyBlock> finallys = new Stack<FinallyBlock>();
+	private Stack<FinallyBlockInfo> finallys = new Stack<FinallyBlockInfo>();
 
 	// finallys which have been finishes
-	private Stack<FinallyBlock> finallys_done = new Stack<FinallyBlock>();
+	private Stack<FinallyBlockInfo> finallys_done = new Stack<FinallyBlockInfo>();
 
 	public void emit_trace(int event, int line) {
 		if (event == TRACE_LINE && last_was_line && line == last_line) {
@@ -776,7 +776,7 @@ public class InterpCompileContext implements CompileContext, Instructions {
 	}
 
 	public void push_finally_handler(Label ensure_label) {
-		finallys.push(new FinallyBlock(iseq.position(), ensure_label));
+		finallys.push(new FinallyBlockInfo(iseq.position(), ensure_label));
 	}
 
 }

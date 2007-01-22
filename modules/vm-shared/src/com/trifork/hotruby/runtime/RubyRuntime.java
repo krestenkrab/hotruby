@@ -330,23 +330,23 @@ public abstract class RubyRuntime {
 			NonLocalJump ex);
 
 	
-	public RaiseException newNoMethodError(String string)
+	public RaisedException newNoMethodError(String string)
 	{	
 		ConstantAccessor ca = NO_METHOD_ERROR;
 		return newRaiseException(ca, string);
 	}
 
-	private RaiseException newRaiseException(ConstantAccessor ca, String string) {
+	private RaisedException newRaiseException(ConstantAccessor ca, String string) {
 		IRubyObject rc = ca.get();
 		IRubyObject ex = rc.select(select_new).call(rc, newString(string));
-		return new RaiseException(ex);
+		return new RaisedException(ex);
 	}
 
-	public  RaiseException newArgumentError(String string) {
+	public  RaisedException newArgumentError(String string) {
 		return newRaiseException(ARGUMENT_ERROR, string);
 	}
 
-	public RaiseException newTypeError(String string) {
+	public RaisedException newTypeError(String string) {
 		return newRaiseException(TYPE_ERROR, string);
 	}
 
@@ -707,7 +707,7 @@ public abstract class RubyRuntime {
 		return newFixnum(ss.object_id);
 	}
 
-	public RaiseException newRuntimeError(IRubyString string) {
+	public RaisedException newRuntimeError(IRubyString string) {
 		// TODO Auto-generated method stub
 		return null;
 	}

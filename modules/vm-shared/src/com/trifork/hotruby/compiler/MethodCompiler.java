@@ -17,7 +17,7 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
 
 import com.trifork.hotruby.interp.BindingContext;
-import com.trifork.hotruby.interp.ExceptionHandler;
+import com.trifork.hotruby.interp.ExceptionHandlerInfo;
 import com.trifork.hotruby.interp.ISeq;
 import com.trifork.hotruby.interp.Instructions;
 import com.trifork.hotruby.interp.MethodISeq;
@@ -39,7 +39,7 @@ import com.trifork.hotruby.runtime.MetaClass;
 import com.trifork.hotruby.runtime.MetaModule;
 import com.trifork.hotruby.runtime.NonLocalBreak;
 import com.trifork.hotruby.runtime.NonLocalReturn;
-import com.trifork.hotruby.runtime.RaiseException;
+import com.trifork.hotruby.runtime.RaisedException;
 import com.trifork.hotruby.runtime.RubyIvarAccessor;
 import com.trifork.hotruby.runtime.RubyMethod;
 import com.trifork.hotruby.runtime.RubyRuntime;
@@ -260,7 +260,7 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 
 	private static final Method NONLOCAL_BREAK_CONSTRUCTOR = new Method("<init>", Type.VOID_TYPE, new Type[] { IRUBYOBJECT });
 
-	private static final Type RAISEEXCEPTION_TYPE = Type.getType(RaiseException.class);
+	private static final Type RAISEEXCEPTION_TYPE = Type.getType(RaisedException.class);
 
 	private static final Method GET_RUBY_EXCEPTION = new Method("getRubyException", IRUBYOBJECT, new Type[0]);
 	
@@ -1621,9 +1621,9 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 			}
 		}
 		
-		ExceptionHandler[] handlers = iseq.getExceptionHandlers();
+		ExceptionHandlerInfo[] handlers = iseq.getExceptionHandlers();
 		for (int i = handlers.length-1; i >= 0; i--) {
-			ExceptionHandler h = handlers[i];
+			ExceptionHandlerInfo h = handlers[i];
 			call.visitTryCatchBlock(
 					getLabel(labels, h.start_pc, call),
 					getLabel(labels, h.end_pc, call),

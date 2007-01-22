@@ -82,7 +82,7 @@ public class ISeq implements Instructions {
 	}
 
 	final Loop[] loops;
-	final ExceptionHandler[] handlers;
+	final ExceptionHandlerInfo[] handlers;
 
 	int visibility;
 
@@ -243,7 +243,7 @@ public class ISeq implements Instructions {
 		}
 	}
 
-	public ExceptionHandler[] getExceptionHandlers() {
+	public ExceptionHandlerInfo[] getExceptionHandlers() {
 		return handlers;
 	}
 
