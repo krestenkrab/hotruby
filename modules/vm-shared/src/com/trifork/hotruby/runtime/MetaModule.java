@@ -472,6 +472,11 @@ public class MetaModule implements CallContext {
 		}
 		/* including a module does not expose the module's module methods */
 		/* also, we cannot see class Module's static methods */
+		
+		if (!this.isClass()) {
+			return getRuntime().meta_module.lookup_instance_method(name, true);
+		}
+		
 		return null;
 	}
 
@@ -516,8 +521,12 @@ public class MetaModule implements CallContext {
 	}
 
 	public String get_base_class_name() {
+		
+		
 		if (this.base == null) {
-			return "com.trifork.hotruby.classes.RubyClassModule";
+			String base_name = getBaseName();
+			return "com.trifork.hotruby.modules." + getPackageName() 
+				+ (base_name.startsWith("#") ? "Module" : ("Module" + base_name));
 		} else {
 			return this.base.getClass().getName();
 		}

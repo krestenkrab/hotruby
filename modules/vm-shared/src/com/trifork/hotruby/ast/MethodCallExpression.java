@@ -169,7 +169,11 @@ public class MethodCallExpression extends Expression {
 		if (args != null) {
 			for (int i = 0; i < args.size(); i++) {
 				Expression exp = args.get(i);
-				exp.compile(ctx, true);
+				if (exp instanceof RestArgExpression) {
+					((RestArgExpression)exp).compile(ctx, push, arg_count);
+				} else {
+					exp.compile(ctx, true);
+				}
 				if (exp.isRestArg()) {
 					has_rest_arg = true;
 				} else if (exp.isBlockArg()) {

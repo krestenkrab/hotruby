@@ -178,8 +178,11 @@ public class RegularExpressionTranslator {
 				case '-':
 				case '.':
 					break;
+				case '\\':
+					append('\\');
+					break;
 				default:
-					throw new IllegalRegularExpressionException("Unknown escape sequence: \\" + current());
+					throw new IllegalRegularExpressionException("Unknown escape sequence: \\" + current() + " (0x" + Integer.toHexString(current()) + ")");
 				}
 			}
 			else if (current() == '-')

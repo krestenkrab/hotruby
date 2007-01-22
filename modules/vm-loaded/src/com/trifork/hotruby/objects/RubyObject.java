@@ -3,6 +3,7 @@ package com.trifork.hotruby.objects;
 import com.trifork.hotruby.runtime.CallContext;
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
 import com.trifork.hotruby.runtime.MetaClass;
+import com.trifork.hotruby.runtime.MetaModule;
 import com.trifork.hotruby.runtime.RubyBlock;
 import com.trifork.hotruby.runtime.RubyIvarAccessor;
 import com.trifork.hotruby.runtime.RubyMethod;
@@ -190,6 +191,14 @@ public class RubyObject extends RubyBaseObject implements IRubyObject {
 	public MetaClass get_meta_class() {
 		if (singleton == null) {
 			return get_class().get_meta_class();
+		} else {
+			return singleton.get_meta_class(this, false);
+		}
+	}
+
+	public MetaModule get_meta_module() {
+		if (singleton == null) {
+			return get_class().get_meta_module();
 		} else {
 			return singleton.get_meta_class(this, false);
 		}

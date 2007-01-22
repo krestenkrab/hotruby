@@ -57,6 +57,13 @@ end
 class TypeError < StandardError
 end
 
+class ScriptError < Exception
+end
+
+class LoadError < ScriptError
+end
+
+
 
 class File
  # JavaIOFile = include_class('java.io.File') 
@@ -66,7 +73,7 @@ class File
   end
   
   def File.join(dir,file) 
-     "${dir}/${file}"
+     "#{dir}/#{file}"
   end
   
   def File.expand_path(file, dir_string=cwd)
@@ -100,10 +107,10 @@ module Kernel
       end
     end
     
-    throw LoadError.new "No such file to load -- #{filename}"
+    raise LoadError.new "No such file to load -- #{filename}"
   end
   
-  def require(filename)
+  def require(filename, wrap=false)
     return true if $".contains? filename
     
     if (File.absolute? filename)
@@ -114,6 +121,8 @@ module Kernel
   
     ($:).each do |path_elem| 
       full_name = File.join(path_elem, filename)
+
+      p "trying #{full_name}"
     
       if (File.file? full_name)
         $" << filename
@@ -122,11 +131,12 @@ module Kernel
       end
     end
 
-    if (/.rb$/ !~ file) 
+    if (/.rb$/ !~ filename) 
       require(filename + ".rb")
+      return
     end
   
-    throw LoadError.new "No such file to load -- #{filename}"
+    raise LoadError.new "No such file to load -- #{filename}"
   end
 end  
 
@@ -147,6 +157,10 @@ class String
      end
   end
 
+  def +(other)
+    "#{self}#{other}"
+  end
+
 end
 
 class Object
@@ -154,6 +168,12 @@ class Object
   def =~(anObject)
      false
   end
+
+  def not
+    nil
+  end
+
+  MAIN = Object.new
 
 end
 
@@ -227,10 +247,16 @@ module Kernel
       eval val,nil
     end
   end
-end
 
+  def Kernel.const_missing(sym)
+     raise StandardError, "missing #{sym}"
+  end
+  
+end
+  
 class Module
   
+
   def attr_reader (*names)
     names.each {|name|
       sname = name.to_s
@@ -254,5 +280,9 @@ end
 class NilClass
   def or(other)
     other
+  end
+  
+  def not
+    true
   end
 end

@@ -748,6 +748,11 @@ public class BindingContext implements Instructions {
 
 					case NONLOCAL_REDO:
 						throw new NonLocalRedo();
+						
+					case RETURN: {
+						IRubyObject retval = (IRubyObject) stack[--sp];
+						throw new NonLocalReturn(dvars.get_parent() , retval);
+					}
 
 					case LEAVE: {
 						result = stack[--sp];
@@ -1094,8 +1099,12 @@ public class BindingContext implements Instructions {
 	private void eval_definemodule(IRubyObject self, IRubyString name,
 			ISeq iseq, ThreadState state) {
 
-		IRubyModule decl_context = (IRubyModule) self;
-		MetaModule decl_meta = decl_context.get_meta_module();
+//		if (!(self instanceof IRubyModule)) {
+//			throw new InternalError("self is not module, but: "+self.inspect());
+//		}
+		
+		//IRubyModule decl_context = (self instanceof IRubyModule) ? ((IRubyModule) self) : (self.get_class());
+		MetaModule decl_meta = self.get_meta_module();
 
 		String newName = name.asSymbol();
 		MetaModule new_module_meta = decl_meta.get_module(newName, false);
@@ -1117,7 +1126,7 @@ public class BindingContext implements Instructions {
 				}
 
 				newName = newName.substring(idx + 2);
-				decl_context = decl_meta.get_base_module();
+				//decl_context = decl_meta.get_base_module();
 			}
 
 			new_module_meta = new MetaModule(getRuntime(), decl_meta, newName);

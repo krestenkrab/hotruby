@@ -105,6 +105,7 @@ public class LoadedRubyRuntime extends RubyRuntime {
 		new_system_class("Time");
 		new_system_class("Binding");
 		new_system_class("Range");
+		new_system_class("File");
 		
 		RubyString.init(string_class);
 	}

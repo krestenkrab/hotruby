@@ -317,7 +317,10 @@ public class ISeqBuilder implements ConstantPool, Instructions {
 			return;
 		}
 		
-		case NONLOCAL_BREAK: {
+		case NONLOCAL_BREAK: 
+		case NONLOCAL_NEXT: 
+		case NONLOCAL_REDO: 
+		{
 			return;
 		}
 

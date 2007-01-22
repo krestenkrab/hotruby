@@ -68,4 +68,6 @@ public interface IRubyObject
 
 	MetaModule get_meta_class();
 
+	MetaModule get_meta_module();
+
 }

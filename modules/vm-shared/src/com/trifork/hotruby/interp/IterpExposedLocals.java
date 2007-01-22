@@ -95,4 +95,8 @@ public class IterpExposedLocals extends ExposedLocals {
 		}
 	}
 
+	public ExposedLocals get_parent() {
+		return parent;
+	}
+
 }

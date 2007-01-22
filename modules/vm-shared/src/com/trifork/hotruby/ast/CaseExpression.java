@@ -24,9 +24,13 @@ public class CaseExpression extends Expression {
 	@Override
 	void compile(CompileContext ctx, boolean push) {
 
+		int st = ctx.get_stack_depth();
+		
 		test.compile(ctx, true);
 		int val = ctx.alloc_temp(1);
 		ctx.emit_setlocal(val);
+		
+		assert st == ctx.get_stack_depth();
 		
 		Label after_case_expr = ctx.new_label();
 		for (int i = 0; i < conds.size(); i++) {
@@ -40,7 +44,11 @@ public class CaseExpression extends Expression {
 				ctx.emit_getlocal(val);
 				ctx.emit_eq3();
 				
+				assert (st+1) == ctx.get_stack_depth();
+				
 				ctx.emit_branch_if(body);
+
+				assert (st) == ctx.get_stack_depth();
 			}
 			
 			Label next_test = ctx.new_label();
@@ -51,6 +59,10 @@ public class CaseExpression extends Expression {
 			codes.get(i).compile(ctx, push);
 			
 			ctx.emit_goto(after_case_expr);
+
+			assert push ? ((st+1)==ctx.get_stack_depth()) : (st == ctx.get_stack_depth());
+			
+			ctx.set_stack_depth(st);
 			
 			ctx.mark(next_test);
 			
