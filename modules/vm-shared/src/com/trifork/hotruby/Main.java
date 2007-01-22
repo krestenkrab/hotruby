@@ -18,7 +18,7 @@ public class Main {
 		// For quick'n'dirty testing, put "if (true)" here
 		if (true)
 		{
-			IRubyObject obj = rr.load("rb/richards.rb", rr.getObject());
+			IRubyObject obj = rr.load("rb/test_require.rb", rr.getObject());
 			System.out.println("=> " + obj.inspect());
 			return;
 		}

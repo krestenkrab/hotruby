@@ -15,7 +15,7 @@ class Exception
   
   def initialize(message=nil)
     @message = message
-    @stacktrace = caller(0)
+    @stacktrace = caller(3)
   end
   
   def exception(msg=self)
@@ -62,8 +62,11 @@ class File
  # JavaIOFile = include_class('java.io.File') 
 
   def File.absolute?(string)
-    JavaIOFile.new(string).absolute? 
-#    string == expand_path(string)
+    /^\// =~ string
+  end
+  
+  def File.join(dir,file) 
+     "${dir}/${file}"
   end
   
   def File.expand_path(file, dir_string=cwd)

@@ -466,6 +466,7 @@ public abstract class RubyRuntime {
 
 	private Selector select_new;
 	private Selector select_to_str;
+	private Selector select_backtrace;
 
 	private ConstantAccessor RUNTIME_ERROR;
 	private ConstantAccessor NO_METHOD_ERROR;
@@ -493,6 +494,7 @@ public abstract class RubyRuntime {
 		
 		this.select_new = getSelector(meta_Object(), "new");
 		this.select_to_str = getSelector(meta_Object(), "to_str");
+		this.select_backtrace = getSelector(meta_Object(), "backtrace");
 		
 		// create state variables for known classes
 		NO_METHOD_ERROR = meta_Object().getConstantAccessor("NoMethodError");
@@ -509,8 +511,10 @@ public abstract class RubyRuntime {
 
 		if (path == null) {
 			path = rubyHome().getPath() + File.separator + "core"
-					+ File.pathSeparator + rubyHome().getPath()
-					+ File.separator + "ruby";
+			+ File.pathSeparator + 
+			rubyHome().getPath() + File.separator + "ruby" + File.separator + "2.0"
+			+ File.pathSeparator + 
+			rubyHome().getPath() + File.separator + "ruby" + File.separator + "site_ruby";
 		}
 
 		String[] elms = path.split(File.pathSeparator);
@@ -714,5 +718,10 @@ public abstract class RubyRuntime {
 
 	public IRubyObject call_to_str(IRubyObject obj) {
 		return obj.fast_to_s(select_to_str);
+	}
+
+	public IRubyArray getBacktrace(IRubyObject ruby_exception) {
+		IRubyObject arr = ruby_exception.do_select(select_backtrace).call(ruby_exception);
+		return (IRubyArray) arr;
 	}
 }
