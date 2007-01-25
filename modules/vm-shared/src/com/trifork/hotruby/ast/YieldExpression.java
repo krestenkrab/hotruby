@@ -7,7 +7,7 @@ public class YieldExpression extends VariableExpression {
 	public static Expression instance = new YieldExpression();
 
 	private YieldExpression() {
-		super("yield");
+		super(-1, "yield");
 		// TODO Auto-generated constructor stub
 	}
 

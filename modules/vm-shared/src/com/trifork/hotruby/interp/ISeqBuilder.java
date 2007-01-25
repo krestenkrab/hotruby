@@ -38,6 +38,8 @@ public class ISeqBuilder implements ConstantPool, Instructions {
 
 	private final int first_temp;
 
+	int non_local_exit;
+	
 	public ISeqBuilder(RubyRuntime runtime, RubyCode source,
 			ISeqBuilder parent_iseq, int code_type, String method_name) {
 		this.runtime = runtime;
@@ -65,7 +67,12 @@ public class ISeqBuilder implements ConstantPool, Instructions {
 			data = new_data;
 		}
 
-		assert (value & 0xffffff00) == 0 || (value & 0xffffff00) == 0xffffff00;
+		
+		if (!( (value & 0xffffff00) == 0 || (value & 0xffffff00) == 0xffffff00 ))
+		{
+			System.out.println("value & 0xffffff00 == 0x" + Integer.toHexString(value&0xffffff00));
+			System.exit(-3);
+		}
 		// assert value == (byte) value;
 
 		data[pos++] = (byte) value;
@@ -84,9 +91,12 @@ public class ISeqBuilder implements ConstantPool, Instructions {
 		int insn = data[pos];
 		switch (insn) {
 
-		case RETURN:
+		case NONLOCAL_RETURN:
+			non_local_exit |= FLAG_NONLOCAL_RETURN;
+			
 		case FAST_LT:
 		case FAST_LE:
+		case FAST_GE:
 		case FAST_GT:
 		case FAST_PLUS:
 		case FAST_MINUS:
@@ -107,6 +117,7 @@ public class ISeqBuilder implements ConstantPool, Instructions {
 		case NOP:
 		case ALIAS:
 		case PROC2BLOCK:
+		case MAKERETURN:
 			return;
 
 		case SETINSTANCEVARIABLE:
@@ -318,11 +329,16 @@ public class ISeqBuilder implements ConstantPool, Instructions {
 		}
 		
 		case NONLOCAL_BREAK: 
-		case NONLOCAL_NEXT: 
-		case NONLOCAL_REDO: 
-		{
+			non_local_exit |= FLAG_NONLOCAL_BREAK;
 			return;
-		}
+			
+		case NONLOCAL_NEXT: 
+			non_local_exit |= FLAG_NONLOCAL_NEXT;
+			return;
+			
+		case NONLOCAL_REDO: 
+			non_local_exit |= FLAG_NONLOCAL_REDO;
+			return;
 
 		default:
 			throw new InternalError("unhandled instruction: " + insn);

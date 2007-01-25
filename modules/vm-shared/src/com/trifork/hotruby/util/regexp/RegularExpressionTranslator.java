@@ -178,8 +178,11 @@ public class RegularExpressionTranslator {
 				case '-':
 				case '.':
 					break;
+					
+					// perhaps this should be the default rule?
 				case '\\':
-					append('\\');
+				case '?':
+					//append(current());
 					break;
 				default:
 					throw new IllegalRegularExpressionException("Unknown escape sequence: \\" + current() + " (0x" + Integer.toHexString(current()) + ")");
@@ -377,6 +380,13 @@ public class RegularExpressionTranslator {
 		advanceAndExpectMore();
 		switch(current())
 		{
+		case ':': 
+		case '=': 
+		case '!': 
+		case '<': 
+		case '>': 
+			lookahead();
+			break;
 		case '#':
 			comment();
 			break;
@@ -396,6 +406,26 @@ public class RegularExpressionTranslator {
 		{
 			advanceAndExpectMore();
 		}
+	}
+	
+	/**
+	 * (?= lookahead )
+	 * (?! lookahead )
+	 * (?<= lookahead )
+	 * (?<! lookahead )
+	 * (?: non-capture group )
+	 *
+	 */
+	private void lookahead()
+	{
+		assert current() == '=' || current() == '!' || current() == '<' || current() == '>' || current() == ':';
+		append('(');
+		append('?');
+		if (!parseRegularExpression(true))
+		{
+			return;
+		}
+		append(')');
 	}
 	
 	//

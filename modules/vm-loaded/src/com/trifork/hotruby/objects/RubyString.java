@@ -1,5 +1,6 @@
 package com.trifork.hotruby.objects;
 import java.io.IOException;
+import java.util.regex.Matcher;
 
 import com.trifork.hotruby.marshal.UnmarshalStream;
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
@@ -96,6 +97,35 @@ public class RubyString
 
 	public IRubyObject op_eq2(IRubyObject arg) {
 		return bool(arg instanceof RubyString && ((RubyString)arg).value.equals(value));
+	}
+	
+	@Override
+	public IRubyObject fast_eq3(IRubyObject arg, Selector selector) {
+		return op_eq2(arg);
+	}
+
+	public IRubyInteger length() {
+		return RubyInteger.newInteger(value.length());
+	}
+
+	public IRubyObject substring(IRubyObject start, IRubyObject len) {
+		int s = RubyInteger.mm_induced_from(start).intValue();
+		int l = RubyInteger.mm_induced_from(len).intValue();
+
+		// todo handle error cases...
+		return new RubyString(value.substring(s, s+l));
+	}
+
+	public IRubyObject gsub(RubyRegexp regexp, RubyString string) {
+		
+		 Matcher m = regexp.pattern.matcher(value);
+		 StringBuffer sb = new StringBuffer();
+		 while (m.find()) {
+		     m.appendReplacement(sb, string.asSymbol());
+		 }
+		 m.appendTail(sb);
+
+		 return new RubyString(sb.toString());
 	}
 	
 	@Override

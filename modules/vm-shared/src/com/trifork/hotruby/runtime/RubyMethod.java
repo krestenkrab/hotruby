@@ -10,10 +10,10 @@ public abstract class RubyMethod {
 	/** return names of ivars that are referenced in this method */
 	protected String[] getIVarNames() { return NO_STRINGS; }
 	
-	protected RuntimeException wrongArgs(int given) {
-		throw new RuntimeException("wrong #args. given " + given
+	protected RuntimeException wrongArgs(IRubyObject receiver, int given) {
+		throw receiver.getRuntime().newArgumentError("wrong #args. given " + given
 				+ " expecting " + ((getArity() < 0) ? "at least " : "")
-				+ min_args());
+				+ min_args() + " (in "+getClass().getName()+")");
 	}
 
 	public abstract int getArity();
@@ -94,7 +94,7 @@ public abstract class RubyMethod {
 		}
 	}
 
-	public RubyMethod specialize_for(MetaModule module) {
+	public RubyMethod specialize_for(MetaModule module, boolean is_module) {
 		return this;
 	}
 

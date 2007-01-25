@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import com.trifork.hotruby.callable.PublicMethod;
+import com.trifork.hotruby.callable.PublicMethod0;
 import com.trifork.hotruby.callable.PublicMethod2;
 import com.trifork.hotruby.classes.RubyClassModule;
 import com.trifork.hotruby.objects.IRubyClass;
@@ -17,6 +18,7 @@ import com.trifork.hotruby.objects.RubyClass;
 import com.trifork.hotruby.objects.RubyException;
 import com.trifork.hotruby.objects.RubyInteger;
 import com.trifork.hotruby.objects.RubyModule;
+import com.trifork.hotruby.objects.RubyProc;
 import com.trifork.hotruby.objects.RubyString;
 import com.trifork.hotruby.runtime.EvalContext;
 import com.trifork.hotruby.runtime.EvalMissingEnvironException;
@@ -40,6 +42,33 @@ public final class RubyModuleKernel extends RubyModule {
 
 		TO_S = meta.getRuntime().getSelector(meta, "to_s");
 
+		meta.register_instance_method("at_exit", new PublicMethod0() {
+
+			@Override
+			public IRubyObject call(IRubyObject receiver, RubyBlock block) {
+				RubyProc proc = new RubyProc(block);
+				getRuntime().register_at_exit(proc);
+				return proc;
+			}
+			
+		});
+		
+		meta.register_instance_method("public", new PublicMethodN() {
+
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject[] args, RubyBlock block) {
+				// TODO: implement
+				return LoadedRubyRuntime.NIL;
+			}});
+		
+		meta.register_instance_method("private", new PublicMethodN() {
+
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject[] args, RubyBlock block) {
+				// todo: implement
+				return LoadedRubyRuntime.NIL;
+			}});
+		
 		meta.register_module_method("eval_file", new PublicMethod2() {
 			@Override
 			public IRubyObject call(IRubyObject receiver, IRubyObject arg1,
@@ -137,6 +166,20 @@ public final class RubyModuleKernel extends RubyModule {
 				}
 			}
 		});
+		
+		meta.register_instance_method("block_given?", new PublicMethod0() {
+
+			@Override
+			public IRubyObject call(IRubyObject receiver, RubyBlock block) {
+				throw new EvalMissingEnvironException();
+			}
+			
+			@Override
+			public IRubyObject call_eval(IRubyObject receiver, RubyBlock block, EvalContext ctx) {
+				return bool(ctx.get_block() != null);
+			}
+			
+		});
 
 		meta.register_instance_method("eval", new RubyMethod() {
 
@@ -150,7 +193,7 @@ public final class RubyModuleKernel extends RubyModule {
 
 			@Override
 			public IRubyObject call(IRubyObject receiver, RubyBlock block) {
-				throw wrongArgs(0);
+				throw wrongArgs(receiver, 0);
 			}
 
 			@Override
@@ -177,7 +220,7 @@ public final class RubyModuleKernel extends RubyModule {
 				}
 
 				if (args.length == 0) {
-					throw wrongArgs(0);
+					throw wrongArgs(receiver, 0);
 				}
 
 				String text = ((IRubyString) args[0]).asSymbol();
@@ -218,6 +261,7 @@ public final class RubyModuleKernel extends RubyModule {
 					throw getRuntime().newRuntimeError((IRubyString)arg.fast_to_str(selector_to_str));
 				} 
 
+				curr_exception.set(arg);
 				throw new RaisedException(arg);
 			}
 
@@ -236,6 +280,7 @@ public final class RubyModuleKernel extends RubyModule {
 				
 				exception.do_select(selector_set_backtrace).call(receiver, arg3, (RubyBlock)null);
 				
+				curr_exception.set(exception);
 				throw new RaisedException(exception);
 			}
 
@@ -246,7 +291,7 @@ public final class RubyModuleKernel extends RubyModule {
 				case 1: return call(receiver, args[0], block);
 				case 2: return call(receiver, args[0], args[1], block);
 				case 3: return call(receiver, args[0], args[1], args[2], block);
-				default: throw wrongArgs(args.length);
+				default: throw wrongArgs(receiver, args.length);
 				}
 			}
 

@@ -7,13 +7,13 @@ public abstract class CompiledMethod1 extends CompiledMethod {
 
 	@Override
 	public IRubyObject call(IRubyObject receiver, RubyBlock block) {
-		throw wrongArgs(0);
+		throw wrongArgs(receiver, 0);
 	}
 
 	@Override
 	public IRubyObject call(IRubyObject receiver, IRubyObject arg1,
 			IRubyObject arg2, RubyBlock block) {
-		throw wrongArgs(2);
+		throw wrongArgs(receiver, 2);
 	}
 
 	@Override
@@ -22,7 +22,7 @@ public abstract class CompiledMethod1 extends CompiledMethod {
 		if (args.length == 1) {
 			return call(receiver, args[0], block);
 		}
-		throw wrongArgs(0);
+		throw wrongArgs(receiver, 0);
 	}
 
 }

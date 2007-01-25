@@ -9,6 +9,7 @@ import com.trifork.hotruby.util.regexp.RegularExpressionTranslator;
 public class RubyRegexp extends RubyBaseRegexp {
 	String originalExpression;
 	RegularExpressionTranslator translator;
+	Pattern pattern;
 
 	@Override
 	public String asSymbol() {
@@ -22,6 +23,7 @@ public class RubyRegexp extends RubyBaseRegexp {
 	public RubyRegexp(String string, int flags) {
 		originalExpression = string;
 		translator = new RegularExpressionTranslator(string);
+		pattern = translator.getPattern();
 	}
 
 	@Override
@@ -34,7 +36,7 @@ public class RubyRegexp extends RubyBaseRegexp {
 		IRubyString string = RubyString.induce_from(expr);
 		String value = string.asSymbol();
 
-		Matcher match = translator.getPattern().matcher(value);
+		Matcher match = pattern.matcher(value);
 
 		if (!match.find()) {
 			return LoadedRubyRuntime.NIL;
@@ -46,7 +48,7 @@ public class RubyRegexp extends RubyBaseRegexp {
 		IRubyString string = RubyString.induce_from(expr);
 		String value = string.asSymbol();
 
-		Matcher match = translator.getPattern().matcher(value);
+		Matcher match = pattern.matcher(value);
 
 		if (!match.find()) {
 			return LoadedRubyRuntime.NIL;

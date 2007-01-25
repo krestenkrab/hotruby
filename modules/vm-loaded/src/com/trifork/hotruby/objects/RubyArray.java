@@ -329,11 +329,28 @@ public class RubyArray extends RubyBaseArray {
 		}
 
 		if (idx instanceof RubyRange) {
-			RubyArray result = new RubyArray();
+			final RubyArray result = new RubyArray();
 			RubyRange range = (RubyRange) idx;
-		}
+			int first = RubyInteger.mm_induced_from(range.first()).intValue();
+			int last = RubyInteger.mm_induced_from(range.last()).intValue();
+			if (range.include_last()) {
+				last += 1;
+			}
 
-		throw new InternalError("not implemented");
+			int count = 0;
+			for (int i = first; (last<0 ? count==last : i==last); i++) {
+				result.add(int_at(i));
+				count ++;
+			}
+			
+			return result;
+			
+		} else {
+			throw  getRuntime().newRuntimeError(new RubyString("not implemented, array[" + idx.inspect() + "]"));
+		}
+		
+		
+//		throw new InternalError();
 	}
 
 	public static IRubyObject unmarshalFrom(UnmarshalStream input,

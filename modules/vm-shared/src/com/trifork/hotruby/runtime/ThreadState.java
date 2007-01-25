@@ -133,6 +133,39 @@ public class ThreadState {
 		}
 		public final ModuleFrame parent;
 		public final MetaModule module;
+		
+		@Override
+		public int hashCode() {
+			return module.hashCode() + 
+				(parent == null ? 0 : parent.hashCode());
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (obj == this) return true;
+			if (obj instanceof ModuleFrame) {
+				ModuleFrame frame = (ModuleFrame) obj;
+				ModuleFrame self = this;
+				
+				recurse: do {
+					if (frame.module == self.module) {
+						frame = frame.parent;
+						self = self.parent;
+						
+						if (frame == null && self == null) {
+							return true;
+						} else if (frame == null || self == null) {
+							return false;
+						} else {
+							continue recurse;
+						}
+					} else {
+						return false;
+					}
+				} while(false);
+			}
+			return false;
+		}
 	}
 	
 	ModuleFrame current;

@@ -124,6 +124,11 @@ public class RubyFixnum extends RubyBaseFixnum {
 	}
 	
 	@Override
+	public IRubyObject fast_ge(IRubyObject arg, Selector selector) {
+		return op_ge(arg);
+	}
+	
+	@Override
 	public IRubyObject fast_gt(IRubyObject arg, Selector selector) {
 		return op_gt(arg);
 	}
@@ -187,6 +192,11 @@ public class RubyFixnum extends RubyBaseFixnum {
 	public IRubyObject op_le(IRubyObject op) {
 		IRubyInteger other = RubyInteger.mm_induced_from(op);
 		return value <= other.longValue() ? LoadedRubyRuntime.TRUE : LoadedRubyRuntime.FALSE;
+	}
+
+	public IRubyObject op_ge(IRubyObject op) {
+		IRubyInteger other = RubyInteger.mm_induced_from(op);
+		return value >= other.longValue() ? LoadedRubyRuntime.TRUE : LoadedRubyRuntime.FALSE;
 	}
 
 	public IRubyObject op_gt(IRubyObject op) {

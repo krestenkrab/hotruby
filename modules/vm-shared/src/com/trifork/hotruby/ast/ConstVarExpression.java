@@ -4,8 +4,8 @@ import com.trifork.hotruby.interp.CompileContext;
 
 public class ConstVarExpression extends VariableExpression {
 
-	public ConstVarExpression(String text) {
-		super(text);
+	public ConstVarExpression(int line, String text) {
+		super(line, text);
 		// TODO Auto-generated constructor stub
 	}
 

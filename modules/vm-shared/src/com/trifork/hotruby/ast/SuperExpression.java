@@ -9,7 +9,7 @@ public class SuperExpression extends VariableExpression {
 	public static Expression instance = new SuperExpression();
 
 	private SuperExpression() {
-		super("super");
+		super(-1, "super");
 		// TODO Auto-generated constructor stub
 	}
 

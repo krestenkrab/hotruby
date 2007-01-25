@@ -12,20 +12,20 @@ public abstract class PublicMethod1 extends PublicMethod {
 	
 	@Override
 	public IRubyObject call(IRubyObject receiver, RubyBlock block) {
-		throw wrongArgs(0);
+		throw wrongArgs(receiver, 0);
 	}
 
 	@Override
 	public IRubyObject call(IRubyObject receiver, IRubyObject arg1,
 			IRubyObject arg2, RubyBlock block) {
-		throw wrongArgs(2);
+		throw wrongArgs(receiver, 2);
 	}
 
 	@Override
 	public IRubyObject call(IRubyObject receiver, IRubyObject[] args,
 			RubyBlock block) {
 		if (args.length != 1) {
-			throw wrongArgs(args.length);
+			throw wrongArgs(receiver, args.length);
 		}
 		return call(receiver, args[0]);
 	}

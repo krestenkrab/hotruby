@@ -38,7 +38,7 @@ public class CompiledBlockEvalContext extends CompiledEvalContext {
 
 	@Override
 	protected String[] getDVarNames() {
-		System.out.println(owner.getClass());
+		//System.out.println(owner.getClass());
 		try {
 			String[] result = (String[]) owner.getClass().getDeclaredMethod("getDVarNames", new Class[0]).invoke(owner, new Object[0]);
 			return result;

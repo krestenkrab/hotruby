@@ -7,7 +7,7 @@ public class LineExpression extends VariableExpression {
 	private int lineno;
 
 	public LineExpression(int lineno) {
-		super("__LINE__");
+		super(-1, "__LINE__");
 		this.lineno = lineno;
 	}
 

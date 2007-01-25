@@ -21,6 +21,7 @@ import com.trifork.hotruby.objects.IRubyModule;
 
 public class CodeGen implements Opcodes, CompilerConsts {
 
+	public static final boolean DEBUG_WRITE_CLASSES = false;
 	private final RubyRuntime runtime;
 
 	public CodeGen(RubyRuntime runtime) {
@@ -212,12 +213,13 @@ public class CodeGen implements Opcodes, CompilerConsts {
 	}
 
 	private void debug_write_class(Type self_type, byte[] data) {
+		if (!DEBUG_WRITE_CLASSES) return;
+		
 		try {
 			String fileName = self_type.getClassName()+".class";
 			FileOutputStream fo = new FileOutputStream(fileName);
 			fo.write(data);
 			fo.close();
-			//System.out.println("wrote " + fileName);
 		} catch (Exception ex) {
 			
 		}

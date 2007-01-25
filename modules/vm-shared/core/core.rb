@@ -5,11 +5,18 @@
 p "loading core..."
 
 Kernel.eval_file 'object.rb', Object
+Kernel.eval_file 'array.rb', Object
 
 ##
 ## the very first thing we need to define is "load" and "require".  from there, we can
 ## define the rest in separate files
 ##
+
+class Class
+   def use_pp
+      false
+   end
+end
 
 class Exception
   
@@ -63,7 +70,14 @@ end
 class LoadError < ScriptError
 end
 
+class RuntimeError < StandardError
+end
 
+class ThreadError < StandardError
+end
+
+class LocalJumpError < StandardError
+end
 
 class File
  # JavaIOFile = include_class('java.io.File') 
@@ -111,22 +125,22 @@ module Kernel
   end
   
   def require(filename, wrap=false)
-    return true if $".contains? filename
+    return true if $".contains?(filename)
     
     if (File.absolute? filename)
       $" << filename
-      Kernel.eval_file filename, (wrap ? Module.new() : Object::MAIN)
+      Kernel.eval_file filename, (wrap ? Module.new() : Object)
       return true
     end
   
     ($:).each do |path_elem| 
       full_name = File.join(path_elem, filename)
 
-      p "trying #{full_name}"
-    
       if (File.file? full_name)
         $" << filename
-        Kernel.eval_file full_name, (wrap ? Module.new() : Object::MAIN)
+        p "loading #{full_name}..."  
+        Kernel.eval_file full_name, (wrap ? Module.new() : Object)
+        p "loading #{full_name}... done"  
         return true
       end
     end
@@ -142,13 +156,86 @@ end
 
 class Array
    def contains?(elm)
-     each { |e| if e==elm then return true; end }
+     each { |e| return true if e==elm }
      return false
    end
 end
 
 class String
 
+  def empty?
+     length == 0
+  end
+
+  def chomp(aString=$/) 
+    if /#{aString}$/ =~ self
+       self[0,length-aString.length]
+    else
+       self
+    end
+  end
+
+  def split(pattern=$;, limit=0)
+     if (nil == pattern) 
+        pattern = ' '
+     end
+     
+     case pattern.class
+     when String
+       split_by_string(pattern, limit)
+     when Regexp
+       split_by_regexp(pattern, limit)
+     else
+        raise ArgumentError, 'pattern must be string or regexp'
+     end
+  end
+  
+  def scan(pattern)
+     case pattern.class
+     when String
+       scan_by_string(pattern)
+     when Regexp
+       scan_by_regexp(pattern)
+     else
+        raise ArgumentError, 'pattern must be string or regexp'
+     end
+     
+  end
+  
+  private  
+
+  def scan_by_regexp(pattern)
+  #  p "scanning #{self} for #{pattern}"
+    pos= 0
+    lim= self.length
+    result= []
+    while (md = pattern.match(self[pos,lim-pos])) 
+      result << md[0]
+      pos += md.end
+    end
+  #  p "returning #{result}"
+    result
+  end
+  
+  def split_by_regexp(pattern, limit)
+   # p "splitting #{self.to_s} by #{pattern.inspect}"
+    pos= 0
+    lim= self.length
+    result= []
+    str = ""
+    while (md = pattern.match(str=self[pos,lim-pos])) 
+      app = str[0, md.begin]
+   #   p "str[#{pos},#{lim-pos}]=#{str} ... + #{app}"
+      result << app
+      pos += md.end
+    end
+   #   p "str[#{pos},#{lim-pos}]=#{str}"
+   #   p "result => #{result}"
+    result
+  end
+  
+  public
+  
   def =~(anObject)
      if anObject.class == String
         Regexp.new(anObject) =~ self
@@ -174,6 +261,9 @@ class Object
   end
 
   MAIN = Object.new
+  def MAIN.inspect
+    "main"
+  end
 
 end
 
@@ -250,6 +340,10 @@ module Kernel
 
   def Kernel.const_missing(sym)
      raise StandardError, "missing #{sym}"
+  end
+  
+  def proc (&val)
+    val
   end
   
 end

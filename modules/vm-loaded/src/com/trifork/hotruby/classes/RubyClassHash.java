@@ -31,7 +31,7 @@ public class RubyClassHash
 
 			@Override
 			public IRubyObject call(IRubyObject receiver, IRubyObject arg1, IRubyObject arg2, RubyBlock block) {
-				throw super.wrongArgs(2);
+				throw super.wrongArgs(receiver, 2);
 			}
 
 			@Override
@@ -39,7 +39,7 @@ public class RubyClassHash
 				switch(args.length) {
 				case 0: return call(receiver, block);
 				case 1: return call(receiver, args[0], block);
-				default: throw super.wrongArgs(args.length);
+				default: throw super.wrongArgs(receiver, args.length);
 				}
 			}
 

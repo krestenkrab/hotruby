@@ -7,7 +7,7 @@ public class TrueExpression extends VariableExpression {
 	public static Expression instance = new TrueExpression();
 
 	private TrueExpression() {
-		super("true");
+		super(-1, "true");
 		// TODO Auto-generated constructor stub
 	}
 

@@ -67,7 +67,7 @@ tokens {
 	   if (expr instanceof FunctionExpression) {
 	   	  FunctionExpression fe = (FunctionExpression)expr;
 		  scope().assignToLocal(fe.getName(), false);
-	   	  expr = new IdentifierExpression(scope(), fe.getName());
+	   	  expr = new IdentifierExpression(fe.line(), scope(), fe.getName());
 	   } else 
 	   if (expr instanceof IdentifierExpression) {
 	   	  VariableExpression e = (VariableExpression)expr;
@@ -180,7 +180,7 @@ statementWithoutModifier returns [Expression expr=null]
 		|	keyword_END LCURLY_BLOCK (expr=compoundStatement | ) RCURLY
 		
 		|	expr=expression	(expr=parallelAssignmentLeftOver[assignToLocal(expr)])?
-		|	REST_ARG_PREFIX	expr=dotAccess[true]	op=operator_ASSIGN	args=mrhs 
+		|	REST_ARG_PREFIX	expr=dotAccess[true]	op=operator_ASSIGN	args=mrhs[null] 
 			{   SequenceExpression lhs = new SequenceExpression();
 				lhs.setRestArg(assignToLocal(expr));
 				expr = new MultiAssignmentExpression(lhs, args); 
@@ -253,7 +253,7 @@ parallelAssignmentLeftOver[Expression first] returns [Expression expr=null]
 			   |done=mlhs_item[lhs])
 			)+
 			
-			(op=operator_ASSIGN	rhs=mrhs
+			(op=operator_ASSIGN	rhs=mrhs[null]
 				{ expr = new MultiAssignmentExpression(lhs, rhs); }
 			|
 				{ expr = lhs; }
@@ -261,8 +261,8 @@ parallelAssignmentLeftOver[Expression first] returns [Expression expr=null]
 			
 		;
 
-mrhs returns[SequenceExpression rhs=new SequenceExpression()]
-{ Expression expr; boolean done=false; final int line = line(); }
+mrhs[SequenceExpression appendTo] returns[SequenceExpression rhs=new SequenceExpression()]
+{ Expression expr; boolean done=false; final int line = line(); if(appendTo!=null) rhs=appendTo; }
 		:	expr=expression	{ rhs.addExpression(expr); }
 			({!done}?
 			COMMA 
@@ -751,16 +751,17 @@ variableCanBeCommand returns[Expression expr=null]
 		; 
 		
 normalVariable returns [Expression expr=null]
-		:   id1:FUNCTION			{ expr=new FunctionExpression(scope(), false, id1.getText()); }
-		|	id4:IDENTIFIER			{ expr=new IdentifierExpression(scope(), id4.getText());}	//this is OK: p = 1; p 1
-		|	id5:CONSTANT			{ expr=new ConstVarExpression(id5.getText());}
+{ int line = line(); }
+		:   id1:FUNCTION			{ expr=new FunctionExpression(line, scope(), false, id1.getText()); }
+		|	id4:IDENTIFIER			{ expr=new IdentifierExpression(line, scope(), id4.getText());}	//this is OK: p = 1; p 1
+		|	id5:CONSTANT			{ expr=new ConstVarExpression(line, id5.getText());}
 		;
 		
 syntaxedVariable returns[Expression expr=null]
-{can_be_command_ = false;}
-		:	id6:INSTANCE_VARIBLE	{expr=new InstanceVarExpression(id6.getText());}
-		|	id7:GLOBAL_VARIBLE		{expr=new GlobalVarExpression(id7.getText());}
-		|	id8:CLASS_VARIBLE		{expr=new ClassVarExpression(id8.getText());}
+{can_be_command_ = false; int line = line(); }
+		:	id6:INSTANCE_VARIBLE	{expr=new InstanceVarExpression(line, id6.getText());}
+		|	id7:GLOBAL_VARIBLE		{expr=new GlobalVarExpression(line, id7.getText());}
+		|	id8:CLASS_VARIBLE		{expr=new ClassVarExpression(line, id8.getText());}
 		; 
 
 string returns [Expression expr=null]
@@ -885,7 +886,8 @@ primaryExpressionCannotBeCommand returns [Expression expr]
 		;
 
 primaryExpressionCanBeCommand returns [Expression expr=null]
-		:	LEADING_COLON2	fun:FUNCTION { expr = new FunctionExpression(scope(), true, fun.getText()); }
+{ int line = line(); }
+		:	LEADING_COLON2	fun:FUNCTION { expr = new FunctionExpression(line, scope(), true, fun.getText()); }
 		|	expr=variableCanBeCommand
 		|	"super"						{ expr = SuperExpression.instance; }
 		|	"yield"						{ expr = YieldExpression.instance; }
@@ -959,13 +961,13 @@ bodyStatement returns[Expression expr=SelfExpression.instance]
 		;
 
 rescueBody [java.util.List<RescueClause> rescues]
-{ int line = line(); Expression body=NilExpression.instance; SequenceExpression args=new SequenceExpression(); String name = null; } 
+{ IdentifierExpression id=null; Expression exp2 = null; int line = line(); Expression body=NilExpression.instance; SequenceExpression args=new SequenceExpression(); String name = null; } 
 	:
 				    
-			    ( args=methodInvocationArgumentWithoutParen[args,false] )?
-			    (ASSOC name=idOrFun { scope().assignToLocal(name, false); } )?
+			    ( exp2=expression { args.addExpression(exp2); } (COMMA args=mrhs[args])? )?
+			    (ASSOC name=idOrFun { scope().assignToLocal(name, false); id = new IdentifierExpression(line, scope(), name); } )?
 			    thenOrTermialOrColon (body=compoundStatement)?
-				{ rescues.add(new RescueClause(line, args, name, body)); }
+				{ rescues.add(new RescueClause(line, args, id, body)); }
 	;
 
 exceptionHandlingExpression returns[Expression expr=null]
@@ -1018,7 +1020,7 @@ caseExpression returns[Expression expr=null]
 } 
 		:	"case" (test=compoundStatement)?
 			(keyword_when 
-				expr1=mrhs	thenOrTermialOrColon 
+				expr1=mrhs[null]	thenOrTermialOrColon 
 				(expr2=compoundStatement
 				{ conds.add(expr1); codes.add(expr2); }	
 				|

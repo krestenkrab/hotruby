@@ -121,7 +121,7 @@ public class InterpCompileContext implements CompileContext, Instructions {
 	public void emit_return() {
 		do_finalizers_before_return();
 		if (iseq.source.code_type() == ISEQ_TYPE_BLOCK) {
-			iseq.add_insn(RETURN);
+			iseq.add_insn(NONLOCAL_RETURN);
 		} else {
 			iseq.add_insn(LEAVE);
 		}
@@ -228,7 +228,7 @@ public class InterpCompileContext implements CompileContext, Instructions {
 	}
 
 	private int upper16(int selpos) {
-		return selpos >>> 8;
+		return (selpos >>> 8) & (0xff);
 	}
 
 	private int lower16(int blockpos) {
@@ -640,7 +640,7 @@ public class InterpCompileContext implements CompileContext, Instructions {
 	private Stack<FinallyBlockInfo> finallys_done = new Stack<FinallyBlockInfo>();
 
 	public void emit_trace(int event, int line) {
-		if (event == TRACE_LINE && last_was_line && line == last_line) {
+		if (event == TRACE_LINE && ((last_was_line && line == last_line) ||  line != -1)) {
 			return;
 		}
 		iseq.add_insn(TRACE, event, upper16(line), lower16(line));
@@ -656,6 +656,11 @@ public class InterpCompileContext implements CompileContext, Instructions {
 	public void emit_le() {
 		int sel = iseq.add_selector("<=");
 		iseq.add_insn(FAST_LE, upper16(sel), lower16(sel));
+	}
+
+	public void emit_ge() {
+		int sel = iseq.add_selector(">=");
+		iseq.add_insn(FAST_GE, upper16(sel), lower16(sel));
 	}
 
 	public void emit_gt() {

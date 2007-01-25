@@ -4,8 +4,8 @@ import com.trifork.hotruby.interp.CompileContext;
 
 public class InstanceVarExpression extends VariableExpression {
 
-	public InstanceVarExpression(String text) {
-		super(text);
+	public InstanceVarExpression(int line, String text) {
+		super(line, text);
 	}
 
 	@Override

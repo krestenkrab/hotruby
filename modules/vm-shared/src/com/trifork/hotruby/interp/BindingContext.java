@@ -319,7 +319,7 @@ public class BindingContext implements Instructions {
 
 					case SETDYNAMIC:
 						dvars.setdynamic(ui(code[pc++]), ui(code[pc++]),
-								stack[--sp]);
+								(IRubyObject)stack[--sp]);
 						continue next_insn;
 
 					case BRANCHUNLESS: {
@@ -513,9 +513,6 @@ public class BindingContext implements Instructions {
 									method = self_methods[selector_pos].get();
 								} else {
 									Selector sel = lexical_bindings.selectors[selector_pos];
-									if (sel.getName().equals("[]=")) {
-										System.out.print("");
-									}
 									method = receiver.do_select(sel);
 								}
 
@@ -749,7 +746,7 @@ public class BindingContext implements Instructions {
 					case NONLOCAL_REDO:
 						throw new NonLocalRedo();
 						
-					case RETURN: {
+					case NONLOCAL_RETURN: {
 						IRubyObject retval = (IRubyObject) stack[--sp];
 						throw new NonLocalReturn(dvars.get_parent() , retval);
 					}
@@ -1421,6 +1418,10 @@ public class BindingContext implements Instructions {
 
 	public Selector getSelector(int sel_idx) {
 		return lexical_bindings.selectors[sel_idx];
+	}
+
+	public ModuleFrame getModuleStack() {
+		return lexical_bindings.getModuleStack();
 	}
 
 }

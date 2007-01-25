@@ -1,6 +1,7 @@
 package com.trifork.hotruby.ast;
 
 import com.trifork.hotruby.interp.CompileContext;
+import com.trifork.hotruby.interp.Instructions;
 
 
 public class AssignmentExpression extends BinaryExpression {
@@ -14,6 +15,8 @@ public class AssignmentExpression extends BinaryExpression {
 	@Override
 	void compile(CompileContext ctx, boolean push) {
 
+		ctx.emit_trace(Instructions.TRACE_LINE, left.line());
+		
 		if (operator.equals("="))
 		{		
 			right.compile(ctx, true);

@@ -57,7 +57,7 @@ public class RubyParser extends RubyParserBase implements ScopeHolder
 	
 	public RubyParser(Reader in, String filename)
 	{
-		this(new RubyLexer(in, filename, 0));
+		this(new RubyLexer(in, filename, 1));
 	}
 	
 	public int get_regexp_options() {

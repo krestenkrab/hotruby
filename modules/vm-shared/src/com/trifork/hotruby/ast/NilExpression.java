@@ -7,7 +7,7 @@ public class NilExpression extends VariableExpression {
 	public static Expression instance = new NilExpression();
 
 	private NilExpression() {
-		super("nil");
+		super(-1, "nil");
 		// TODO Auto-generated constructor stub
 	}
 	

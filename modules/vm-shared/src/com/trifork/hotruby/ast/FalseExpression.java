@@ -7,7 +7,7 @@ public class FalseExpression extends VariableExpression {
 	public static Expression instance = new FalseExpression();
 
 	private FalseExpression() {
-		super("false");
+		super(-1, "false");
 	}
 
 	@Override

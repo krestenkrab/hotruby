@@ -225,14 +225,16 @@ public class RubyLexer extends RubyLexerBase
 		 */
 		
 		//If not in symbol table yet (not assigned or being a parameter), set the type to FUNCTION
-		if (token.getType() == IDENTIFIER && null == here.lookup(token.getText()))
+		if (token.getType() == IDENTIFIER && !last_token_is_colon_with_no_following_space())
 		{
+			if (null == here.lookup(token.getText())) {
 			//System.out.println("Can not find " + token.getText());
 			token.setType(FUNCTION);
+			}
 		}
 		
 	}
-
+	
 	protected boolean expect_heredoc_content()
 	{
 		return (heredoc_delimiters_.size() > 0);
@@ -404,6 +406,9 @@ public class RubyLexer extends RubyLexerBase
 		{
 			switch (token.getType())
 			{
+				case COLON_WITH_NO_FOLLOWING_SPACE:
+					allow_asignment_ = false;
+					break;
 				case RPAREN:
 					allow_asignment_ = true;// def asctime() strftime('%c') end
 					break;

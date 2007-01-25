@@ -10,7 +10,8 @@ public abstract class VariableExpression extends Expression implements MethodDen
 		return name;
 	}
 
-	public VariableExpression(String name) {
+	public VariableExpression(int line, String name) {
+		super(line);
 		this.name = name;
 	}
 

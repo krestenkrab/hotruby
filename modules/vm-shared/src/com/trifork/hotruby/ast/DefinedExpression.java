@@ -7,7 +7,7 @@ public class DefinedExpression extends VariableExpression {
 	public static Expression instance = new DefinedExpression();
 
 	private DefinedExpression() {
-		super("defined?");
+		super(-1, "defined?");
 	}
 
 	@Override

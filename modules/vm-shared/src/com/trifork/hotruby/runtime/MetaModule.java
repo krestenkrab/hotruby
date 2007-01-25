@@ -8,9 +8,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import com.trifork.hotruby.objects.IRubyMethod;
 import com.trifork.hotruby.objects.IRubyModule;
 import com.trifork.hotruby.objects.IRubyObject;
 import com.trifork.hotruby.objects.IRubySymbol;
+import com.trifork.hotruby.runtime.ThreadState.ModuleFrame;
 
 public class MetaModule implements CallContext {
 
@@ -201,7 +203,7 @@ public class MetaModule implements CallContext {
 	}
 
 	private void append_name(StringBuilder sb, String delim) {
-		if (!isObject()) {
+		if (!isObject() && context_meta != null) {
 			context_meta.append_name(sb, delim);
 			sb.append(name);
 			sb.append(delim);
@@ -235,21 +237,46 @@ public class MetaModule implements CallContext {
 		return package_name = sb.toString();
 	}
 
-	Map<String, ConstantAccessor> lex_access_constant = new WeakHashMap<String, ConstantAccessor>();
+	Map<ConstKey, ConstantAccessor> lex_access_constant = new WeakHashMap<ConstKey, ConstantAccessor>();
 
-	public ConstantAccessor getConstantAccessor(String name) {
+	static class ConstKey {
+		String name;
+		ModuleFrame scope;
+		
+		public ConstKey(String name2, ModuleFrame lex_scope) {
+			this.name = name2;
+			this.scope = lex_scope;
+		}
+
+		@Override
+		public int hashCode() {
+			return name.hashCode() + (scope==null?0: scope.hashCode());
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (obj instanceof ConstKey) {
+				ConstKey key = (ConstKey) obj;
+				return name.equals(key.name) && (scope != null ? scope.equals(key.scope) : scope==key.scope);
+			}
+			return false;
+		}
+	}
+	
+	public ConstantAccessor getConstantAccessor(String name, ModuleFrame lex_scope) {
 		if (name.startsWith("::")) {
 			return getRuntime().meta_Object().getConstantAccessor(
-					name.substring(2));
+					name.substring(2), lex_scope);
 		}
 
-		ConstantAccessor result = lex_access_constant.get(name);
+		ConstKey key = new ConstKey(name, lex_scope);
+		ConstantAccessor result = lex_access_constant.get(key);
 		if (result == null) {
-			lex_access_constant.put(name, result = new ConstantAccessor(this,
-					name));
+			lex_access_constant.put(key, result = new ConstantAccessor(this,
+					key));
 		}
 
-		Constant const_var = find_constant(name);
+		Constant const_var = find_constant(name, lex_scope);
 		if (const_var != null) {
 			result.setConstant(const_var);
 		}
@@ -384,29 +411,38 @@ public class MetaModule implements CallContext {
 		return false;
 	}
 
-	protected Constant find_constant(String name) {
-		return find_constant(name, false);
+	protected Constant find_constant(String name, ModuleFrame lex_scope) {
+		Constant found = find_constant(name, false);
+		if (found == null) {
+			for (ModuleFrame scope = lex_scope; scope != null; scope = scope.parent) {
+				found = scope.module.constants.get(name);
+				if (found != null) {
+					break;
+				}
+			}
+		}
+		return found;
 	}
 
-	protected Constant find_constant(String name, boolean recurse) {
+	protected Constant find_constant(String name, boolean recursive_invocation) {
 		Constant result = constants.get(name);
 		if (result != null) {
 			return result;
 		}
 
 		for (MetaModule inc : included) {
-			result = inc.find_constant(name, recurse);
+			result = inc.find_constant(name, recursive_invocation);
 			if (result != null) {
 				return result;
 			}
 		}
 
-		return find_super_constant(name, recurse);
+		return find_super_constant(name, recursive_invocation);
 	}
 
 	// overridden in MetaClass
-	protected Constant find_super_constant(String name, boolean recurse) {
-		if (recurse)
+	protected Constant find_super_constant(String name, boolean recursive_invocation) {
+		if (recursive_invocation)
 			return null;
 		MetaClass module = getRuntime().meta_Module();
 		return module.find_constant(name, true);
@@ -502,7 +538,7 @@ public class MetaModule implements CallContext {
 			}
 		}
 
-		m = m.specialize_for(this);
+		m = m.specialize_for(this, is_module);
 
 		if (selectorClass != null) {
 			getRuntime().gen.make_special_selector(sel, selectorClass,
@@ -669,6 +705,34 @@ public class MetaModule implements CallContext {
 
 	public MetaClass create_singleton_subclass() {
 		throw new InternalError("should not happen");
+	}
+
+	public boolean respond_to_p(String name, boolean includePriv, boolean is_module) {
+
+		RubyMethod m;
+		if (is_module) {
+			m = lookup_module_method(name);
+		} else {
+			m = lookup_instance_method(name, false);
+		}
+		
+		return m != null;
+	}
+	
+	public IRubyMethod method(IRubyObject receiver, String name) {
+
+		RubyMethod m;
+		if (receiver instanceof IRubyModule) {
+			m = lookup_module_method(name);
+		} else {
+			m = lookup_instance_method(name, false);
+		}
+		
+		if (m == null) {
+			throw getRuntime().newNameError("no such method: `"+name+"' in "+this.getName());
+		}
+		
+		return getRuntime().newMethodObject(m, receiver);
 	}
 
 }

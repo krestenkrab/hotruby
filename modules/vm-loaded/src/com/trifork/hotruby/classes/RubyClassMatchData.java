@@ -21,6 +21,19 @@ public class RubyClassMatchData
 			}
 		});
 		
+		meta.register_instance_method("begin", new PublicMethod0() {
+			@Override
+			public IRubyObject call(IRubyObject receiver, RubyBlock block) {
+				return ((RubyMatchData)receiver).begin();
+			}
+		});
+		meta.register_instance_method("end", new PublicMethod0() {
+			@Override
+			public IRubyObject call(IRubyObject receiver, RubyBlock block) {
+				return ((RubyMatchData)receiver).end();
+			}
+		});
+		
 		meta.register_instance_method("to_a", new PublicMethod0() {
 			@Override
 			public IRubyObject call(IRubyObject receiver, RubyBlock block) {

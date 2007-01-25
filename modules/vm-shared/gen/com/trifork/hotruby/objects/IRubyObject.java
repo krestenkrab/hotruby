@@ -35,6 +35,7 @@ public interface IRubyObject
 	IRubyObject fast_to_str(Selector selector);
 	
 	// comparison
+	IRubyObject fast_eq3(IRubyObject arg, Selector selector);
 	IRubyObject fast_eq2(IRubyObject arg, Selector selector);
 	IRubyObject fast_ge(IRubyObject arg, Selector selector);
 	IRubyObject fast_gt(IRubyObject arg, Selector selector);

@@ -196,4 +196,6 @@ public interface CompileContext {
 	void emit_new_range(boolean inclusive);
 
 	void emit_unwrap_raise();
+
+	void emit_ge();
 }

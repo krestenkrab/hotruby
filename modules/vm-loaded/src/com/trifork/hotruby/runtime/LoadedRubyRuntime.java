@@ -11,6 +11,7 @@ import com.trifork.hotruby.objects.IRubyFixnum;
 import com.trifork.hotruby.objects.IRubyFloat;
 import com.trifork.hotruby.objects.IRubyHash;
 import com.trifork.hotruby.objects.IRubyInteger;
+import com.trifork.hotruby.objects.IRubyMethod;
 import com.trifork.hotruby.objects.IRubyObject;
 import com.trifork.hotruby.objects.IRubyRange;
 import com.trifork.hotruby.objects.IRubyRegexp;
@@ -106,6 +107,7 @@ public class LoadedRubyRuntime extends RubyRuntime {
 		new_system_class("Binding");
 		new_system_class("Range");
 		new_system_class("File");
+		new_system_class("Method");
 		
 		RubyString.init(string_class);
 	}
@@ -227,6 +229,12 @@ public class LoadedRubyRuntime extends RubyRuntime {
 	}
 	
 	@Override
+	public IRubyMethod newMethodObject(RubyMethod m, IRubyObject receiver) {
+		return new com.trifork.hotruby.objects.RubyMethod(m, receiver);
+	}
+	
+	
+	@Override
 	public IRubyRange newRange(IRubyObject start, IRubyObject end, boolean inclusive) {
 		return new RubyRange().init(start, end, inclusive ? TRUE : FALSE);
 	}
@@ -262,13 +270,7 @@ public class LoadedRubyRuntime extends RubyRuntime {
 	}
 
 	@Override
-	public RuntimeException newLocalJumpError(String string, NonLocalJump ex) {
-		// TODO: FIX
-		throw new RuntimeException(string);
-	}
-
-	@Override
-	public IRubyRegexp newRegexp(IRubyString string, int flags) {
+	public IRubyRegexp newRegexp(IRubyObject string, int flags) {
 		// TODO Auto-generated method stub
 		return new RubyRegexp(string.asSymbol(), flags);
 	}

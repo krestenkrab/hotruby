@@ -51,7 +51,7 @@ public interface Instructions {
     public static final int SEND = 46; // ok
     public static final int INVOKESUPER = 47;
     public static final int INVOKEBLOCK = 48; // ok
-    public static final int RETURN = 49; // non-local return from block
+    public static final int NONLOCAL_RETURN = 49; // non-local return from block
     public static final int LEAVE = 50; // last insn of code block
     public static final int THROW = 51;
     
@@ -103,6 +103,7 @@ public interface Instructions {
     public static final int FAST_BIT_XOR = 80;
     public static final int FAST_RSHIFT = 81;
     public static final int FAST_EQ3 = 83;
+    public static final int FAST_GE = 84;
     
     public static final int LOCAL_JSR = 100;
     public static final int LOCAL_RETURN = 101;
@@ -158,5 +159,11 @@ public interface Instructions {
 	public static final int TRACE_RAISE = 5;
 	public static final int FLAG_DEFINECLASS_SUPER_CLASS_GIVEN = 1;
 	public static final int FLAG_DEFINECLASS_IS_SINGLETON = 2;
+	
+	public static final int FLAG_NONLOCAL_RETURN = 1;
+	public static final int FLAG_NONLOCAL_REDO = 2;
+	public static final int FLAG_NONLOCAL_NEXT = 4;
+	public static final int FLAG_NONLOCAL_BREAK = 8;
+	public static final int FLAG_NONLOCAL_RETRY = 16;
 	
 }

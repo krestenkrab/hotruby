@@ -27,10 +27,14 @@ public class LexicalBindings implements CallContext {
 		this.lexical_context = lexical_context;
 		this.frame = frame;
 		globals = iseq.getGlobals(lexical_context.getRuntime());
-		constants = iseq.getConstants(lexical_context);
+		constants = iseq.getConstants(lexical_context, frame);
 		selectors = prepare_selectors(iseq.getRuntime(), 
 				iseq.getSelectors());
 		super_method = iseq.getSuperMethod(lexical_context, self_is_module);
+	}
+	
+	public ModuleFrame getModuleStack() {
+		return frame;
 	}
 
 

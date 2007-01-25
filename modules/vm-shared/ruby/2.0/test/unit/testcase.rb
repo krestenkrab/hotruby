@@ -58,7 +58,7 @@ module Test
         end
         return suite
       end
-
+      
       # Runs the individual test method represented by this
       # instance of the fixture, collecting statistics, failures
       # and errors in result.
@@ -70,7 +70,7 @@ module Test
           __send__(@method_name)
         rescue AssertionFailedError => e
           add_failure(e.message, e.backtrace)
-        rescue StandardError, ScriptError
+        rescue StandardError, ScriptError => e
           add_error($!)
         ensure
           begin

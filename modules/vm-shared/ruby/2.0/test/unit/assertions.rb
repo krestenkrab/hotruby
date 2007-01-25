@@ -405,7 +405,7 @@ EOT
           end
 
           def result(parameters)
-            raise "The number of parameters does not match the number of substitutions." if(parameters.size != count)
+            raise "The number of parameters (#{parameters.size}) does not match the number of substitutions (#{count})." if(parameters.size != count)
             params = parameters.dup
             @parts.collect{|e| e == '?' ? params.shift : e.gsub(/\\\?/m, '?')}.join('')
           end

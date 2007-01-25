@@ -46,7 +46,6 @@ cc = C.new
 p cc.m 4
 
 
-
 class AA
    def pp(x)
      p x

@@ -1,4 +1,30 @@
 
+
+module Enumerable
+
+   def detect
+      each { |e| return e if yield(e) }
+      nil
+   end
+
+   def collect 
+     result = []
+     each { |e| result << yield(e) }
+     result
+   end
+
+   def find_all
+      result = Array.new
+      each { |e| 
+        if yield(e) 
+          result << e
+        end 
+      }
+      result
+   end
+
+end
+
 ##
 ## Defines classes in Array that can be written in plain Ruby
 ##
@@ -46,10 +72,6 @@ class Array
       result
    end
    
-   def << (elm)
-      self[size]= elm
-   end
-   
    def <=> (other)
      idx=0
      max = Math.max(self.size, other.size)
@@ -75,7 +97,7 @@ class Array
      case val.class
      when ::Fixnum
         return self.at(val) if length==nil
-        range = val...(val+length)
+        range = (val)...(val+length)        
      when ::Range
         range = val
      else
@@ -85,16 +107,31 @@ class Array
      end 
      
      size = self.size
-     result = Array.new
-     range.each {|idx| 
-        if idx<0
-          idx = size + idx
-        end
-        
-        if idx >= 0 && idx < size
-          result << self.at(idx)
-        end
-     }     
+     first = range.first
+     last = range.last
+
+     if first<0
+        first = size-first
+        first = 0 if first < 0
+     end
+    
+     if last<0
+        last = size-last
+        last = 0 if last < 0
+     end
+    
+  #   p "[] #{val},#{length} => #{range}"
+
+     if !range.exclude_end?
+        last += 1;
+     end
+     
+     result = []
+     
+     pos = first
+     while (pos += 1) < last
+          result << self.at(pos)
+     end
      
      # empty array returns nil
      return *result     
@@ -139,6 +176,18 @@ class Array
       end
    end
    
+   def dup
+     result = []
+     each { |e| result << e }
+     result
+   end
+   
+   def join(sep = $,)
+      result = ""
+      first = true
+      each { |e| result += sep unless first; first = true; result += e }
+      result
+   end
    
 
 end

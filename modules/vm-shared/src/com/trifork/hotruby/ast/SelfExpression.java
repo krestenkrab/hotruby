@@ -7,7 +7,7 @@ public class SelfExpression extends VariableExpression {
 	public static Expression instance = new SelfExpression();
 
 	private SelfExpression() {
-		super("self");
+		super(-1, "self");
 	}
 
 	void compile(CompileContext ctx, boolean push) {

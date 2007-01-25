@@ -13,7 +13,7 @@ public abstract class RubyBaseClassModule
 		instance = (RubyClassModule)this; 
 		super.init(meta);
 	}
-	interface SelectModule { RubyMethod get_RubyClassModule(); }
+	public interface SelectModule { RubyMethod get_RubyClassModule(); }
 	public RubyMethod select(Selector sel) {
 		if(sel instanceof SelectModule) { return ((SelectModule)sel).get_RubyClassModule(); }
 		else { return LoadedRubyRuntime.resolve_method((RubyClass)this,sel,SelectModule.class); }

@@ -20,5 +20,11 @@ public class RubyClassRange
 				return ((RubyRange)receiver).each(block);
 			}
 		});
+		meta.register_instance_method("exclude_end?", new PublicMethod0() {
+			@Override
+			public IRubyObject call(IRubyObject receiver, RubyBlock block) {
+				return bool(((RubyRange)receiver).exclude_end_p());
+			}
+		});
 	}
 }

@@ -158,7 +158,7 @@ public class MethodCallExpression extends Expression {
 				throw new InternalError("should only push 1 element, did push "
 						+ (ctx.get_stack_depth() - st) + ": " + receiver);
 			}
-		} else {
+		} else if (!is_yield) {
 			// self is stored here, before args
 			ctx.emit_push_self();
 		}
@@ -200,6 +200,9 @@ public class MethodCallExpression extends Expression {
 			} else if ("<=".equals(method)) {
 				ctx.emit_le();
 				return;
+			} else if (">=".equals(method)) {
+				ctx.emit_ge();
+				return;
 			} else if (">".equals(method)) {
 				ctx.emit_gt();
 				return;
@@ -232,8 +235,8 @@ public class MethodCallExpression extends Expression {
 		}
 		if (is_yield) {
 			ctx.emit_invoke_block(arg_count, has_rest_arg, push);
-			ctx.emit_swap();
-			ctx.emit_pop();
+			//ctx.emit_swap();
+			//ctx.emit_pop();
 
 		} else if (is_super) {
 			ctx.emit_supersend(arg_count, has_rest_arg, has_block_arg,

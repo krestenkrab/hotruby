@@ -7,7 +7,7 @@ public class RedoExpression extends VariableExpression {
 	public static Expression instance = new RedoExpression();
 
 	private RedoExpression() {
-		super("redo");
+		super(-1, "redo");
 		// TODO Auto-generated constructor stub
 	}
 

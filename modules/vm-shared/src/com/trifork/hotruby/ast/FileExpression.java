@@ -7,7 +7,7 @@ public class FileExpression extends VariableExpression {
 	private String file;
 
 	public FileExpression(String text) {
-		super("__FILE__");
+		super(-1, "__FILE__");
 		this.file = text;
 	}
 

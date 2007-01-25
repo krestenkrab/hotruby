@@ -53,7 +53,7 @@ public class MethodCode extends RubyCode {
 
 	public void addBlockParameter(String name) {
 		super.assignToLocal(name, true);
-		parms.add(new BlockArgExpression(new IdentifierExpression(this, name)));
+		parms.add(new BlockArgExpression(new IdentifierExpression(-1, this, name)));
 		parm_names.add(name);
 		has_block_parm = true;
 	}
@@ -71,7 +71,7 @@ public class MethodCode extends RubyCode {
 
 			parm_names.add(name);
 			super.assignToLocal(name, true);
-			parms.add(new RestArgExpression(new IdentifierExpression(this, name)));
+			parms.add(new RestArgExpression(new IdentifierExpression(-1, this, name)));
 
 		has_rest_parm = true;
 	}
@@ -84,11 +84,11 @@ public class MethodCode extends RubyCode {
 		super.assignToLocal(name, true);
 		if (expr == null) {
 			parm_names.add(name);
-			parms.add(new IdentifierExpression(this, name));
+			parms.add(new IdentifierExpression(-1, this, name));
 			min_arg_count += 1;
 		} else {
 			parm_names.add(name);
-			parms.add(new IdentifierExpression(this, name));
+			parms.add(new IdentifierExpression(-1, this, name));
 			optionals.add(expr);
 		}
 	}

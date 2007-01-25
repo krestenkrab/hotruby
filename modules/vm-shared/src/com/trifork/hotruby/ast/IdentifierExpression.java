@@ -6,8 +6,8 @@ public class IdentifierExpression extends VariableExpression {
 
 	private LocalVariableAccess ref;
 
-	public IdentifierExpression(RubyCode here, String text) {
-		super(text);
+	public IdentifierExpression(int line, RubyCode here, String text) {
+		super(line, text);
 		ref = here.lookup(text);
 		if (ref == null) {
 			new Throwable("TRACE").printStackTrace();

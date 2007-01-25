@@ -7,7 +7,7 @@ public class RetryExpression extends VariableExpression {
 	public static Expression instance = new RetryExpression();
 
 	private RetryExpression() {
-		super("retry");
+		super(-1, "retry");
 		// TODO Auto-generated constructor stub
 	}
 

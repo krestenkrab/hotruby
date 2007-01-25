@@ -32,7 +32,7 @@ public class RubyRange extends RubyBaseRange {
 
 	private static final IRubyFixnum FIX0 = runtime.newFixnum(0);
 
-	private IRubyObject first;
+	IRubyObject first;
 
 	private IRubyObject last;
 
@@ -121,7 +121,7 @@ public class RubyRange extends RubyBaseRange {
 					return this;
 				}
 
-				curr = curr.do_select(SEL_SUCC).call(curr, (RubyBlock) null);
+				curr = curr.do_select(SEL_SUCC.get()).call(curr, (RubyBlock) null);
 			}
 
 		} while (false);
@@ -131,5 +131,13 @@ public class RubyRange extends RubyBaseRange {
 	private boolean range_equals(IRubyObject o1, IRubyObject o2) {
 		IRubyObject cmp_result = o1.fast_cmp(o2, SEL_CMP);
 		return RubyInteger.mm_induced_from(cmp_result).intValue() == 0;
+	}
+
+	public boolean include_last() {
+		return include_last;
+	}
+
+	public boolean exclude_end_p() {
+		return !include_last;
 	}
 }

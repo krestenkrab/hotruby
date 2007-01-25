@@ -4,8 +4,8 @@ import com.trifork.hotruby.interp.CompileContext;
 
 public class GlobalVarExpression extends VariableExpression {
 
-	public GlobalVarExpression(String text) {
-		super(text);
+	public GlobalVarExpression(int line, String text) {
+		super(line, text);
 		// TODO Auto-generated constructor stub
 	}
 	

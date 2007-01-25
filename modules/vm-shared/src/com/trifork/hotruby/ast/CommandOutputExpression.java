@@ -16,7 +16,7 @@ public class CommandOutputExpression extends Expression {
 		SequenceExpression args = new SequenceExpression();
 		args.addExpression(string);
 		MethodCallExpression mc = new MethodCallExpression(null, 0,
-				new ConstVarExpression("::Kernel"), "command", args, null, true);
+				new ConstVarExpression(-1, "::Kernel"), "command", args, null, true);
 
 		mc.compile(ctx, push);
 	}

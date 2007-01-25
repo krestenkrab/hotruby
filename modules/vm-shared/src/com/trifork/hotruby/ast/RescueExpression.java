@@ -67,6 +67,9 @@ public class RescueExpression extends Expression {
 		
 		ctx.emit_unwrap_raise();
 		
+		ctx.emit_dup();
+		ctx.emit_setglobal("$!");
+		
 		int ex = ctx.alloc_temp(1);
 		ctx.emit_setlocal(ex);
 
@@ -101,6 +104,12 @@ public class RescueExpression extends Expression {
 
 			ctx.mark(this_clause);
 
+			if (clause.var != null) {
+				ctx.emit_getglobal("$!");
+				clause.var.compile_assignment(ctx, false);
+			}
+			
+			
 			compile_with_finally(ctx, clause.body, ensure_label, push);
 			assert ctx.get_stack_depth() == depth_before_next_clause
 					+ (push ? 1 : 0);

@@ -22,5 +22,6 @@ public abstract class Selector implements CallContext {
 	}
 
 	abstract void set(Selector selector);
+	public abstract Selector get();
 
 }

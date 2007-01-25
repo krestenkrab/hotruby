@@ -9,6 +9,7 @@ import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -28,6 +29,7 @@ import com.trifork.hotruby.objects.IRubyFixnum;
 import com.trifork.hotruby.objects.IRubyFloat;
 import com.trifork.hotruby.objects.IRubyHash;
 import com.trifork.hotruby.objects.IRubyInteger;
+import com.trifork.hotruby.objects.IRubyMethod;
 import com.trifork.hotruby.objects.IRubyModule;
 import com.trifork.hotruby.objects.IRubyObject;
 import com.trifork.hotruby.objects.IRubyProc;
@@ -324,8 +326,11 @@ public abstract class RubyRuntime {
 	public abstract IRubyObject unmarshalModuleFrom(UnmarshalStream stream)
 			throws IOException;
 
-	public abstract RuntimeException newLocalJumpError(String string,
-			NonLocalJump ex);
+	public RuntimeException newLocalJumpError(String string,
+			NonLocalJump ex) {
+		ConstantAccessor ca = LOCAL_JUMP_ERROR;
+		return newRaiseException(ca, string);
+	}
 
 	
 	public RaisedException newNoMethodError(String string)
@@ -350,7 +355,7 @@ public abstract class RubyRuntime {
 
 	public abstract IRubyHash newHash();
 
-	public abstract IRubyRegexp newRegexp(IRubyString string, int flags);
+	public abstract IRubyRegexp newRegexp(IRubyObject string, int flags);
 
 	public abstract IRubyRegexp newRegexp(String string, int flags);
 
@@ -474,6 +479,7 @@ public abstract class RubyRuntime {
 	private ConstantAccessor NAME_ERROR;
 	private ConstantAccessor STANDARD_ERROR;
 	private ConstantAccessor TYPE_ERROR;
+	private ConstantAccessor LOCAL_JUMP_ERROR;
 
 	private void shared_init() {
 		trace_func = null;
@@ -490,19 +496,22 @@ public abstract class RubyRuntime {
 
 		init_properties();
 
-		load("core.rb", getObject());
-		
+		// create state variables for known classes
+		NO_METHOD_ERROR = meta_Object().getConstantAccessor("NoMethodError", null);
+		NAME_ERROR = meta_Object().getConstantAccessor("NameError", null);
+		STANDARD_ERROR = meta_Object().getConstantAccessor("StandardError", null);
+		ARGUMENT_ERROR = meta_Object().getConstantAccessor("ArgumentError", null);
+		TYPE_ERROR = meta_Object().getConstantAccessor("TypeError", null);
+		RUNTIME_ERROR = meta_Object().getConstantAccessor("RuntimeError", null);
+		LOCAL_JUMP_ERROR = meta_Object().getConstantAccessor("LocalJumpError", null);
+
 		this.select_new = getSelector(meta_Object(), "new");
 		this.select_to_str = getSelector(meta_Object(), "to_str");
 		this.select_backtrace = getSelector(meta_Object(), "backtrace");
+
+		load("core.rb", getObject());
 		
-		// create state variables for known classes
-		NO_METHOD_ERROR = meta_Object().getConstantAccessor("NoMethodError");
-		NAME_ERROR = meta_Object().getConstantAccessor("NameError");
-		STANDARD_ERROR = meta_Object().getConstantAccessor("StandardError");
-		ARGUMENT_ERROR = meta_Object().getConstantAccessor("ArgumentError");
-		TYPE_ERROR = meta_Object().getConstantAccessor("TypeError");
-		RUNTIME_ERROR = meta_Object().getConstantAccessor("RuntimeError");
+		
 	}
 
 	private void init_properties() {
@@ -526,6 +535,9 @@ public abstract class RubyRuntime {
 		Global gpath = getGlobal("$:");
 		gpath.set(arr);
 
+		getGlobal("$/").set(newString("\n"));
+		getGlobal("$,").set(newString(""));
+		
 		IRubyArray arr2 = newArray();
 		arr2.add(newString("core.rb"));
 
@@ -635,7 +647,7 @@ public abstract class RubyRuntime {
 		StringReader sr = new StringReader(text);
 		RubyParser parser = new RubyParser(sr, filename, first_line);
 
-		System.out.println("eval: " + text);
+		// System.out.println("eval: " + text);
 
 		RubyCode code;
 		try {
@@ -724,4 +736,16 @@ public abstract class RubyRuntime {
 		IRubyObject arr = ruby_exception.do_select(select_backtrace).call(ruby_exception);
 		return (IRubyArray) arr;
 	}
+
+	public RaisedException newRuntimeError(String string) {
+		return newRuntimeError(newString(string));
+	}
+	
+	List<IRubyProc> exit_handlers = new ArrayList<IRubyProc>();
+	
+	public void register_at_exit(IRubyProc proc) {
+		exit_handlers.add(proc);
+	}
+
+	public abstract IRubyMethod newMethodObject(RubyMethod m, IRubyObject receiver);
 }

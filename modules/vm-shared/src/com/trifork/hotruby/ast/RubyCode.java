@@ -60,6 +60,7 @@ public abstract class RubyCode {
 	}
 
 	public void assignToLocal(String name, boolean isParmDecl) {
+		
 		if (isParmDecl) {
 
 			for (LocalVariable l : locals) {
@@ -269,12 +270,13 @@ public abstract class RubyCode {
 		special_methods.add("eval");
 		special_methods.add("local_variables");
 		special_methods.add("binding");
+		special_methods.add("block_given?");
 	}
 	
 	public void method_call_here(String fname) {
 		if (special_methods.contains(fname)) {
 			
-			System.out.println("call to "+fname+" in "+this);
+		//	System.out.println("call to "+fname+" in "+this);
 			
 			this.this_code_calls_eval = true;
 		}

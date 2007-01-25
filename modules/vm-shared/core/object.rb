@@ -3,11 +3,6 @@
 
 p 'loading object.rb'
 
-module Module
-   def private
-   end
-end
-
 class Object
    
    def include_class(class_name)

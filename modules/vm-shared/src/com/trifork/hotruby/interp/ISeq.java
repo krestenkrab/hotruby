@@ -8,6 +8,7 @@ import com.trifork.hotruby.runtime.NonLocalJump;
 import com.trifork.hotruby.runtime.RubyIvarAccessor;
 import com.trifork.hotruby.runtime.RubyMethodAccessor;
 import com.trifork.hotruby.runtime.RubyRuntime;
+import com.trifork.hotruby.runtime.ThreadState.ModuleFrame;
 
 public class ISeq implements Instructions {
 
@@ -26,6 +27,8 @@ public class ISeq implements Instructions {
 
 	public final String[] ivars;
 
+	public final int non_local_exits;
+
 	public ISeq(ISeqBuilder builder) {
 		this.runtime = builder.runtime;
 		this.code = builder.getCode();
@@ -37,6 +40,7 @@ public class ISeq implements Instructions {
 		this.super_access = builder.calls_super;
 		this.source = builder.source;
 		this.handlers = builder.getExceptionHanders();
+		non_local_exits = builder.non_local_exit;
 		num_locals = source.getNumLocals() + builder.getTemps();
 		num_dynamics = source.getNumDynamics();
 		min_parm_count = source.getMinParmCount();
@@ -142,10 +146,10 @@ public class ISeq implements Instructions {
 		return result;
 	}
 
-	public ConstantAccessor[] getConstants(MetaModule module) {
+	public ConstantAccessor[] getConstants(MetaModule module, ModuleFrame lex_scope) {
 		ConstantAccessor[] result = new ConstantAccessor[constants.length];
 		for (int i = 0; i < result.length; i++) {
-			result[i] = module.getConstantAccessor(constants[i]);
+			result[i] = module.getConstantAccessor(constants[i], lex_scope);
 		}
 		return result;
 	}

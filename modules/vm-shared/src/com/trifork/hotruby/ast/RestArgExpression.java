@@ -31,7 +31,11 @@ public class RestArgExpression extends Expression {
 	
 	@Override
 	public void compile_assignment(CompileContext ctx, boolean push) {
-		rest.compile_assignment(ctx, push);
+		if (rest == null) {
+			ctx.emit_pop();
+		} else {
+			rest.compile_assignment(ctx, push);
+		}
 	}
 
 

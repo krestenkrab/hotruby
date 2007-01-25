@@ -73,7 +73,7 @@ public abstract class RubyBaseClassRange
 			}
 		);
 	}
-	interface SelectRange { RubyMethod get_RubyClassRange(); }
+	public interface SelectRange { RubyMethod get_RubyClassRange(); }
 	public RubyMethod select(Selector sel) {
 		if(sel instanceof SelectRange) { return ((SelectRange)sel).get_RubyClassRange(); }
 		else { return LoadedRubyRuntime.resolve_method((RubyClass)this,sel,SelectRange.class); }

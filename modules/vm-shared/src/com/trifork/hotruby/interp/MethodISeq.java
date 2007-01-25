@@ -16,14 +16,24 @@ public class MethodISeq extends RubyMethod {
 		return context.method_template.ivars;
 	}
 	
-	public RubyMethod specialize_for(MetaModule module) {
+	MethodISeq bind(MetaModule module, boolean is_module) {
 		if (module == context.dynamic_context) {
 			return this;
 		} 
 			
-		return new MethodCompiler(context.getRuntime()).compile(this);
+		BindingContext ctx = context.bind(module, is_module);
 
-//		return new MethodISeq(context.bind(module), locals_when_bound, name);
+		return new MethodISeq(ctx, locals_when_bound, name);		
+	}
+	
+	public RubyMethod specialize_for(MetaModule module, boolean is_module) {
+		if (module == context.dynamic_context) {
+			return this;
+		} 
+			
+		MethodCompiler mc = new MethodCompiler(context.getRuntime());
+		
+		return mc.compile(bind(module, is_module));
 	}
 	
 	private final BindingContext context;
