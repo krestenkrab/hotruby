@@ -94,8 +94,12 @@ public class RubyString
 		throw LoadedRubyRuntime.instance.newTypeError("object is not string");
 	}
 
-	// TODO: Kresten, der må være noget smart man skal gøre her?
 	public IRubyObject op_eq2(IRubyObject arg) {
 		return bool(arg instanceof RubyString && ((RubyString)arg).value.equals(value));
+	}
+	
+	@Override
+	public IRubyObject fast_eq2(IRubyObject arg, Selector selector) {
+		return op_eq2(arg);
 	}
 }
