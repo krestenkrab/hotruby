@@ -208,6 +208,9 @@ public class TestRegularExpressionTranslator {
 		assertMatch("a[a-c\\-]c", "12a-c45").withResult("a-c");
 		assertMatch("a[abc\\.]c", "12a.c45").withResult("a.c");
 		assertMatch("a[abc.]c", "12a.c45").withResult("a.c");
+		assertMatch("a[ab\\\\c]c", "12a\\c45").withResult("a\\c");
+		assertMatch("a[ab\\\\d]c", "12abc45").withResult("abc");
+		assertNoMatch("a[ab\\d]c", "12adc45");
 
 		// POSIX character classes
 		assertMatch("a[b[:digit:]]c", "12a3c45").withResult("a3c");

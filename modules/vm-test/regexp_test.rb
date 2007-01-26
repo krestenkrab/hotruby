@@ -157,6 +157,9 @@ class RegExpTest < Test::Unit::TestCase
 		assert_match ['a-c'], /a[a-c\-]c/, '12a-c45'
 		assert_match ['a.c'], /a[abc\.]c/, '12a.c45'
 		assert_match ['a.c'], /a[abc.]c/, '12a.c45'
+		assert_match ['a\\c'], /a[ab\\c]c/, '12a\\c45'
+		assert_match ['abc'], /a[ab\d]c/, '12abc45'
+		assert_no_match /a[ab\d]c/, '12adc45'
 		
 		# POSIX character classes
 		assert_match ['a3c'], /a[b[:digit:]]c/, '12a3c45'
