@@ -92,7 +92,7 @@ public class RegularExpressionTranslator {
 
 	private boolean parseRegularExpression(boolean inGroup)
 	{
-		while(pos < originalExp.length())
+		while(!finished())
 		{
 			switch(current())
 			{
@@ -137,7 +137,7 @@ public class RegularExpressionTranslator {
 	 */
 	private boolean characterClass()
 	{
-		assert(current() == '[');
+		assert current() == '[';
 		append('[');
 		advanceAndExpectMore();
 		
@@ -241,7 +241,7 @@ public class RegularExpressionTranslator {
 	 */
 	private boolean repetition()
 	{
-		assert(current() == '{');
+		assert current() == '{';
 		append('{');
 		advanceAndExpectMore();
 		if (!number())
@@ -295,21 +295,18 @@ public class RegularExpressionTranslator {
 	 */
 	private boolean group()
 	{
-		assert(current() == '(');
+		assert current() == '(';
 		advanceAndExpectMore();
 		if (current() == '?')
 		{
-			extension();
+			return extension();
 		}
-		else
+		append('(');
+		if (!parseRegularExpression(true))
 		{
-			append('(');
-			if (!parseRegularExpression(true))
-			{
-				return false;
-			}
-			append(')');
+			return false;
 		}
+		append(')');
 		return true;
 	}
 	
@@ -318,7 +315,7 @@ public class RegularExpressionTranslator {
 	 */
 	private void escape()
 	{
-		assert(current() == '\\');
+		assert current() == '\\';
 		advanceAndExpectMore();
 		switch(current())
 		{
@@ -367,105 +364,110 @@ public class RegularExpressionTranslator {
 		append(current());
 	}
 
-	//
-	// Extensions
-	//
-	
 	/**
 	 * (? extension)
 	 */
-	private void extension()
+	private boolean extension()
 	{
-		assert(current() == '?');
+		assert current() == '?';
 		advanceAndExpectMore();
 		switch(current())
 		{
 		case ':': 
+			return extension("(?:"); // Group without backreference
 		case '=': 
+			return extension("(?="); // Zero-width positive lookahead
 		case '!': 
-		case '<': 
+			return extension("(?!"); // Zero-width negative lookahead
 		case '>': 
-			lookahead();
-			break;
+			return extension("(?>"); // Independent regular expresseion
 		case '#':
-			comment();
-			break;
+			return comment(); // Comment
 		default:
-			throw new UnsupportedOperationException("Not supported yet: " + current());
+			throw new IllegalRegularExpressionException("Undefined (?...) sequence: " + originalExp);
 		}
+	}
+
+	private boolean extension(String javaExtension)
+	{
+		assert current() == ':';
+		advanceAndExpectMore();
+		append(javaExtension);
+		if (!parseRegularExpression(true))
+		{
+			return false;
+		}
+		append(')');
+		return true;
 	}
 
 	/**
 	 * (?# comment )
 	 *
 	 */
-	private void comment()
+	private boolean comment()
 	{
-		assert(current() == '#');
+		assert current() == '#';
 		while (current() != ')')
 		{
 			advanceAndExpectMore();
 		}
-	}
-	
-	/**
-	 * (?= lookahead )
-	 * (?! lookahead )
-	 * (?<= lookahead )
-	 * (?<! lookahead )
-	 * (?: non-capture group )
-	 *
-	 */
-	private void lookahead()
-	{
-		assert current() == '=' || current() == '!' || current() == '<' || current() == '>' || current() == ':';
-		append('(');
-		append('?');
-		if (!parseRegularExpression(true))
-		{
-			return;
-		}
-		append(')');
+		return true;
 	}
 	
 	//
 	// Helper methods
 	//
 	
+	/**
+	 * True if the input continues with the given string. Also, if that is the
+	 * case, the input position is advanced to just after the given string.
+	 */
 	private boolean continues(String s)
 	{
-		if (pos + s.length() >= originalExp.length())
+		int length = s.length();
+		if (!originalExp.regionMatches(pos, s, 0, length))
 		{
 			return false;
 		}
-		for (int i=0; i<s.length(); i++)
-		{
-			if (originalExp.charAt(pos + i) != s.charAt(i))
-			{
-				return false;
-			}
-		}
-		pos += s.length();
+		advance(length);
 		return true;
 	}
 	
+	/**
+	 * Character at current position in input.
+	 */
 	private char current()
 	{
 		return originalExp.charAt(pos);
 	}
 
+	/**
+	 * Advances 1 character in input.
+	 */
 	private void advance()
 	{
-		pos++;
+		advance(1);
+	}
+	
+	/**
+	 * Advances "length" characters in input.
+	 */
+	private void advance(int length)
+	{
+		pos += length;
 	}
 
+	/**
+	 * Errs if at the end of input, advances 1 character in input otherwise.
+	 */
 	private void advanceAndExpectMore()
 	{
-		pos++;
-		if (pos >= originalExp.length())
+		if (!hasMore())
 		{
 			throw new IllegalRegularExpressionException("Unexpected end of regular expression");
 		}
+		advance();
 	}
 	
 	/**
@@ -475,12 +477,26 @@ public class RegularExpressionTranslator {
 	{
 		return pos + 1 < originalExp.length();
 	}
+	
+	/**
+	 * True if we have passed the last character in input.
+	 */
+	private boolean finished()
+	{
+		return pos >= originalExp.length();
+	}
 
+	/**
+	 * Appends given char to output.
+	 */
 	private void append(char c)
 	{
 		newExp.append(c);
 	}
 	
+	/**
+	 * Appends given string to output.
+	 */
 	private void append(String s)
 	{
 		newExp.append(s);

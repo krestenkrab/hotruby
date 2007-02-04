@@ -125,15 +125,6 @@ public class TestRegularExpressionTranslator {
 	}
 	
 	@Test
-	public void comment()
-	{
-		assertMatch("a(?# my comment )bc", "abc").withResult("abc");
-		assertMatch("a(?#my comment)bc", "abc").withResult("abc");
-		assertMatch("a(?# my comment \\)bc", "abc").withResult("abc");
-		assertMatch("a(?# my comment ()bc", "abc").withResult("abc");
-	}
-	
-	@Test
 	public void backreference()
 	{
 		assertNoMatch("a(b)\\1c", "abc");
@@ -282,6 +273,40 @@ public class TestRegularExpressionTranslator {
 	    assertNoMatch("\\Gabc", "12abc34");
 	    assertMatch("\\Gabc", "abc34").withResult("abc");
 	    assertNoMatch("a\\Gbc", "12abc34");
+	}
+	
+	@Test
+	public void extensions()
+	{
+		// Comment
+		assertMatch("a(?# my comment )bc", "abc").withResult("abc");
+		assertMatch("a(?#my comment)bc", "abc").withResult("abc");
+		assertMatch("a(?# my comment \\)bc", "abc").withResult("abc");
+		assertMatch("a(?# my comment ()bc", "abc").withResult("abc");
+
+	    // Group without backreference
+	    assertMatch("(a)(?:b)(c)", "12abc34").withResult("abc", "a", "c");
+
+	    // Zero-width positive lookahead
+	    assertMatch("[a-z]+(?=,)", "12a,c34").withResult("a");
+	    assertNoMatch("[a-z]+(?=,)", "12ac34");
+
+	    // Zero-width negative lookahead
+	    assertMatch("a(?!c)", "12abc34").withResult("a");
+	    assertNoMatch("a(?!b)", "12abc34");
+
+	    // Independent regular expression
+	    assertMatch("a(?>b*)c", "12abbc45").withResult("abbc");
+	    assertMatch("a(?>(b)*)c", "12abbc45").withResult("abbc", "b");
+	    
+	    // Unknown extension
+	    try {
+	    	assertNoMatch("a(?<b*)c", "12abc45");
+	    	fail();
+	    } catch (IllegalRegularExpressionException e)
+	    {
+	    	// Should go here
+	    }
 	}
 	
 	private void assertNoMatch(String regex, String s)

@@ -89,13 +89,6 @@ class RegExpTest < Test::Unit::TestCase
     assert_no_match /ab{2, }c/, 'abbc'
   end
   
-  def test_comment
-    assert_match ['abc'], /a(?# my comment )bc/, 'abc'
-    assert_match ['abc'], /a(?#my comment)bc/, 'abc'
-    assert_match ['abc'], /a(?# my comment \)bc/, 'abc'
-    assert_match ['abc'], /a(?# my comment ()bc/, 'abc'
-  end
-  
   def test_backreference
     assert_no_match /a(b)\1c/, 'abc'
     assert_match ['abbc', 'b'], /a(b)\1c/, 'abbc'
@@ -227,6 +220,34 @@ class RegExpTest < Test::Unit::TestCase
     assert_no_match /\Gabc/, '12abc34'
     assert_match ['abc'], /\Gabc/, 'abc34'
 		assert_no_match /a\Gbc/, '12abc34'
+  end
+  
+  def test_extensions
+    # Comment
+    assert_match ['abc'], /a(?# my comment )bc/, 'abc'
+    assert_match ['abc'], /a(?#my comment)bc/, 'abc'
+    assert_match ['abc'], /a(?# my comment \)bc/, 'abc'
+    assert_match ['abc'], /a(?# my comment ()bc/, 'abc'
+
+    # Group without backreference
+    assert_match ['abc', 'a', 'c'], /(a)(?:b)(c)/, '12abc34'
+    
+    # Zero-width positive lookahead
+    assert_match ['a'], /[a-z]+(?=,)/, '12a,c34'
+    assert_no_match /[a-z]+(?=,)/, '12ac34'
+    
+    # Zero-width negative lookahead
+    assert_match ['a'], /a(?!c)/, '12abc34'
+    assert_no_match /a(?!b)/, '12abc34'
+    
+    # Independent regular expression
+    assert_match ['abbc'], /a(?>b*)c/, '12abbc45'
+    assert_match ['abbc', 'b'], /a(?>(b)*)c/, '12abbc45'
+
+    # Unknown extension
+    assert_raise(RegexpError) do
+      Regexp.new('a(?<b*)c');
+    end
   end
   
   private
