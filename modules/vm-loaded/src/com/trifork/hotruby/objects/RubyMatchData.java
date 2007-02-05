@@ -51,6 +51,10 @@ public class RubyMatchData extends RubyBaseMatchData {
 			return LoadedRubyRuntime.NIL;
 		}
 		CharSequence result_sequence = match.group(val);
+        if (result_sequence == null)
+        {
+          return LoadedRubyRuntime.NIL;
+        }
 		return LoadedRubyRuntime.instance.newString(result_sequence);
 	}
 
