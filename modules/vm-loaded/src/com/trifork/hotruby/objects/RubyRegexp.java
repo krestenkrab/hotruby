@@ -61,6 +61,6 @@ public class RubyRegexp extends RubyBaseRegexp {
       }
       return new RubyFixnum(match.start());
     }
-    return new RubyFixnum(0);
+    return LoadedRubyRuntime.NIL;
   }
 }

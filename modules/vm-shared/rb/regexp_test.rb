@@ -64,10 +64,10 @@ class RegExpTest < Test::Unit::TestCase
     assert_no_match(/ab{2,4}c/, 'abbbbbc')
 
     # If any whitespace is included, it never matches
-    # TODO assert_no_match(/ab{2 ,4}c/, 'abbc')
-    # TODO assert_no_match(/ab{ 2,4}c/, 'abbc')
-    # TODO assert_no_match(/ab{2, 4}c/, 'abbc')
-    # TODO assert_no_match(/ab{2,4 }c/, 'abbc')
+    assert_no_match(/ab{2 ,4}c/, 'abbc')
+    assert_no_match(/ab{ 2,4}c/, 'abbc')
+    assert_no_match(/ab{2, 4}c/, 'abbc')
+    assert_no_match(/ab{2,4 }c/, 'abbc')
   end
   
   def test_repetition_exact
@@ -76,8 +76,8 @@ class RegExpTest < Test::Unit::TestCase
     assert_no_match(/ab{2}c/, 'abbbc')
     
     # If any whitespace is included, it never matches
-    # TODO assert_no_match(/ab{ 2}c/, 'abbc')
-    # TODO assert_no_match(/ab{2 }c/, 'abbc')
+    assert_no_match(/ab{ 2}c/, 'abbc')
+    assert_no_match(/ab{2 }c/, 'abbc')
   end
   
   def test_repetition_minimum
@@ -86,9 +86,9 @@ class RegExpTest < Test::Unit::TestCase
     assert_match(['abbbbc'], /ab{2,}c/, 'abbbbc')
 
     # If any whitespace is included, it never matches
-    # TODO assert_no_match(/ab{ 2,}c/, 'abbc')
-    # TODO assert_no_match(/ab{2 ,}c/, 'abbc')
-    # TODO assert_no_match(/ab{2, }c/, 'abbc')
+    assert_no_match(/ab{ 2,}c/, 'abbc')
+    assert_no_match(/ab{2 ,}c/, 'abbc')
+    assert_no_match(/ab{2, }c/, 'abbc')
   end
   
   def test_backreference
