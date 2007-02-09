@@ -1,0 +1,2 @@
+== Bugs found with this suite
+* Dir.chdir and '/' => ruby-core: 8914

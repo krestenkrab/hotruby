@@ -1,0 +1,44 @@
+######################################################################
+# tc_chdir.rb
+#
+# Test case for the Dir.chdir class method.
+######################################################################
+require "test/unit"
+
+class TC_Dir_Chdir_Class < Test::Unit::TestCase
+   def setup
+      @pwd      = Dir.pwd
+      @old_home = ENV["HOME"] || ENV["LOGDIR"]
+      ENV["HOME"] = @pwd
+   end
+
+   def test_chdir_basic
+      assert_respond_to(Dir, :chdir)
+      assert_nothing_raised{ Dir.chdir }
+      assert_nothing_raised{ Dir.chdir(@pwd) }
+      assert_nothing_raised{ Dir.chdir(@pwd){} }
+   end
+
+   def test_chdir
+      assert_equal(0, Dir.chdir(@pwd))
+      assert_nothing_raised{ Dir.chdir }
+      assert_equal(@pwd, Dir.pwd)
+   end
+
+   def test_chdir_block
+      assert_nothing_raised{ Dir.chdir{ @old_home } }
+      assert_equal(@pwd, Dir.pwd)
+   end
+
+   def test_chdir_expected_errors
+      assert_raises(ArgumentError){ Dir.chdir(@pwd, @pwd) }
+      assert_raises(TypeError){ Dir.chdir(1) }
+
+      ENV["HOME"] = "bogus"
+      assert_raises(Errno::ENOENT){ Dir.chdir }
+   end
+
+   def teardown
+      @pwd = nil
+   end
+end
