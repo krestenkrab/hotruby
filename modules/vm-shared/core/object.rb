@@ -5,6 +5,24 @@ p 'loading object.rb'
 
 class Object
    
+  def =~(anObject)
+     false
+  end
+  
+  def extend(klass)
+     self
+  end
+
+  def not
+    nil
+  end
+
+  MAIN = Object.new
+  def MAIN.inspect
+    "main"
+  end
+
+   
    def include_class(class_name)
      classes = class_name.to_a
      

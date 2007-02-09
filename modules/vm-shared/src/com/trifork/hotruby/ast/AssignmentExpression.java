@@ -19,8 +19,14 @@ public class AssignmentExpression extends BinaryExpression {
 		
 		if (operator.equals("="))
 		{		
-			right.compile(ctx, true);
-			left.compile_assignment(ctx, push);
+			if (right instanceof RestArgExpression) {
+				((RestArgExpression)right).compile(ctx, true, 0);
+				ctx.emit_java_array_at(0);
+				left.compile_assignment(ctx, push);
+			} else {
+				right.compile(ctx, true);
+				left.compile_assignment(ctx, push);
+			}
 			return;
 		}
 		

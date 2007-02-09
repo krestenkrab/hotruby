@@ -53,12 +53,12 @@ public abstract class RubyBaseClassArray extends RubyClass {
 				return ((RubyArray) receiver).at(idx);
 			}
 		});
-		meta.register_instance_method("[]", new PublicMethod1() {
-			public IRubyObject call(IRubyObject receiver, IRubyObject idx,
-					RubyBlock b) {
-				return ((RubyArray) receiver).at_x(idx);
-			}
-		});
+//		meta.register_instance_method("[]", new PublicMethod1() {
+//			public IRubyObject call(IRubyObject receiver, IRubyObject idx,
+//					RubyBlock b) {
+//				return ((RubyArray) receiver).at_x(idx);
+//			}
+//		});
 	}
 
 	public interface SelectArray {

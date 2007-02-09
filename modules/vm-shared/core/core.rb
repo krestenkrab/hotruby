@@ -19,6 +19,10 @@ class Class
 end
 
 class Exception
+
+  def Exception.exception( msg=nil )
+    self.new(msg)
+  end
   
   def initialize(message=nil)
     @message = message
@@ -161,7 +165,15 @@ class Array
    end
 end
 
+module Comparable
+
+end
+
 class String
+
+  def to_i
+     Kernel::Integer(self)
+  end
 
   def empty?
      length == 0
@@ -246,23 +258,6 @@ class String
 
   def +(other)
     "#{self}#{other}"
-  end
-
-end
-
-class Object
-
-  def =~(anObject)
-     false
-  end
-
-  def not
-    nil
-  end
-
-  MAIN = Object.new
-  def MAIN.inspect
-    "main"
   end
 
 end
@@ -369,6 +364,19 @@ class Module
     }
     nil
   end
+  
+  def attr_writer (*names)
+    names.each {|name|
+      sname = name.to_s
+      script = "def #{sname}=(val) @#{sname}=val end"
+      p "#{self}.module_eval #{script}"
+      module_eval script;
+    }
+    nil
+  end
+  
+  
+  
 end
 
 class NilClass

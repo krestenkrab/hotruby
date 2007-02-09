@@ -90,7 +90,7 @@ public class RubyArray extends RubyBaseArray {
 
 	public IRubyObject at(IRubyObject index) {
 
-		int val = RubyInteger.mm_induced_from(index).intValue();
+		int val = RubyInteger.induced_from(index).intValue();
 		if (val < 0) {
 			val = size - val;
 		}
@@ -325,20 +325,32 @@ public class RubyArray extends RubyBaseArray {
 	// implementation of []
 	public IRubyObject at_x(IRubyObject idx) {
 		if (idx instanceof IRubyInteger) {
-			return at((IRubyInteger) idx);
+			return this.at((IRubyInteger) idx);
 		}
 
 		if (idx instanceof RubyRange) {
 			final RubyArray result = new RubyArray();
 			RubyRange range = (RubyRange) idx;
-			int first = RubyInteger.mm_induced_from(range.first()).intValue();
-			int last = RubyInteger.mm_induced_from(range.last()).intValue();
+			int first = RubyInteger.induced_from(range.first()).intValue();
+			int last = RubyInteger.induced_from(range.last()).intValue();
+
+			if (first < 0) {
+				first = 0;
+			}
+			
+			if (last < 0) {
+				last = size+last;
+				if (last < first) {
+					last = first;
+				}
+			}
+			
 			if (range.include_last()) {
 				last += 1;
 			}
 
 			int count = 0;
-			for (int i = first; (last<0 ? count==last : i==last); i++) {
+			for (int i = first; i<last; i++) {
 				result.add(int_at(i));
 				count ++;
 			}

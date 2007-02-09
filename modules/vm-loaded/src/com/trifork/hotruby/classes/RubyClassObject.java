@@ -22,6 +22,16 @@ public class RubyClassObject extends RubyBaseClassObject {
 
 		final Selector call_to_s = getRuntime().getSelector(meta, "to_s");
 		
+		meta.register_instance_method("freeze", new PublicMethod0() {
+
+			@Override
+			public IRubyObject call(IRubyObject receiver, RubyBlock block) {
+				receiver.setFrozen(true);
+				return receiver;
+			}
+			
+		});
+		
 		meta.register_instance_method("__id__", new PublicMethod0() {
 			@Override
 			public IRubyObject call(IRubyObject receiver, RubyBlock block) {

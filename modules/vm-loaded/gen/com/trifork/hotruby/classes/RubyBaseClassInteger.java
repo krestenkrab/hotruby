@@ -19,7 +19,7 @@ public abstract class RubyBaseClassInteger extends RubyClass {
 		meta.register_module_method("induced_from", new PublicMethod1() {
 			public IRubyObject call(IRubyObject receiver, IRubyObject obj,
 					RubyBlock b) {
-				return RubyInteger.mm_induced_from(obj);
+				return RubyInteger.induced_from(obj);
 			}
 		});
 	}

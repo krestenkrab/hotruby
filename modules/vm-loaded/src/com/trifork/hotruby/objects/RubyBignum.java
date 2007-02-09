@@ -59,12 +59,12 @@ public class RubyBignum extends RubyBaseBignum {
 	
 	@Override
 	public IRubyObject fast_lt(IRubyObject arg, Selector selector) {
-		BigInteger other = RubyInteger.mm_induced_from(arg).asBigInteger();
+		BigInteger other = RubyInteger.induced_from(arg).asBigInteger();
 		return bool (value.compareTo(other) < 0);
 	}
 	@Override
 	public IRubyObject fast_le(IRubyObject arg, Selector selector) {
-		BigInteger other = RubyInteger.mm_induced_from(arg).asBigInteger();
+		BigInteger other = RubyInteger.induced_from(arg).asBigInteger();
 		return bool (value.compareTo(other) <= 0);
 	}
 

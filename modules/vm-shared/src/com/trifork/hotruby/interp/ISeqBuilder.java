@@ -79,11 +79,11 @@ public class ISeqBuilder implements ConstantPool, Instructions {
 	}
 
 	private void adjust_stack(int pos) {
-		int old_pos = stack_depth;
+		int old_pos = stack_depth + 0;
 		adjust_stack0(pos);
 		if (stack_depth < 0) {
 			throw new InternalError("stack emptied: was:" + old_pos
-					+ "; after: " + stack_depth);
+					+ "; after: " + stack_depth + " opcode="+data[pos]);
 		}
 	}
 

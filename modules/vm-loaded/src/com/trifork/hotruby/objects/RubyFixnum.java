@@ -48,14 +48,14 @@ public class RubyFixnum extends RubyBaseFixnum {
 	@Override
 	public
 	IRubyObject fast_bit_or(IRubyObject arg, Selector selector) {
-		RubyInteger intval = RubyInteger.mm_induced_from(arg);
+		RubyInteger intval = RubyInteger.induced_from(arg);
 		return intval.inverse_bit_or(value);
 	}
 	
 	@Override
 	public
 	IRubyObject fast_bit_and(IRubyObject arg, Selector selector) {
-		RubyInteger intval = RubyInteger.mm_induced_from(arg);
+		RubyInteger intval = RubyInteger.induced_from(arg);
 		return intval.inverse_bit_and(value);
 	}
 	
@@ -142,7 +142,7 @@ public class RubyFixnum extends RubyBaseFixnum {
 	}
 	
 	public IRubyObject fast_bit_xor(IRubyObject arg, Selector sel) {
-		return RubyInteger.mm_induced_from(arg).inverse_xor(value);
+		return RubyInteger.induced_from(arg).inverse_xor(value);
 	}
 	
 	@Override
@@ -151,7 +151,7 @@ public class RubyFixnum extends RubyBaseFixnum {
 	}
 	
 	public IRubyObject fast_rshift(IRubyObject arg, Selector sel) {
-		int val = RubyInteger.mm_induced_from(arg).intValue();
+		int val = RubyInteger.induced_from(arg).intValue();
 		return new RubyFixnum(value >> val);
 	}
 	
@@ -185,22 +185,22 @@ public class RubyFixnum extends RubyBaseFixnum {
 	}
 
 	public IRubyObject op_lt(IRubyObject op) {
-		IRubyInteger other = RubyInteger.mm_induced_from(op);
+		IRubyInteger other = RubyInteger.induced_from(op);
 		return value < other.longValue() ? LoadedRubyRuntime.TRUE : LoadedRubyRuntime.FALSE;
 	}
 
 	public IRubyObject op_le(IRubyObject op) {
-		IRubyInteger other = RubyInteger.mm_induced_from(op);
+		IRubyInteger other = RubyInteger.induced_from(op);
 		return value <= other.longValue() ? LoadedRubyRuntime.TRUE : LoadedRubyRuntime.FALSE;
 	}
 
 	public IRubyObject op_ge(IRubyObject op) {
-		IRubyInteger other = RubyInteger.mm_induced_from(op);
+		IRubyInteger other = RubyInteger.induced_from(op);
 		return value >= other.longValue() ? LoadedRubyRuntime.TRUE : LoadedRubyRuntime.FALSE;
 	}
 
 	public IRubyObject op_gt(IRubyObject op) {
-		IRubyInteger other = RubyInteger.mm_induced_from(op);
+		IRubyInteger other = RubyInteger.induced_from(op);
 		return value > other.longValue() ? LoadedRubyRuntime.TRUE : LoadedRubyRuntime.FALSE;
 	}
 

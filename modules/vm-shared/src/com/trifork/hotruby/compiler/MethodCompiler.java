@@ -185,7 +185,7 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 	private static final Method IVAR_GET = new Method("get", IRUBYOBJECT,
 			new Type[] { IRUBYOBJECT });
 
-	private static final Method IVAR_SET = new Method("set", IRUBYOBJECT,
+	private static final Method IVAR_SET = new Method("set", Type.VOID_TYPE,
 			new Type[] { IRUBYOBJECT, IRUBYOBJECT });
 
 	private static final Method FAST_EQ2_METHOD = new Method("fast_eq2",
@@ -918,14 +918,16 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 				labels.put(new Integer(pc), l = call.mark());
 			}
 
-			call.visitLineNumber(pc, l);
+			// call.visitLineNumber(pc, l);
 
 			switch (opcode = code[insn_pc = pc++]) {
 
 			case Instructions.TRACE: {
 				int kind = code[pc++];
 				int line = ui(code[pc++], code[pc++]);
-				// call.visitLineNumber(line, call.mark());
+				if (line > 0) {
+					call.visitLineNumber(line, l);
+				}
 				continue next_insn;
 			}
 
@@ -1016,7 +1018,8 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 							type_of_self, self_idx);
 					call.rbLoadLocal(value_loc, IRUBYOBJECT);
 					call.invokeVirtual(RUBY_IVAR_ACCESSOR_TYPE, IVAR_SET);
-
+					call.rbLoadLocal(value_loc, IRUBYOBJECT);
+					
 					locals_in_use--;
 				}
 

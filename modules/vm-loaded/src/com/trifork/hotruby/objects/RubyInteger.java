@@ -9,7 +9,7 @@ public abstract class RubyInteger extends RubyBaseInteger implements IRubyIntege
 	}
 
 
-	public static RubyInteger mm_induced_from(IRubyObject obj) {
+	public static RubyInteger induced_from(IRubyObject obj) {
 		if (obj instanceof RubyInteger) {
 			return (RubyInteger) obj;
 		} else {

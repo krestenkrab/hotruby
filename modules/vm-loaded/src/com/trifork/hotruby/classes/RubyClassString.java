@@ -4,6 +4,7 @@ import com.trifork.hotruby.callable.PublicMethod1;
 import com.trifork.hotruby.callable.PublicMethod2;
 import com.trifork.hotruby.objects.IRubyObject;
 import com.trifork.hotruby.objects.RubyArray;
+import com.trifork.hotruby.objects.RubyFixnum;
 import com.trifork.hotruby.objects.RubyInteger;
 import com.trifork.hotruby.objects.RubyRegexp;
 import com.trifork.hotruby.objects.RubyString;
@@ -17,6 +18,13 @@ public class RubyClassString
 	public void init(MetaClass meta) {
 		super.init(meta);
 
+		meta.register_instance_method("split_by_string", new PublicMethod2() {
+
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject arg1, IRubyObject arg2, RubyBlock block) {
+				return ((RubyString)receiver).split_by_string((RubyString)arg1, (RubyFixnum)arg2);
+			}});
+		
 		meta.register_instance_method("gsub", new PublicMethod2() {
 
 			@Override

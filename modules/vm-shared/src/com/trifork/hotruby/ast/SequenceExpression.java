@@ -16,6 +16,11 @@ public class SequenceExpression extends Expression implements AssocHolder {
 		args = new ArrayList<Expression>();
 	}
 
+	public SequenceExpression(Expression arg) {
+		this();
+		addExpression(arg);
+	}
+	
 	public SequenceExpression(List<Expression> arg) {
 		args = arg;
 		if (args.get(args.size() - 1) instanceof RestArgExpression) {
@@ -201,7 +206,7 @@ public class SequenceExpression extends Expression implements AssocHolder {
 			throw new InternalError("empty sequence");
 		} else {
 
-			if (args.size() == 1) {
+			if (args.size() == 1 && !(args.get(0) instanceof RestArgExpression)) {
 				args.get(0).compile(ctx, true);
 				ctx.emit_internal_to_a();
 				return;

@@ -130,7 +130,7 @@ public class RubyRange extends RubyBaseRange {
 
 	private boolean range_equals(IRubyObject o1, IRubyObject o2) {
 		IRubyObject cmp_result = o1.fast_cmp(o2, SEL_CMP);
-		return RubyInteger.mm_induced_from(cmp_result).intValue() == 0;
+		return RubyInteger.induced_from(cmp_result).intValue() == 0;
 	}
 
 	public boolean include_last() {

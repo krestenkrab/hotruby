@@ -993,6 +993,16 @@ public class BindingContext implements Instructions {
 						continue next_insn;
 					}
 
+					case FAST_EQ3: {
+						IRubyObject arg = (IRubyObject) stack[--sp];
+						IRubyObject rcv = (IRubyObject) stack[--sp];
+						Selector sel = lexical_bindings.selectors[ui(
+								code[pc++], code[pc++])];
+						state.setStackPointer(sp);
+						stack[sp++] = rcv.fast_eq3(arg, sel);
+						continue next_insn;
+					}
+
 					case FAST_MINUS: {
 						IRubyObject arg = (IRubyObject) stack[--sp];
 						IRubyObject rcv = (IRubyObject) stack[--sp];

@@ -19,7 +19,7 @@ public class RubyMatchData extends RubyBaseMatchData {
 		
 		
 		if (args.length == 1) {
-			int val = RubyInteger.mm_induced_from(args[0]).intValue();
+			int val = RubyInteger.induced_from(args[0]).intValue();
 			if (val == 0) {
 				return get_match(0);
 			}
@@ -28,7 +28,7 @@ public class RubyMatchData extends RubyBaseMatchData {
 		IRubyArray result = LoadedRubyRuntime.instance.newArray();
 
 		for (int i = 0; i < args.length; i++) {
-			int val = RubyInteger.mm_induced_from(args[i]).intValue();
+			int val = RubyInteger.induced_from(args[i]).intValue();
 			result.add(get_match(val));
 		}
 

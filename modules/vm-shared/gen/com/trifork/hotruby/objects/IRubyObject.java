@@ -64,11 +64,13 @@ public interface IRubyObject
 	boolean isFrozen();
 	boolean isTaint();
 	void setTaint(boolean taint);
+	void setFrozen(boolean frozen);
 
 	IRubyObject get_ivar(String string);
 
 	MetaModule get_meta_class();
 
 	MetaModule get_meta_module();
+
 
 }

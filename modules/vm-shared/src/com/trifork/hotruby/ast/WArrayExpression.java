@@ -12,8 +12,8 @@ public class WArrayExpression extends Expression {
 
 	@Override
 	void compile(CompileContext ctx, boolean push) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("not implemented");		
+		MethodCallExpression mce = new MethodCallExpression(null, line, string, "split", null , null, false);
+		mce.compile(ctx, push);
 	}
 
 

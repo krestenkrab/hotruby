@@ -31,7 +31,7 @@ public abstract class Expression implements Cloneable {
 	}
 
 	public void compile_assignment(CompileContext ctx, boolean push) {
-		throw new InternalError("cannot be assigned to "+ this.getClass().getName());
+		throw new InternalError("cannot be assigned to "+ this);
 	}
 
 }

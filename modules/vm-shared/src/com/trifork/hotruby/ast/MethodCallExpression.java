@@ -87,6 +87,11 @@ public class MethodCallExpression extends Expression {
 	}
 
 	void compile(CompileContext ctx, boolean push) {
+		
+		if ("update".equals(method)) {
+			System.out.print("");
+		}
+		
 		Expression receiver = expr;
 		boolean is_yield = false;
 		boolean is_super = false;
@@ -170,7 +175,7 @@ public class MethodCallExpression extends Expression {
 			for (int i = 0; i < args.size(); i++) {
 				Expression exp = args.get(i);
 				if (exp instanceof RestArgExpression) {
-					((RestArgExpression)exp).compile(ctx, push, arg_count);
+					((RestArgExpression)exp).compile(ctx, true, arg_count);
 				} else {
 					exp.compile(ctx, true);
 				}

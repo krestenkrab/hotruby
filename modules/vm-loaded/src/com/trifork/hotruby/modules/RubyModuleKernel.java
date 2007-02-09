@@ -86,7 +86,7 @@ public final class RubyModuleKernel extends RubyModule {
 				if (args.length == 0) {
 					return getRuntime().caller(1);
 				} else {
-					int i = RubyInteger.mm_induced_from(args[0]).intValue();
+					int i = RubyInteger.induced_from(args[0]).intValue();
 					return getRuntime().caller(i);
 				}
 			}

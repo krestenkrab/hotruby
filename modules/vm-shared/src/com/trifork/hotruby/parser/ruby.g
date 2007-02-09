@@ -379,14 +379,22 @@ symbol2 returns [Expression expr]
  */
 
 expression returns [Expression expr]
-		:	expr=assignmentExpression
+		:	expr=andorExpression
+		;
+
+//and or
+andorExpression returns [Expression expr] { String op=null; Expression expr2; }
+		:	expr=assignmentExpression 
+			(options{greedy=true;/*caused by command*/}:(keyword_and {op="and";}| keyword_or{op="or";}) 
+			expr2=assignmentExpression
+			{ expr= new BinaryExpression(expr, op, expr2); } )*
 		;
 
 
 //= += -= *= /= %= **= &= ^= |= <<= >>= &&= ||=
 assignmentExpression returns [Expression expr] 
 { String op=null; Expression expr2; }
-		:	expr=andorExpression
+		:	expr=notExpression
 			(options{greedy=true;/*caused by command*/}:
 			(	op=operator_ASSIGN 	
 					{ 
@@ -406,17 +414,9 @@ assignmentExpression returns [Expression expr]
 			|	op=operator_LOGICAL_AND_ASSIGN
 			|	op=operator_LOGICAL_OR_ASSIGN)
 			(REST_ARG_PREFIX expr2=rangeExpression { expr2=new RestArgExpression(expr2); }
-			| expr2=assignmentExpression )
+			| expr2=notExpression )
 			{ expr= AssignmentExpression.build (expr, op, expr2); }
 			)*
-		;
-
-//and or
-andorExpression returns [Expression expr] { String op=null; Expression expr2; }
-		:	expr=notExpression 
-			(options{greedy=true;/*caused by command*/}:(keyword_and {op="and";}| keyword_or{op="or";}) 
-			expr2=notExpression
-			{ expr= new BinaryExpression(expr, op, expr2); } )*
 		;
 
 //not

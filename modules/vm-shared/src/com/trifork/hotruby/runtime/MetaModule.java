@@ -616,6 +616,10 @@ public class MetaModule implements CallContext {
 		}
 	}
 
+	public RubyIvarAccessor getInstanceIVarAccessor(String name) {
+		return getInstanceIVarAccessor(name, true);
+	}
+
 	public RubyIvarAccessor getInstanceIVarAccessor(String name, boolean create) {
 		RubyIvarAccessor result = ivar_accessors.get(name);
 

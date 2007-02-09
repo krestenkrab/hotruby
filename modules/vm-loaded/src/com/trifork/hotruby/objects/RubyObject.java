@@ -22,6 +22,15 @@ public class RubyObject extends RubyBaseObject implements IRubyObject {
 		return singleton != null && singleton.taint;
 	}
 
+	public void setFrozen(boolean frozen) {
+		if (isFrozen() != frozen) {
+			if (singleton == null) {
+				singleton = new SingletonState();
+			}
+			singleton.frozen = frozen;
+		}
+	}
+	
 	public void setTaint(boolean taint) {
 		if (isTaint() != taint) {
 			if (singleton == null) {

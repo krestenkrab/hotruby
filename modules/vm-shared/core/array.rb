@@ -1,4 +1,5 @@
 
+# Kernel.eval_file "enumerable.rb", Object
 
 module Enumerable
 
@@ -91,7 +92,10 @@ class Array
      (self <=> other) == 0
    end
 
-   alias :=== :==
+   def ===(val)
+      each { |e| return true if e===val }
+      false
+   end
    
    def [] (val, length=nil)
      case val.class
@@ -116,7 +120,7 @@ class Array
      end
     
      if last<0
-        last = size-last
+        last = size+last
         last = 0 if last < 0
      end
     
@@ -128,7 +132,7 @@ class Array
      
      result = []
      
-     pos = first
+     pos = first-1
      while (pos += 1) < last
           result << self.at(pos)
      end

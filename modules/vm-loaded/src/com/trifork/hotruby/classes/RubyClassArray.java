@@ -33,11 +33,11 @@ public class RubyClassArray
 			}
 			@Override
 			public IRubyObject call(IRubyObject receiver, IRubyObject size, RubyBlock block) {
-				return ((RubyArray)receiver).initialize(RubyInteger.mm_induced_from(size).intValue());
+				return ((RubyArray)receiver).initialize(RubyInteger.induced_from(size).intValue());
 			}
 			@Override
 			public IRubyObject call(IRubyObject receiver, IRubyObject size, IRubyObject val, RubyBlock block) {
-				return ((RubyArray)receiver).initialize(RubyInteger.mm_induced_from(size).intValue(), val);
+				return ((RubyArray)receiver).initialize(RubyInteger.induced_from(size).intValue(), val);
 			}
 		});
 		

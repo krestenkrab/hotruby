@@ -1,6 +1,7 @@
 package com.trifork.hotruby.objects;
 import java.io.IOException;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.trifork.hotruby.marshal.UnmarshalStream;
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
@@ -109,8 +110,8 @@ public class RubyString
 	}
 
 	public IRubyObject substring(IRubyObject start, IRubyObject len) {
-		int s = RubyInteger.mm_induced_from(start).intValue();
-		int l = RubyInteger.mm_induced_from(len).intValue();
+		int s = RubyInteger.induced_from(start).intValue();
+		int l = RubyInteger.induced_from(len).intValue();
 
 		// todo handle error cases...
 		return new RubyString(value.substring(s, s+l));
@@ -131,5 +132,38 @@ public class RubyString
 	@Override
 	public IRubyObject fast_eq2(IRubyObject arg, Selector selector) {
 		return op_eq2(arg);
+	}
+
+	public IRubyObject split_by_string(RubyString string, RubyFixnum fixnum) {
+		String sep = string.asSymbol();
+		int lim = fixnum.intValue();
+		
+		if (" ".equals(sep)) {
+			String val = value.trim();
+			String[] splitted = val.split("\\s+", lim);
+			IRubyArray result = getRuntime().newArray();
+			for (int i = 0; i < splitted.length; i++) {
+				result.add(new RubyString(splitted[i]));
+			}
+			return result;
+		} 
+
+		 Matcher m = Pattern.compile("(\\[|\\]|\\(|\\)|\\.|\\|)").matcher(sep);
+		 
+		 StringBuffer sb = new StringBuffer();
+		 while (m.find()) {
+			 sb.append('\\');
+		     m.appendReplacement(sb, "$1");
+		 }
+		 m.appendTail(sb);
+
+			String val = value;
+			String[] splitted = val.split(sb.toString(), lim);
+			IRubyArray result = getRuntime().newArray();
+			for (int i = 0; i < splitted.length; i++) {
+				result.add(new RubyString(splitted[i]));
+			}
+			return result;
+		 
 	}
 }
