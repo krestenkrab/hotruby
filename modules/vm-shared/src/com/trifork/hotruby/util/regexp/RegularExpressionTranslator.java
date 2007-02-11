@@ -11,6 +11,9 @@ import java.util.regex.Pattern;
  * @author ofo
  */
 public class RegularExpressionTranslator {
+	public static final int IGNORECASE = 1;
+	public static final int EXTENDED = 2;
+	public static final int MULTILINE = 4;
 	private static final String[][] POSIX_CLASSES =
 	{
 		{ "[:alnum:]", "\\p{Alnum}" },
@@ -26,21 +29,20 @@ public class RegularExpressionTranslator {
 		{ "[:upper:]", "\\p{Upper}" },
 		{ "[:xdigit:]", "\\p{XDigit}" }
 	};
-	
+
 	private final StringBuilder newExp;
 	private final String originalExp;
 	private final Pattern pattern;
 	private int pos;
 	private boolean valid;
 
-	public static List<String> match(String regex, String s)
+	public static List<String> match(String regex, String s, int flags)
 	{
 		List<String> result = new ArrayList<String>();
-		RegularExpressionTranslator myMatcher = new RegularExpressionTranslator(regex);
+		RegularExpressionTranslator myMatcher = new RegularExpressionTranslator(regex, flags);
 		if (myMatcher.isValid())
 		{
-			String newExp = myMatcher.getParsedExpression();
-			Pattern pattern = Pattern.compile(newExp);
+			Pattern pattern = myMatcher.getPattern();
 			Matcher matcher = pattern.matcher(s);
 			if (matcher.find())
 			{
@@ -53,26 +55,37 @@ public class RegularExpressionTranslator {
 		return result;
 	}
 
-	public RegularExpressionTranslator(String regex)
+	public RegularExpressionTranslator(String regex, int flags)
 	{
 		try {
 			originalExp = regex;
 			newExp = new StringBuilder();
+			// Pattern.MULTILINE is always turned on
+			int newFlags = Pattern.MULTILINE
+			    | checkFlag(flags, IGNORECASE, Pattern.CASE_INSENSITIVE)
+				| checkFlag(flags, EXTENDED, Pattern.COMMENTS)
+				| checkFlag(flags, MULTILINE, Pattern.DOTALL);
 			valid = parseRegularExpression(false);
 			if (valid)
 			{
-				pattern = Pattern.compile(newExp.toString());
+				pattern = Pattern.compile(newExp.toString(), newFlags);
 			}
 			else
 			{
 				pattern = null;
 			}
+//			System.out.println("Oversat: " + newExp + ", " + newFlags);
 		}
 		catch (IllegalRegularExpressionException e)
 		{
 			System.out.println("Error: " + e.getMessage());
 			throw e;
 		}
+	}
+	
+	int checkFlag(int flags, int flagValue, int translatedValue)
+	{
+		return (flags & flagValue) == 0 ? 0 : translatedValue;
 	}
 
 	public boolean isValid()
@@ -83,11 +96,6 @@ public class RegularExpressionTranslator {
 	public Pattern getPattern()
 	{
 		return pattern;
-	}
-
-	private String getParsedExpression()
-	{
-		return newExp.toString();
 	}
 
 	private boolean parseRegularExpression(boolean inGroup)
@@ -383,6 +391,11 @@ public class RegularExpressionTranslator {
 			return extension("(?>"); // Independent regular expresseion
 		case '#':
 			return comment(); // Comment
+		case '-':
+		case 'i':
+		case 'm':
+		case 'x':
+			return options(); // Option alteration
 		default:
 			throw new IllegalRegularExpressionException("Undefined (?...) sequence: " + originalExp);
 		}
@@ -412,6 +425,50 @@ public class RegularExpressionTranslator {
 		{
 			advanceAndExpectMore();
 		}
+		return true;
+	}
+	
+	/**
+	 * (?imx), (?-imx), (?ims:R), (?-imx:R)
+	 */
+	private boolean options()
+	{
+		assert current() == '-'
+			|| current() == 'i'
+			|| current() == 'm'
+			|| current() == 'x';
+		append("(?");
+		while (current() == '-'
+			|| current() == 'i'
+			|| current() == 'm'
+			|| current() == 'x')
+		{
+			if (current() == 'm')
+			{
+				// Multiline in Ruby => dot-all in Java
+				append('s');
+			}
+			else
+			{
+				append(current());
+			}
+			advanceAndExpectMore();
+		}
+		if (current() == ')')
+		{
+			append(')');
+			return true;
+		}
+		if (current() != ':')
+		{
+			throw new IllegalRegularExpressionException("undefined (?...) inline option: /"
+					+ originalExp + "/");
+		}
+		if (!parseRegularExpression(true))
+		{
+			return false;
+		}
+		append(')');
 		return true;
 	}
 	

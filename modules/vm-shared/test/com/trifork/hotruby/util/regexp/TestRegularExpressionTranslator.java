@@ -309,23 +309,79 @@ public class TestRegularExpressionTranslator {
 	    }
 	}
 	
+	@Test
+	public void options()
+	{
+	    // Ignorecase
+	    assertNoMatch("abc", "12aBc45");
+	    assertMatch("abc", "12aBc45", RegularExpressionTranslator.IGNORECASE).withResult("aBc");
+	    assertMatch("abc(?i)abc", "12abcaBc45").withResult("abcaBc");
+	    assertMatch("abc(?i:abc)", "12abcaBc45").withResult("abcaBc");
+	    assertNoMatch("abc(?i)abc(?-i)abc", "12abcaBcaBc45");
+	    assertNoMatch("abc(?-i)abc", "12aBcaBc45", RegularExpressionTranslator.IGNORECASE);
+		
+		// Extended
+	    String s = "   a #A comment\n" +
+                   "   # Another comment\n" +
+                   "   bc";
+	    assertMatch(s, "12abc45", RegularExpressionTranslator.EXTENDED).withResult("abc");
+	    String t = "   a #A comment\n" +
+        "   (?-x)# Another comment\n" +
+        "   bc";
+	    assertNoMatch(t, "12abc45", RegularExpressionTranslator.EXTENDED);
+
+	    
+	    // Multiline
+	    assertNoMatch("a.b", "12a\nc45");
+	    assertMatch("^abc", "12\nabc45").withResult("abc");
+	    assertMatch("^abc", "12\nabc45", RegularExpressionTranslator.MULTILINE).withResult("abc");
+	    assertMatch("abc(?m)a\nc", "12abca\nc45").withResult("abca\nc");
+	    assertMatch("abc$", "12abc\n45").withResult("abc");
+	    assertMatch("abc$", "12abc\n45", RegularExpressionTranslator.MULTILINE).withResult("abc");
+	    assertMatch("abc(?m)abc$", "12abcabc\n45").withResult("abcabc");
+	    assertNoMatch("a.c", "12a\nc45");
+	    assertMatch("a.c", "12a\nc45", RegularExpressionTranslator.MULTILINE).withResult("a\nc");
+	    assertMatch("a.c(?m)a.c", "12abca\nc45").withResult("abca\nc");
+	    assertNoMatch("a.c(?-m)a.c", "12a\nca\nc45", RegularExpressionTranslator.MULTILINE);
+	    
+	    // Total confusion of option switching
+	    assertNoMatch("(?i)a(?i-i)bc", "12aBc45");
+	    try {
+	    	assertNoMatch("b(?ih)c", "12abc45");
+	    	fail();
+	    } catch (IllegalRegularExpressionException e)
+	    {
+	    	// Should go here
+	    }
+	}
+	
 	private void assertNoMatch(String regex, String s)
 	{
 		assertMatch(regex, s).withResult();
 	}
 	
+	private void assertNoMatch(String regex, String s, int flags)
+	{
+		assertMatch(regex, s, flags).withResult();
+	}
+	
 	private MatchChecker assertMatch(String regex, String s)
 	{
-		return new MatchChecker(regex, s);
+		return new MatchChecker(regex, s, 0);
+	}
+	
+	private MatchChecker assertMatch(String regex, String s, int flags)
+	{
+		return new MatchChecker(regex, s, flags);
 	}
 	
     private static class MatchChecker
     {
     	List<String> result;
 
-    	public MatchChecker(String regex, String s)
+    	public MatchChecker(String regex, String s, int flags)
     	{
-    		result = RegularExpressionTranslator.match(regex, s);
+    		result = RegularExpressionTranslator.match(regex, s, flags);
     	}
 
     	public void withResult(String... expected)

@@ -4,63 +4,84 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
+import com.trifork.hotruby.runtime.Selector;
 import com.trifork.hotruby.util.regexp.RegularExpressionTranslator;
 
 public class RubyRegexp extends RubyBaseRegexp {
-  String originalExpression;
-  RegularExpressionTranslator translator;
-  Pattern pattern;
+	private String originalExpression;
+	private RegularExpressionTranslator translator;
+	Pattern pattern;
+	private int flags = 0;
 
-  @Override
-  public String asSymbol() {
-    return originalExpression;
-  }
+	@Override
+	public String asSymbol() {
+		return originalExpression;
+	}
 
-  public int flags() {
-    if (translator.isValid())
-    {
-      return translator.getPattern().flags();
-    }
-    return 0;
-  }
+	public int flags() {
+		return flags;
+	}
+	
+	public RubyRegexp() {
+		// Empty
+	}
 
-  public RubyRegexp(String string, int flags) {
-    originalExpression = string;
-    translator = new RegularExpressionTranslator(string);
-    pattern = translator.getPattern();
-  }
+	public RubyRegexp(String string, int flags) {
+		do_initialize(string, flags);
+	}
+	
+	public IRubyObject initialize(IRubyObject arg) {
+		IRubyString string = RubyString.induce_from(arg);
+		String value = string.asSymbol();
+		do_initialize(value, 0);
+		return LoadedRubyRuntime.NIL;
+	}
 
-  @Override
-  public String inspect() {
-    return "/" + originalExpression + "/";
-  }
+	public IRubyObject initialize(IRubyObject arg1, IRubyObject arg2) {
+		IRubyString string = RubyString.induce_from(arg1);
+		String value = string.asSymbol();
+		int flags = RubyInteger.induced_from(arg2).intValue();
+		do_initialize(value, flags);
+		return LoadedRubyRuntime.NIL;
+	}
+	
+	private void do_initialize(String regexp, int flags)
+	{
+		this.flags = flags;
+		originalExpression = regexp;
+		translator = new RegularExpressionTranslator(regexp, flags);
+		pattern = translator.getPattern();
+	}
 
-  public IRubyObject match(IRubyObject expr) {
+	@Override
+	public String inspect() {
+		return "/" + originalExpression + "/";
+	}
 
-    IRubyString string = RubyString.induce_from(expr);
-    String value = string.asSymbol();
+	public IRubyObject match(IRubyObject expr) {
+		IRubyString string = RubyString.induce_from(expr);
+		String value = string.asSymbol();
+		Matcher match = pattern.matcher(value);
 
-    Matcher match = pattern.matcher(value);
+		if (!match.find()) {
+			return LoadedRubyRuntime.NIL;
+		}
+		return new RubyMatchData().initialize(match, value);
+	}
 
-    if (!match.find()) {
-      return LoadedRubyRuntime.NIL;
-    }
-    return new RubyMatchData().initialize(match, value);
-  }
+	public IRubyObject op_eqmatch(IRubyObject expr) {
+		IRubyString string = RubyString.induce_from(expr);
+		String value = string.asSymbol();
 
-  public IRubyObject op_eqmatch(IRubyObject expr) {
-    IRubyString string = RubyString.induce_from(expr);
-    String value = string.asSymbol();
+		if (translator.isValid())
+		{
+			Matcher match = pattern.matcher(value);
 
-    if (translator.isValid())
-    {
-      Matcher match = pattern.matcher(value);
-
-      if (!match.find()) {
-        return LoadedRubyRuntime.NIL;
-      }
-      return new RubyFixnum(match.start());
-    }
-    return LoadedRubyRuntime.NIL;
-  }
+			if (!match.find()) {
+				return LoadedRubyRuntime.NIL;
+			}
+			return new RubyFixnum(match.start());
+		}
+		return LoadedRubyRuntime.NIL;
+	}
 }

@@ -19,6 +19,7 @@ class RegExpTest < Test::Unit::TestCase
   end
   
   def test_too_many_ending_parentheses
+    # TODO assert_raise(RegexpError) { Regexp.new('ab(cd))ef') }
     # TODO assert_raise(SyntaxError) do
     #  eval "assert_match(['abcd)ef', 'cd'], /ab(cd))ef/, '12abcd)ef34')"
     #end
@@ -163,6 +164,7 @@ class RegExpTest < Test::Unit::TestCase
 		assert_match(['a3c'], /a[[:alnum:]]c/, '12a3c45')
 		assert_match(['abc'], /a[[:alpha:]]c/, '12abc45')
 		assert_match(['a c'], /a[[:blank:]]c/, '12a c45')
+		# Doesn't work currently because the parser does not convert \n to a newline
 		# TODO assert_match(["a\nc"], /a[[:cntrl:]]c/, "12a\nc45")
 		assert_match(['a.c'], /a[[:graph:]]c/, "12a.c45")
 		assert_match(['abc'], /a[[:lower:]]c/, "12abc45")
@@ -203,12 +205,13 @@ class RegExpTest < Test::Unit::TestCase
     assert_no_match(/abc\Z/, '12abc34')
     assert_match(['abc'], /abc\Z/, '12abc')
     assert_no_match(/ab\Zc/, '12abc34')
+		# Doesn't work currently because the parser does not convert \n to a newline
     # TODO assert_match(['abc'], /abc\Z/, "12abc\n")
     
     # \b
-    assert_match(['cd'], /\bcd/, 'ab cd', '\b')
+    assert_match(['cd'], /\bcd/, 'ab cd')
     assert_no_match(/\bcd/, 'abcd')
-    assert_match(['ab'], /ab\b/, 'ab cd', '\b')
+    assert_match(['ab'], /ab\b/, 'ab cd')
     assert_no_match(/ab\b/, 'abcd')
     
     # \B
@@ -248,8 +251,64 @@ class RegExpTest < Test::Unit::TestCase
 
     # Unknown extension
     # TODO assert_raise(RegexpError) do
-    #  Regexp.new('a(?<b*)c');
+    #  Regexp.new('a(?<b*)c')
     #end
+  end
+
+  def test_options
+    # TODO: Cannot fully test "MULTILINE" option, since escape sequences are not
+    #       interpreted in hotruby
+    # TODO: Cannot test options given in explicit regular expressions, since
+    #       they are not given to the created Regexp class.
+  
+    assert_equal 1, Regexp::IGNORECASE
+    assert_equal 2, Regexp::EXTENDED
+    assert_equal 4, Regexp::MULTILINE
+    
+    # Ignorecase
+    assert_no_match(Regexp.new('abc', 0), '12aBc45')
+    assert_match(['aBc'], Regexp.new('abc', Regexp::IGNORECASE), '12aBc45')
+    # TODO assert_match(['aBc'], /abc/i, '12aBc45')
+    assert_match(['abcaBc'], /abc(?i)abc/, '12abcaBc45')
+    assert_match(['abcaBc'], /abc(?i:abc)/, '12abcaBc45')
+    assert_no_match(/abc(?i)abc(?-i)abc/, '12abcaBcaBc45')
+    assert_no_match(Regexp.new('abc(?-i)abc', Regexp::IGNORECASE), '12aBcaBc45')
+		
+    # Extended
+# TODO    s = <<HERE
+#      a #A comment
+#      # Another comment
+#      bc
+#HERE
+#    assert_match(['abc'], Regexp.new(s, Regexp::EXTENDED), '12abc45')
+    # TODO assert_match(['abc'], /a #A comment
+    #  # Another comment
+    #  bc/x, '12abc45')
+#    t = <<HERE
+#      a #A comment
+#      (?-x) # Another comment
+#      bc
+#HERE
+#    assert_no_match(Regexp.new(t, Regexp::EXTENDED), '12abc45')
+
+    # Multiline
+    assert_no_match(/12a\nc45/, 'a.b')
+#    assert_match(['abc'], /^abc/, "12\nabc45")
+# TODO: Convert these to Ruby when character esccaping works
+#	    assertMatch("^abc", "12\nabc45", RegularExpressionTranslator.MULTILINE).withResult("abc");
+#	    assertMatch("abc(?m)a\nc", "12abca\nc45").withResult("abca\nc");
+#	    assert_match(['abc'], /abc$/, "12abc\n45")
+#	    assertMatch("abc$", "12abc\n45", RegularExpressionTranslator.MULTILINE).withResult("abc");
+#	    assertMatch("abc(?m)abc$", "12abcabc\n45").withResult("abcabc");
+#	    assertNoMatch("a.c", "12a\nc45");
+#	    assertMatch("a.c", "12a\nc45", RegularExpressionTranslator.MULTILINE).withResult("a\nc");
+#	    assertMatch("a.c(?m)a.c", "12abca\nc45").withResult("abca\nc");
+#	    assertNoMatch("a.c(?-m)a.c", "12a\nca\nc45", RegularExpressionTranslator.MULTILINE);
+	    
+    # Total confusion of option switching
+	  assert_no_match(/(?i)a(?i-i)bc/, '12aBc45')
+	  assert_no_match(/a(?i-i)bc/, '12aBc45')
+    #assert_raise(RegexpError) { Regexp.new('b(?ih)c') }
   end
   
   private
@@ -294,3 +353,4 @@ do_test("test_predefined_character_classes")
 do_test("test_character_classes")
 do_test("test_anchors")
 do_test("test_extensions")
+do_test("test_options")

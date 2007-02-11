@@ -6,6 +6,7 @@ p "loading core..."
 
 Kernel.eval_file 'object.rb', Object
 Kernel.eval_file 'array.rb', Object
+Kernel.eval_file 'regexp.rb', Object
 
 ##
 ## the very first thing we need to define is "load" and "require".  from there, we can
