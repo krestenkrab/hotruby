@@ -156,6 +156,7 @@ class RegExpTest < Test::Unit::TestCase
 		# TODO assert_match(['a\\c'], /a[ab\\c]c/, '12a\\c45')
 		assert_match(['abc'], /a[ab\d]c/, '12abc45')
 		assert_no_match(/a[ab\d]c/, '12adc45')
+    assert_match(['abc'], /a[^\[\]]c/, '12abc45')
 		
 		# POSIX character classes
 		assert_match(['a3c'], /a[b[:digit:]]c/, '12a3c45')
@@ -311,7 +312,36 @@ class RegExpTest < Test::Unit::TestCase
     #assert_raise(RegexpError) { Regexp.new('b(?ih)c') }
   end
   
+  def test_equals
+    assert !(/abd/ == /abc/), 1
+    assert /abd/ != /abc/, 2
+    assert /abc/ == /abc/, 3
+    assert /abc/ == Regexp.new('abc'), 4
+    assert Regexp.new('abc') == /abc/, 5
+    assert !(/abc/ == /abc/x), 6
+    assert /abc/ != /abc/x, 7
+    assert !(/abc/ == /abc/i), 8
+    assert /abc/ != /abc/i, 9
+    assert /abc/ != 'abc'
+  end
+  
+  def test_to_s
+    assert_equal '(?-mix:abc)', /abc/.to_s
+    assert_equal '(?mix:abc)', Regexp.new('abc',
+      Regexp::MULTILINE | Regexp::IGNORECASE | Regexp::EXTENDED).to_s
+  end
+  
   private
+#  def assert(val, msg)
+#    p "Fejl: #{msg}" if !val
+#    fail if !val
+#  end
+
+  def assert_equal(val1, val2)
+    p "Fejl: #{val1} != #{val2}" if val1 != val2
+    
+  end
+  
   def assert_match(result, regexp, input)
     match = regexp.match(input).to_a
     if (match != result)
@@ -354,3 +384,5 @@ do_test("test_character_classes")
 do_test("test_anchors")
 do_test("test_extensions")
 do_test("test_options")
+#do_test("test_equals")
+do_test "test_to_s"

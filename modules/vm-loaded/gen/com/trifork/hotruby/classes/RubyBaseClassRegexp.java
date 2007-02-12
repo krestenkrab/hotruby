@@ -1,10 +1,12 @@
 package com.trifork.hotruby.classes;
 
+import com.trifork.hotruby.callable.PublicMethod0;
 import com.trifork.hotruby.callable.PublicMethod1;
 import com.trifork.hotruby.callable.PublicMethod2;
 import com.trifork.hotruby.objects.IRubyObject;
 import com.trifork.hotruby.objects.RubyClass;
 import com.trifork.hotruby.objects.RubyRegexp;
+import com.trifork.hotruby.objects.RubyString;
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
 import com.trifork.hotruby.runtime.MetaClass;
 import com.trifork.hotruby.runtime.RubyBlock;
@@ -38,6 +40,18 @@ public abstract class RubyBaseClassRegexp extends RubyClass {
 			public IRubyObject call(IRubyObject receiver, IRubyObject expr,
 					RubyBlock b) {
 				return ((RubyRegexp) receiver).initialize(expr);
+			}
+		});
+		meta.register_instance_method("options", new PublicMethod0() {
+			@Override
+			public IRubyObject call(IRubyObject receiver, RubyBlock block) {
+				return ((RubyRegexp) receiver).options();
+			}
+		});
+		meta.register_instance_method("source", new PublicMethod0() {
+			@Override
+			public IRubyObject call(IRubyObject receiver, RubyBlock block) {
+				return new RubyString(((RubyRegexp) receiver).inspect());
 			}
 		});
 	}

@@ -181,7 +181,8 @@ public class RegularExpressionTranslator {
 				case 'w':
 				case 'W':
 					
-					// Closing bracket, minus sign
+					// Opening bracket, closing bracket, minus sign
+				case '[':
 				case ']':
 				case '-':
 				case '.':
@@ -193,7 +194,10 @@ public class RegularExpressionTranslator {
 					//append(current());
 					break;
 				default:
-					throw new IllegalRegularExpressionException("Unknown escape sequence: \\" + current() + " (0x" + Integer.toHexString(current()) + ")");
+					throw new IllegalRegularExpressionException(
+							"Unknown escape sequence: \\" + current() + " (0x"
+							+ Integer.toHexString(current()) + "): "
+							+ originalExp);
 				}
 			}
 			else if (current() == '-')

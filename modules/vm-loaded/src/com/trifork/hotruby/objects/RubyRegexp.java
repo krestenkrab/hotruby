@@ -57,6 +57,10 @@ public class RubyRegexp extends RubyBaseRegexp {
 	public String inspect() {
 		return "/" + originalExpression + "/";
 	}
+	
+	public IRubyObject options() {
+		return RubyInteger.newInteger(flags);
+	}
 
 	public IRubyObject match(IRubyObject expr) {
 		IRubyString string = RubyString.induce_from(expr);
@@ -67,6 +71,10 @@ public class RubyRegexp extends RubyBaseRegexp {
 			return LoadedRubyRuntime.NIL;
 		}
 		return new RubyMatchData().initialize(match, value);
+	}
+	
+	public IRubyObject source() {
+		return new RubyString(originalExpression);
 	}
 
 	public IRubyObject op_eqmatch(IRubyObject expr) {
