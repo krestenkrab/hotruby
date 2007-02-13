@@ -51,7 +51,7 @@ public abstract class RubyBaseClassRegexp extends RubyClass {
 		meta.register_instance_method("source", new PublicMethod0() {
 			@Override
 			public IRubyObject call(IRubyObject receiver, RubyBlock block) {
-				return new RubyString(((RubyRegexp) receiver).inspect());
+				return ((RubyRegexp) receiver).source();
 			}
 		});
 	}

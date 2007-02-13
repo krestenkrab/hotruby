@@ -331,6 +331,12 @@ class RegExpTest < Test::Unit::TestCase
       Regexp::MULTILINE | Regexp::IGNORECASE | Regexp::EXTENDED).to_s
   end
   
+  def test_inspect
+    assert_equal '/ab/', /ab/.inspect
+    assert_equal '/ab/mx', Regexp.new('ab', Regexp::MULTILINE | Regexp::EXTENDED).inspect
+    assert_equal '/ab/mix', Regexp.new('ab', Regexp::MULTILINE | Regexp::IGNORECASE | Regexp::EXTENDED).inspect
+  end
+  
   private
 #  def assert(val, msg)
 #    p "Fejl: #{msg}" if !val
@@ -386,3 +392,4 @@ do_test("test_extensions")
 do_test("test_options")
 #do_test("test_equals")
 do_test "test_to_s"
+do_test "test_inspect"

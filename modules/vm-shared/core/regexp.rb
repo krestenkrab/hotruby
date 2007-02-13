@@ -16,20 +16,26 @@ class Regexp
     return other.source == source && other.options == options
   end
   
-  #def to_s
-  #  "(?#{optionstring}:#{source})"
-  #end
+  def to_s
+    "(?#{positive_options(options)}#{negative_options(options)}:#{source})"
+  end
   
-  #def inspect
-  #  return source
-  #end
+  def inspect
+    return "/#{source}/#{positive_options(options)}"
+  end
 
-  #private
-  #def optionstring
-  #  s = ''
-  #  s << 'm' if flags & MULTILINE
-  #  if (flags != 0)
-  #end
+  private
+  def positive_options(flags)
+    m = (flags & MULTILINE != 0) ? 'm' : ''
+    i = (flags & IGNORECASE != 0) ? 'i' : ''
+    x =  (flags & EXTENDED != 0) ? 'x' : ''
+    return m + i + x
+  end
+  
+  def negative_options(flags)
+    return '' if flags == 7
+    return '-' + positive_options(flags ^ 7)
+  end
   
   #def abc(flags, flag, value)
   #  if flags & flag
