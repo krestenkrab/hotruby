@@ -343,11 +343,11 @@ class RegExpTest < Test::Unit::TestCase
 #    fail if !val
 #  end
 
-  def assert_equal(val1, val2)
-    p "Fejl: #{val1} != #{val2}" if val1 != val2
-    
-  end
-  
+#  def assert_equal(val1, val2)
+#    p "Fejl: #{val1} != #{val2}" if val1 != val2
+#    
+#  end
+#  
   def assert_match(result, regexp, input)
     match = regexp.match(input).to_a
     if (match != result)
@@ -372,24 +372,24 @@ def do_test(name)
   p tr.to_s
 end
 
-do_test("test_simple")
-do_test("test_specialchars")
-do_test("test_escape")
-do_test("test_too_many_ending_parentheses")
-do_test("test_group")
-do_test("test_alternation")
-do_test("test_zero_or_more")
-do_test("test_optional")
-do_test("test_one_or_more")
-do_test("test_repetition_min_max_specified")
-do_test("test_repetition_exact")
-do_test("test_repetition_minimum")
-do_test("test_backreference")
-do_test("test_predefined_character_classes")
-do_test("test_character_classes")
-do_test("test_anchors")
-do_test("test_extensions")
-do_test("test_options")
-#do_test("test_equals")
+do_test "test_simple"
+do_test "test_specialchars"
+do_test "test_escape"
+do_test "test_too_many_ending_parentheses"
+do_test "test_group"
+do_test "test_alternation"
+do_test "test_zero_or_more"
+do_test "test_optional"
+do_test "test_one_or_more"
+do_test "test_repetition_min_max_specified"
+do_test "test_repetition_exact"
+do_test "test_repetition_minimum"
+do_test "test_backreference"
+do_test "test_predefined_character_classes"
+do_test "test_character_classes"
+do_test "test_anchors"
+do_test "test_extensions"
+do_test "test_options"
+do_test "test_equals"
 do_test "test_to_s"
 do_test "test_inspect"

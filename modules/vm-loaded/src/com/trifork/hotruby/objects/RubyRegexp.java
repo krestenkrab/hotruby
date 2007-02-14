@@ -92,4 +92,15 @@ public class RubyRegexp extends RubyBaseRegexp {
 		}
 		return LoadedRubyRuntime.NIL;
 	}
+    
+    @Override
+    public IRubyObject fast_eq2(IRubyObject arg, Selector selector) {
+        return op_eq2(arg);
+    }
+
+    public IRubyObject op_eq2(IRubyObject arg) {
+        return bool(arg instanceof RubyRegexp
+            && ((RubyRegexp)arg).flags == flags
+            && originalExpression.equals(((RubyRegexp)arg).originalExpression));
+    }
 }

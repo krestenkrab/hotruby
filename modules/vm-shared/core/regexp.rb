@@ -1,7 +1,8 @@
 class Regexp
   # Defined "natively":
-  # * initialize
+  # * ==
   # * =~
+  # * initialize
   # * match
   # * options
   # * source
@@ -10,18 +11,12 @@ class Regexp
   EXTENDED = 2
   MULTILINE = 4
   
-  def ==(other)
-    #p "Other: #{other.source}"
-    #p "This: #{source}"
-    return other.source == source && other.options == options
-  end
-  
   def to_s
     "(?#{positive_options(options)}#{negative_options(options)}:#{source})"
   end
   
   def inspect
-    return "/#{source}/#{positive_options(options)}"
+    "/#{source}/#{positive_options(options)}"
   end
 
   private
@@ -29,7 +24,7 @@ class Regexp
     m = (flags & MULTILINE != 0) ? 'm' : ''
     i = (flags & IGNORECASE != 0) ? 'i' : ''
     x =  (flags & EXTENDED != 0) ? 'x' : ''
-    return m + i + x
+    m + i + x
   end
   
   def negative_options(flags)
@@ -37,17 +32,6 @@ class Regexp
     return '-' + positive_options(flags ^ 7)
   end
   
-  #def abc(flags, flag, value)
-  #  if flags & flag
-  #    value
-  #  else
-  #    ''
-  #  end
-  #end
-#irb(main):001:0> /abc/xm.inspect
-#=> "/abc/mx"
-#irb(main):002:0> /abc/xm.to_s
-#=> "(?mx-i:abc)"
 #irb(main):003:0> Regexp.union(/abc/.xm, /def/).to_s
 #NoMethodError: undefined method `xm' for /abc/:Regexp
 #        from (irb):3

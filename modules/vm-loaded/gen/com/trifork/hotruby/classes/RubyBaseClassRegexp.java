@@ -25,6 +25,11 @@ public abstract class RubyBaseClassRegexp extends RubyClass {
 				return ((RubyRegexp) receiver).match(expr);
 			}
 		});
+        meta.register_instance_method("==", new PublicMethod1() {
+            @Override
+            public IRubyObject call(IRubyObject receiver, IRubyObject arg, RubyBlock block) {
+                return ((RubyRegexp)receiver).op_eq2(arg);
+            }});
 		meta.register_instance_method("=~", new PublicMethod1() {
 			public IRubyObject call(IRubyObject receiver, IRubyObject expr,
 					RubyBlock b) {
