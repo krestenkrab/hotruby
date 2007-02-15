@@ -16,12 +16,21 @@ class Regexp
     self.new(expression, options)
   end
   
+  def self.union(*expressions)
+    Regexp.new(do_union expressions)
+  end
+
   #def self.escape(s)
   #def self.last_match(index=nil)
   #def self.quote(s)
   
-  #def ===(regexp)
-  #def ~(rxp)
+  def ===(other)
+    self =~ other
+  end
+
+  def ~
+    self =~ $_
+  end
   
   def casefold?
     options & IGNORECASE == IGNORECASE
@@ -41,6 +50,22 @@ class Regexp
   end
   
   private
+  def self.do_union(*expressions)
+    case expressions.size
+      when 0: '(?!)'
+      when 1: part_of_union(expressions[0])
+      else part_of_union(expressions[0]) + '|'+ do_union(expressions[1,-1])
+    end
+  end
+  
+  def self.part_of_union(part)
+    if part.class == Regexp
+      part.to_s
+    else
+      '' + part
+    end
+  end
+  
   def positive_options(flags)
     ((flags & MULTILINE != 0) ? 'm' : '') +
     ((flags & IGNORECASE != 0) ? 'i' : '') +
@@ -55,9 +80,6 @@ class Regexp
     end
   end
   
-#irb(main):003:0> Regexp.union(/abc/.xm, /def/).to_s
-#NoMethodError: undefined method `xm' for /abc/:Regexp
-#        from (irb):3
 #irb(main):004:0> Regexp.union(/abc/xm, /def/).to_s
 #=> "(?-mix:(?mx-i:abc)|(?-mix:def))"
 end

@@ -135,65 +135,65 @@ class RegExpTest < Test::Unit::TestCase
   def test_character_classes
     assert_match(['a3c'], /a[3b]c/, '12a3c45')
     assert_match(['abc'], /a[3b]c/, '12abc45')
-		assert_match(['abc'], /a[b-f]c/, '12abc45')
-		assert_match(['aec'], /a[b-f]c/, '12aec45')
-		assert_match(['a-c'], /a[-a-c]c/, '12a-c45')
-		assert_match(['abc'], /a[-a-c]c/, '12abc45')
-		assert_match(['a-c'], /a[-----a-c]c/, '12a-c45')
-		assert_match(['a-c'], /a[a-c-]c/, '12a-c45')
-		# TODO assert_raise(SyntaxError) do
-		#  eval("assert_match(['a-c'], /a[a--c]c/, '12a-c45')")
-		#end
-		assert_match(['a]c'], /a[ab\]]c/, '12a]c45')
-		assert_no_match(/a[ab\]]c/, '12a\c45')
-		
-		# Inverse classes
-		assert_match(['a3c'], /a[^bc]c/, '12a3c45')
-		assert_no_match(/a[^bc]c/, '12abc45')
-		assert_match(['a3c'], /a[^^^^^bc]c/, '12a3c45')
-		assert_no_match(/a[^^^^^bc]c/, '12a^c45')
-		assert_no_match(/a[^-bc]c/, '12a-c45')
-		
-		# Escapes
-		assert_match(['a3c'], /a[a-c\d]c/, '12a3c45')
-		assert_no_match(/a[a-c\d]c/, '12aec45')
-		# TODO assert_raise(SyntaxError) do
+    assert_match(['abc'], /a[b-f]c/, '12abc45')
+    assert_match(['aec'], /a[b-f]c/, '12aec45')
+    assert_match(['a-c'], /a[-a-c]c/, '12a-c45')
+    assert_match(['abc'], /a[-a-c]c/, '12abc45')
+    assert_match(['a-c'], /a[-----a-c]c/, '12a-c45')
+    assert_match(['a-c'], /a[a-c-]c/, '12a-c45')
+    # TODO assert_raise(SyntaxError) do
+    #  eval("assert_match(['a-c'], /a[a--c]c/, '12a-c45')")
+    #end
+    assert_match(['a]c'], /a[ab\]]c/, '12a]c45')
+    assert_no_match(/a[ab\]]c/, '12a\c45')
+
+    # Inverse classes
+    assert_match(['a3c'], /a[^bc]c/, '12a3c45')
+    assert_no_match(/a[^bc]c/, '12abc45')
+    assert_match(['a3c'], /a[^^^^^bc]c/, '12a3c45')
+    assert_no_match(/a[^^^^^bc]c/, '12a^c45')
+    assert_no_match(/a[^-bc]c/, '12a-c45')
+
+    # Escapes
+    assert_match(['a3c'], /a[a-c\d]c/, '12a3c45')
+    assert_no_match(/a[a-c\d]c/, '12aec45')
+    # TODO assert_raise(SyntaxError) do
   	#	eval("assert_match(['aFc'] /a[a-c\F]c/, '12aFc45')")
-		#end
-		assert_match(['a-c'], /a[a-c\-]c/, '12a-c45')
-		assert_match(['a.c'], /a[abc\.]c/, '12a.c45')
-		assert_match(['a.c'], /a[abc.]c/, '12a.c45')
-		# TODO assert_match(['a\\c'], /a[ab\\c]c/, '12a\\c45')
-		assert_match(['abc'], /a[ab\d]c/, '12abc45')
-		assert_no_match(/a[ab\d]c/, '12adc45')
+    #end
+    assert_match(['a-c'], /a[a-c\-]c/, '12a-c45')
+    assert_match(['a.c'], /a[abc\.]c/, '12a.c45')
+    assert_match(['a.c'], /a[abc.]c/, '12a.c45')
+    # TODO assert_match(['a\\c'], /a[ab\\c]c/, '12a\\c45')
+    assert_match(['abc'], /a[ab\d]c/, '12abc45')
+    assert_no_match(/a[ab\d]c/, '12adc45')
     assert_match(['abc'], /a[^\[\]]c/, '12abc45')
 		
-		# POSIX character classes
-		assert_match(['a3c'], /a[b[:digit:]]c/, '12a3c45')
-		assert_match(['abc'], /a[b[:digit:]]c/, '12abc45')
-		assert_match(['abc'], /a[[:alnum:]]c/, '12abc45')
-		assert_match(['a3c'], /a[[:alnum:]]c/, '12a3c45')
-		assert_match(['abc'], /a[[:alpha:]]c/, '12abc45')
-		assert_match(['a c'], /a[[:blank:]]c/, '12a c45')
-		# Doesn't work currently because the parser does not convert \n to a newline
-		# TODO assert_match(["a\nc"], /a[[:cntrl:]]c/, "12a\nc45")
-		assert_match(['a.c'], /a[[:graph:]]c/, "12a.c45")
-		assert_match(['abc'], /a[[:lower:]]c/, "12abc45")
-		assert_match(['abc'], /a[[:print:]]c/, "12abc45")
-		assert_match(['a.c'], /a[[:punct:]]c/, "12a.c45")
-		assert_match(['a c'], /a[[:space:]]c/, "12a c45")
-		assert_match(['aBc'], /a[[:upper:]]c/, "12aBc45")
-		assert_match(['aFc'], /a[[:xdigit:]]c/, "12aFc45")
-		# TODO assert_raise(SyntaxError) do
-		#  eval("assert_no_match(/a[b[:digits:]]c/, '12abc45')")
-		#end
+    # POSIX character classes
+    assert_match(['a3c'], /a[b[:digit:]]c/, '12a3c45')
+    assert_match(['abc'], /a[b[:digit:]]c/, '12abc45')
+    assert_match(['abc'], /a[[:alnum:]]c/, '12abc45')
+    assert_match(['a3c'], /a[[:alnum:]]c/, '12a3c45')
+    assert_match(['abc'], /a[[:alpha:]]c/, '12abc45')
+    assert_match(['a c'], /a[[:blank:]]c/, '12a c45')
+    # Doesn't work currently because the parser does not convert \n to a newline
+    # TODO assert_match(["a\nc"], /a[[:cntrl:]]c/, "12a\nc45")
+    assert_match(['a.c'], /a[[:graph:]]c/, "12a.c45")
+    assert_match(['abc'], /a[[:lower:]]c/, "12abc45")
+    assert_match(['abc'], /a[[:print:]]c/, "12abc45")
+    assert_match(['a.c'], /a[[:punct:]]c/, "12a.c45")
+    assert_match(['a c'], /a[[:space:]]c/, "12a c45")
+    assert_match(['aBc'], /a[[:upper:]]c/, "12aBc45")
+    assert_match(['aFc'], /a[[:xdigit:]]c/, "12aFc45")
+    # TODO assert_raise(SyntaxError) do
+    #  eval("assert_no_match(/a[b[:digits:]]c/, '12abc45')")
+    #end
   end
   
   def test_anchors
     # ^
     assert_no_match(/^abc/, '12abc34')
     assert_match(['abc'], /^abc/, 'abc34')
-		assert_no_match(/a^bc/, '12abc34')
+    assert_no_match(/a^bc/, '12abc34')
 
     # $
     assert_no_match(/abc$/, '12abc34')
@@ -203,19 +203,19 @@ class RegExpTest < Test::Unit::TestCase
     # \A
     assert_no_match(/\Aabc/, '12abc34')
     assert_match(['abc'], /\Aabc/, 'abc34')
-		assert_no_match(/a\Abc/, '12abc34')
+    assert_no_match(/a\Abc/, '12abc34')
 		
-		# \z
+    # \z
     assert_no_match(/abc\z/, '12abc34')
     assert_match(['abc'], /abc\z/, '12abc')
     assert_no_match(/ab\zc/, '12abc34')
     assert_no_match(/abc\z/, "12abc\n")
 		
-		# \Z
+    # \Z
     assert_no_match(/abc\Z/, '12abc34')
     assert_match(['abc'], /abc\Z/, '12abc')
     assert_no_match(/ab\Zc/, '12abc34')
-		# Doesn't work currently because the parser does not convert \n to a newline
+    # Doesn't work currently because the parser does not convert \n to a newline
     # TODO assert_match(['abc'], /abc\Z/, "12abc\n")
     
     # \b
@@ -231,10 +231,10 @@ class RegExpTest < Test::Unit::TestCase
     assert_match(['cd'], /\Bcd/, 'abcd')
     
     # \G
-	  # TODO: Test with repetitive matches...
+    # TODO: Test with repetitive matches...
     assert_no_match(/\Gabc/, '12abc34')
     assert_match(['abc'], /\Gabc/, 'abc34')
-		assert_no_match(/a\Gbc/, '12abc34')
+    assert_no_match(/a\Gbc/, '12abc34')
   end
   
   def test_extensions
@@ -319,8 +319,8 @@ class RegExpTest < Test::Unit::TestCase
 #	    assertNoMatch("a.c(?-m)a.c", "12a\nca\nc45", RegularExpressionTranslator.MULTILINE);
 	    
     # Total confusion of option switching
-	  assert_no_match(/(?i)a(?i-i)bc/, '12aBc45')
-	  assert_no_match(/a(?i-i)bc/, '12aBc45')
+    assert_no_match(/(?i)a(?i-i)bc/, '12aBc45')
+    assert_no_match(/a(?i-i)bc/, '12aBc45')
     #assert_raise(RegexpError) { Regexp.new('b(?ih)c') }
   end
   
@@ -337,6 +337,18 @@ class RegExpTest < Test::Unit::TestCase
     assert /abc/ != 'abc'
   end
   
+  def test_case_equality
+    assert /abc/ === '12abc45'
+    assert !(/abd/ === '12abc45')
+    case '12abc45'
+      when /abd/: res = 1
+      when /abc/: res = 2
+      when /abe/: res = 3
+      else res = 4
+    end
+    assert_equal 2, res
+  end
+  
   def test_to_s
     assert_equal '(?-mix:abc)', /abc/.to_s
     assert_equal '(?mix:abc)', Regexp.new('abc',
@@ -347,6 +359,24 @@ class RegExpTest < Test::Unit::TestCase
     assert_equal '/ab/', /ab/.inspect
     assert_equal '/ab/mx', Regexp.new('ab', Regexp::MULTILINE | Regexp::EXTENDED).inspect
     assert_equal '/ab/mix', Regexp.new('ab', Regexp::MULTILINE | Regexp::IGNORECASE | Regexp::EXTENDED).inspect
+  end
+  
+  def test_match_constant
+    $_ = '12abc45'
+    assert ~ /abc/
+    assert !(~ /abd/)
+  end
+  
+  def test_union
+    assert_equal '(?!)', Regexp.union().source
+    assert_equal 'abc', Regexp.union('abc').source
+    assert_equal 'a\(c', Regexp.union('a(c').source
+    assert_equal 'abc', Regexp.union(/abc/).source
+    assert_equal 'abc|def', Regexp.union('abc', 'def').source
+    assert_equal 'abc|def|ghi', Regexp.union('abc', 'def', 'ghi').source
+    assert_equal '(?-mix:abc)|(?-mix:def)', Regexp.union(/abc/, /def/).source
+    assert_equal '(?-mix:abc)|(?-mix:def)|(?-mix:ghi)', Regexp.union(/abc/, /def/, /ghi/).source
+    assert_equal 'abc|(?-mix:def)', Regexp.union('abc', /def/).source
   end
   
   private
@@ -404,5 +434,8 @@ do_test "test_anchors"
 do_test "test_extensions"
 do_test "test_options"
 do_test "test_equals"
+do_test "test_case_equality"
 do_test "test_to_s"
 do_test "test_inspect"
+do_test "test_match_constant"
+#do_test "test_union"
