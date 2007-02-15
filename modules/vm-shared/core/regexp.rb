@@ -10,26 +10,49 @@ class Regexp
   IGNORECASE = 1
   EXTENDED = 2
   MULTILINE = 4
+
+  def self.compile(expression, options=0, language=nil)
+    # Ignore the language argument
+    self.new(expression, options)
+  end
   
-  def to_s
-    "(?#{positive_options(options)}#{negative_options(options)}:#{source})"
+  #def self.escape(s)
+  #def self.last_match(index=nil)
+  #def self.quote(s)
+  
+  #def ===(regexp)
+  #def ~(rxp)
+  
+  def casefold?
+    options & IGNORECASE == IGNORECASE
   end
   
   def inspect
     "/#{source}/#{positive_options(options)}"
   end
 
+  def kcode
+    # We don't support different character set codes
+    nil
+  end
+
+  def to_s
+    "(?#{positive_options(options)}#{negative_options(options)}:#{source})"
+  end
+  
   private
   def positive_options(flags)
-    m = (flags & MULTILINE != 0) ? 'm' : ''
-    i = (flags & IGNORECASE != 0) ? 'i' : ''
-    x =  (flags & EXTENDED != 0) ? 'x' : ''
-    m + i + x
+    ((flags & MULTILINE != 0) ? 'm' : '') +
+    ((flags & IGNORECASE != 0) ? 'i' : '') +
+    ((flags & EXTENDED != 0) ? 'x' : '')
   end
   
   def negative_options(flags)
-    return '' if flags == 7
-    return '-' + positive_options(flags ^ 7)
+    if flags == 7
+      ''
+    else
+      '-' + positive_options(flags ^ 7)
+    end
   end
   
 #irb(main):003:0> Regexp.union(/abc/.xm, /def/).to_s

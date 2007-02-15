@@ -9,6 +9,7 @@ import com.trifork.hotruby.objects.RubyRegexp;
 import com.trifork.hotruby.objects.RubyString;
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
 import com.trifork.hotruby.runtime.MetaClass;
+import com.trifork.hotruby.runtime.PublicMethodN;
 import com.trifork.hotruby.runtime.RubyBlock;
 import com.trifork.hotruby.runtime.RubyMethod;
 import com.trifork.hotruby.runtime.Selector;
@@ -36,16 +37,29 @@ public abstract class RubyBaseClassRegexp extends RubyClass {
 				return ((RubyRegexp) receiver).op_eqmatch(expr);
 			}
 		});
-		meta.register_instance_method("initialize", new PublicMethod2() {
+		meta.register_instance_method("initialize", new PublicMethodN() {
+            @Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject expr,
+					RubyBlock b) {
+				return ((RubyRegexp) receiver).initialize(expr);
+			}
+
+			@Override
 			public IRubyObject call(IRubyObject receiver, IRubyObject expr1,
 					IRubyObject expr2, RubyBlock b) {
 				return ((RubyRegexp) receiver).initialize(expr1, expr2);
 			}
 
-			public IRubyObject call(IRubyObject receiver, IRubyObject expr,
-					RubyBlock b) {
-				return ((RubyRegexp) receiver).initialize(expr);
+            @Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject[] args,
+					RubyBlock block) {
+				return ((RubyRegexp) receiver).initialize(args);
 			}
+
+        	@Override
+        	public int getArity() {
+        		return 3;
+        	}
 		});
 		meta.register_instance_method("options", new PublicMethod0() {
 			@Override

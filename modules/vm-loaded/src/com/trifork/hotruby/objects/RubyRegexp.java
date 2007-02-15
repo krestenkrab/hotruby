@@ -45,6 +45,11 @@ public class RubyRegexp extends RubyBaseRegexp {
 		return LoadedRubyRuntime.NIL;
 	}
 	
+	public IRubyObject initialize(IRubyObject[] args) {
+		// Ignore the 3rd argument (language)
+		return initialize(args[0], args[1]);
+	}
+
 	private void do_initialize(String regexp, int flags)
 	{
 		this.flags = flags;

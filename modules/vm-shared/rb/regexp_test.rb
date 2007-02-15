@@ -7,6 +7,16 @@ class RegExpTest < Test::Unit::TestCase
     assert_match(['bcd'], /bcd/, 'abcde')
   end
   
+  def test_constructors
+    assert_match(['bcd'], Regexp.new('bcd'), 'abcde')
+    assert_match(['bcd'], Regexp.new('bcd', Regexp::MULTILINE), 'abcde')
+    assert_match(['bcd'], Regexp.new('bcd', Regexp::MULTILINE, 'n'), 'abcde')
+
+    assert_match(['bcd'], Regexp.compile('bcd'), 'abcde')
+    assert_match(['bcd'], Regexp.compile('bcd', Regexp::MULTILINE), 'abcde')
+    assert_match(['bcd'], Regexp.compile('bcd', Regexp::MULTILINE, 'n'), 'abcde')
+  end
+  
   def test_specialchars
     assert_match(['%&'], /%&/, '!@%&-_=+')
   end
@@ -179,7 +189,6 @@ class RegExpTest < Test::Unit::TestCase
 		#end
   end
   
-  
   def test_anchors
     # ^
     assert_no_match(/^abc/, '12abc34')
@@ -274,6 +283,9 @@ class RegExpTest < Test::Unit::TestCase
     assert_match(['abcaBc'], /abc(?i:abc)/, '12abcaBc45')
     assert_no_match(/abc(?i)abc(?-i)abc/, '12abcaBcaBc45')
     assert_no_match(Regexp.new('abc(?-i)abc', Regexp::IGNORECASE), '12aBcaBc45')
+    # casefold?
+    assert !(Regexp.new('abc', 0).casefold?)
+    assert Regexp.new('abc', Regexp::IGNORECASE).casefold?
 		
     # Extended
 # TODO    s = <<HERE
@@ -373,6 +385,7 @@ def do_test(name)
 end
 
 do_test "test_simple"
+do_test "test_constructors"
 do_test "test_specialchars"
 do_test "test_escape"
 do_test "test_too_many_ending_parentheses"
