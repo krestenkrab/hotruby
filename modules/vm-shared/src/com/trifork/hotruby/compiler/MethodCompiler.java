@@ -27,6 +27,7 @@ import com.trifork.hotruby.objects.IRubyFixnum;
 import com.trifork.hotruby.objects.IRubyFloat;
 import com.trifork.hotruby.objects.IRubyHash;
 import com.trifork.hotruby.objects.IRubyNilClass;
+import com.trifork.hotruby.objects.IRubyObject;
 import com.trifork.hotruby.objects.IRubyProc;
 import com.trifork.hotruby.objects.IRubyRange;
 import com.trifork.hotruby.objects.IRubyRegexp;
@@ -40,6 +41,7 @@ import com.trifork.hotruby.runtime.Global;
 import com.trifork.hotruby.runtime.MetaClass;
 import com.trifork.hotruby.runtime.MetaModule;
 import com.trifork.hotruby.runtime.NonLocalBreak;
+import com.trifork.hotruby.runtime.NonLocalNext;
 import com.trifork.hotruby.runtime.NonLocalReturn;
 import com.trifork.hotruby.runtime.RaisedException;
 import com.trifork.hotruby.runtime.RubyIvarAccessor;
@@ -110,6 +112,10 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 
 	private static final Method JAVA_ARRAY_REST_METHOD = new Method(
 			"java_array_rest", IRUBYARRAY, new Type[] { IRUBYOBJECT_ARR,
+					Type.INT_TYPE, RUBY_RUNTIME_TYPE });
+
+	private static final Method JAVA_ARRAY_AT_METHOD = new Method(
+			"java_array_at", IRUBYARRAY, new Type[] { IRUBYOBJECT_ARR,
 					Type.INT_TYPE, RUBY_RUNTIME_TYPE });
 
 	private static final Type MATH_TYPE = Type.getType(Math.class);
@@ -247,7 +253,10 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 			Type.VOID_TYPE, new Type[] { IRUBYOBJECT });
 
 	private static final Type NONLOCAL_RETURN_EXCEPTION = Type
-			.getType(NonLocalReturn.class);
+	.getType(NonLocalReturn.class);
+
+	private static final Type NONLOCAL_NEXT_EXCEPTION = Type
+	.getType(NonLocalNext.class);
 
 	private static final Method NONLOCAL_RETURN_CONSTRUCTOR = new Method(
 			"<init>", Type.VOID_TYPE, new Type[] {
@@ -279,6 +288,9 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 	private static final Method IRUBYARRAY_INT_AT = new Method("int_at",
 			IRUBYOBJECT, new Type[] { Type.INT_TYPE });
 
+	private static final Method IRUBYARRAY_INT_REST = new Method("int_rest",
+			IRUBYARRAY, new Type[] { Type.INT_TYPE });
+
 	private static final Method PROC_TO_BLOCK = new Method("get_block",
 			RUBYBLOCK, new Type[0]);
 
@@ -298,6 +310,9 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 	private static final Method NONLOCAL_BREAK_CONSTRUCTOR = new Method(
 			"<init>", Type.VOID_TYPE, new Type[] { IRUBYOBJECT });
 
+	private static final Method NONLOCAL_NEXT_CONSTRUCTOR = new Method(
+			"<init>", Type.VOID_TYPE, new Type[] {  });
+
 	private static final Type RAISEEXCEPTION_TYPE = Type
 			.getType(RaisedException.class);
 
@@ -309,10 +324,16 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 	private static final Method NEW_HASH = new Method("newHash", IRUBYHASH,
 			new Type[0]);
 
-	private static final Method NONLOCAL_RETURN_PERFORM = new Method("perform", IRUBYOBJECT, new Type[] { EXPOSED_LOCALS_TYPE });
+	private static final Method NONLOCAL_RETURN_PERFORM = new Method("perform",
+			IRUBYOBJECT, new Type[] { EXPOSED_LOCALS_TYPE });
 
-	private static final Method CONVERT_RESTARG_TO_ARRAY = new Method("convert_rest_arg_to_array", IRUBYOBJECT_ARR, new Type[] { IRUBYOBJECT, Type.INT_TYPE, RUBY_RUNTIME_TYPE});
-	private static final Method MAKE_RETURN_VALUE = new Method("make_return_value", IRUBYOBJECT, new Type[] { IRUBYOBJECT, RUBY_RUNTIME_TYPE});
+	private static final Method CONVERT_RESTARG_TO_ARRAY = new Method(
+			"convert_rest_arg_to_array", IRUBYOBJECT_ARR, new Type[] {
+					IRUBYOBJECT, Type.INT_TYPE, RUBY_RUNTIME_TYPE });
+
+	private static final Method MAKE_RETURN_VALUE = new Method(
+			"make_return_value", IRUBYOBJECT, new Type[] { IRUBYOBJECT,
+					RUBY_RUNTIME_TYPE });
 
 	private static final boolean DEBUG_WRITE_CLASSES = CodeGen.DEBUG_WRITE_CLASSES;
 
@@ -421,15 +442,15 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 		byte[] bytes = cw.toByteArray();
 
 		if (DEBUG_WRITE_CLASSES) {
-		try {
-			String name = fullName + ".rclass";
-			FileOutputStream fo = new FileOutputStream(name);
-			fo.write(bytes);
-			fo.close();
-			System.out.println("wrote " + name);
-		} catch (IOException ex) {
-			ex.printStackTrace();
-		}
+			try {
+				String name = fullName + ".rclass";
+				FileOutputStream fo = new FileOutputStream(name);
+				fo.write(bytes);
+				fo.close();
+				System.out.println("wrote " + name);
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
 		}
 
 		Class bc = runtime.getClassLoader().doDefineClass(fullName, bytes);
@@ -1019,7 +1040,7 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 					call.rbLoadLocal(value_loc, IRUBYOBJECT);
 					call.invokeVirtual(RUBY_IVAR_ACCESSOR_TYPE, IVAR_SET);
 					call.rbLoadLocal(value_loc, IRUBYOBJECT);
-					
+
 					locals_in_use--;
 				}
 
@@ -1122,17 +1143,16 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 				call.goTo(t);
 				continue next_insn;
 			}
-			
+
 			case MAKERETURN: {
 				emit_load_runtime(call);
 				call.invokeStatic(COMPILEDCODEUTIL, MAKE_RETURN_VALUE);
 				continue next_insn;
 			}
 
-			
 			case EXPAND_REST_ARG: {
 				int n_pre_args = code[pc++];
-				
+
 				//
 				call.push(n_pre_args);
 				// obj pre
@@ -1141,16 +1161,16 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 				call.invokeStatic(COMPILEDCODEUTIL, CONVERT_RESTARG_TO_ARRAY);
 				// irubyobject[]
 				if (n_pre_args > 0) {
-				  int arr_pos = locals_in_use++;
-				  call.rbStoreLocal(arr_pos, IRUBYOBJECT_ARR);
-				  pop_args_into(call, n_pre_args, arr_pos);
-				  call.rbLoadLocal(arr_pos, IRUBYOBJECT_ARR);
-				  locals_in_use--;
+					int arr_pos = locals_in_use++;
+					call.rbStoreLocal(arr_pos, IRUBYOBJECT_ARR);
+					pop_args_into(call, n_pre_args, arr_pos);
+					call.rbLoadLocal(arr_pos, IRUBYOBJECT_ARR);
+					locals_in_use--;
 				}
-				
+
 				continue next_insn;
 			}
-			
+
 			case INTERNAL_TO_A: {
 				call.dup();
 				call.instanceOf(IRUBYARRAY);
@@ -1180,6 +1200,44 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 				call.invokeInterface(IRUBYARRAY, IRUBYARRAY_INT_AT);
 				continue next_insn;
 			}
+			
+			case ARRAY_REST: {
+				int idx = code[pc++];
+				call.checkCast(IRUBYARRAY);
+				call.push(idx);
+				call.invokeInterface(IRUBYARRAY, IRUBYARRAY_INT_REST);
+				continue next_insn;
+			}
+
+
+			
+			case JAVA_ARRAY_AT: {
+				int idx = code[pc++];
+				call.dup();
+				call.arrayLength();
+				call.push(idx);
+				Label done = call.newLabel();
+				Label nil = call.newLabel();
+				call.ifICmp(call.GE, nil);
+				call.push(idx);
+				call.arrayLoad(IRUBYARRAY);
+				call.goTo(done);
+				
+				call.mark(nil);
+				call.pop();
+				emit_load_nil(call);
+				
+				call.mark(done);
+				continue next_insn;
+			}
+
+			case JAVA_ARRAY_REST: {
+				int idx = code[pc++];
+				call.push(idx);
+				emit_load_runtime(call);
+				call.invokeStatic(COMPILEDCODEUTIL, JAVA_ARRAY_REST_METHOD);
+				continue next_insn;
+			}
 
 			case PROC2BLOCK: {
 				call.checkCast(IRUBYPROC);
@@ -1204,6 +1262,7 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 			}
 
 			case Instructions.NEWHASH: {
+				int size = code[pc++];
 				emit_load_runtime(call);
 				call.invokeVirtual(RUBY_RUNTIME_TYPE, NEW_HASH);
 				continue next_insn;
@@ -1266,14 +1325,14 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 				call.invokeVirtual(RUBY_RUNTIME_TYPE, NEW_ARRAY_METHOD);
 
 				locals_in_use--;
-				
+
 				continue next_insn;
 			}
 
 			case INVOKEBLOCK: {
 
 				int save = locals_in_use;
-				
+
 				if (block_idx == -1 && iseq.getCodeType() == ISEQ_TYPE_BLOCK) {
 					block_idx = locals_in_use++;
 					call.loadThis();
@@ -1391,7 +1450,7 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 				}
 
 				locals_in_use = save;
-				
+
 				if (block_idx >= save) {
 					block_idx = -1;
 				}
@@ -1402,7 +1461,7 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 			case INVOKESUPER:
 			case SELFSEND:
 			case SEND: {
-				int save = locals_in_use;
+				int save = locals_in_use++;
 
 				// special flags
 				int flags = code[pc++];
@@ -1459,12 +1518,88 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 
 				Label handler_start = call.mark();
 
+				int last_arg_loc = -1;
+				int all_arg_loc = -1;
+
 				if ((flags & FLAG_REST_ARG) == FLAG_REST_ARG) {
-					throw new InternalError("cannot compile code with *arg");
+					
+					all_arg_loc = locals_in_use++;
+					call.rbStoreLocal(all_arg_loc, IRUBYOBJECT_ARR);
+
+					/*
+					// top-of-stack is varargs array
+
+					// arg0, arg1, .., argN, arg[V]
+					call.dup();
+					// arg0, arg1, .., argN, arg[V], arg[V]
+
+					int vargs = locals_in_use++;
+					call.rbStoreLocal(vargs, IRUBYOBJECT_ARR);
+					// arg0, arg1, .., argN, arg[V]
+
+					call.arrayLength();
+					// arg0, arg1, .., argN, V
+					call.dup();
+					// arg0, arg1, .., argN, V, V
+					int vpos = locals_in_use++;
+					call.rbStoreLocal(vpos, Type.INT_TYPE);
+					// arg0, arg1, .., argN, V
+
+					call.push(nargs);
+					// arg0, arg1, .., argN, V, N
+					call.math(GeneratorAdapter.ADD, Type.INT_TYPE);
+					// arg0, arg1, .., argN, V+N
+
+					call.newArray(IRUBYOBJECT);
+					// arg0, arg1, .., argN, all[V+N]
+
+					all_arg_loc = locals_in_use++;
+					call.rbStoreLocal(all_arg_loc, IRUBYOBJECT_ARR);
+					// arg0, arg1, .., argN
+
+					Label loop = call.mark();
+
+					call.rbLoadLocal(vpos, Type.INT_TYPE);
+
+					// arg0, arg1, .., argN, V
+
+					Label done = call.newLabel();
+					call.ifZCmp(GeneratorAdapter.EQ, done);
+					// arg0, arg1, .., argN
+
+					call.rbLoadLocal(all_arg_loc, IRUBYOBJECT_ARR);
+					// arg0, arg1, .., argN, all[V+N]
+					call.rbLoadLocal(vpos, Type.INT_TYPE);
+					// arg0, arg1, .., argN, all, V
+					call.push(1);
+					// arg0, arg1, .., argN, all, V, 1
+					call.math(GeneratorAdapter.SUB, Type.INT_TYPE);
+					// arg0, arg1, .., argN, all, V-1
+					call.dup();
+					// arg0, arg1, .., argN, all, V-1, V-1
+					call.rbStoreLocal(vpos, Type.INT_TYPE);
+					// arg0, arg1, .., argN, all, V-1
+					call.push(nargs);
+					// arg0, arg1, .., argN, all, V-1, N
+					call.math(GeneratorAdapter.ADD, Type.INT_TYPE);
+					// arg0, arg1, .., argN, all, V-1+N
+
+					call.rbLoadLocal(vargs, IRUBYOBJECT_ARR);
+					// arg0, arg1, .., argN, all, V-1+N, vargs
+					call.rbLoadLocal(vpos, Type.INT_TYPE);
+					// arg0, arg1, .., argN, all, V-1+N, vargs, V-1
+					call.arrayLoad(IRUBYOBJECT);
+					// arg0, arg1, .., argN, all, V-1+N, vargX
+					call.arrayStore(IRUBYOBJECT);
+					// arg0, arg1, .., argN
+					call.goTo(loop);
+
+					call.mark(done);
+
+					pop_args_into(call, nargs, all_arg_loc);
+					*/
 				} else {
 
-					int last_arg_loc = -1;
-					int all_arg_loc = -1;
 					if (nargs > 2) {
 						call.push(nargs);
 						call.newArray(IRUBYOBJECT);
@@ -1482,69 +1617,71 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 							call.rbStoreLocal(save_pos, IRUBYOBJECT);
 						}
 					}
+				}
 
-					int receiver_loc = locals_in_use++;
+				int receiver_loc = locals_in_use++;
 
-					// now receiver is on stack
+				// now receiver is on stack
 
-					if (opcode == SELFSEND) {
-						call.rbStoreLocal(receiver_loc, IRUBYOBJECT);
-						call.getStatic(self_type,
-								selfSendMethodAccessorName(selector_pos),
-								METHODACCESSOR_TYPE);
-						call.invokeVirtual(METHODACCESSOR_TYPE,
-								METHODACCESSOR_GET);
-						call.rbLoadLocal(receiver_loc, IRUBYOBJECT);
-					} else if (opcode == INVOKESUPER) {
-						call.rbStoreLocal(receiver_loc, IRUBYOBJECT);
-						call.getStatic(self_type,
-								superSendMethodAccessorName(),
-								METHODACCESSOR_TYPE);
-						call.invokeVirtual(METHODACCESSOR_TYPE,
-								METHODACCESSOR_GET);
-						call.rbLoadLocal(receiver_loc, IRUBYOBJECT);
-					} else {
-						call.dup(); // dup receiver for do_select
-						call.rbStoreLocal(receiver_loc, IRUBYOBJECT);
-						emit_push_selector(call, selector_pos);
-						call.invokeInterface(IRUBYOBJECT, DO_SELECT_METHOD);
-						call.rbLoadLocal(receiver_loc, IRUBYOBJECT);
+				if (opcode == SELFSEND) {
+					call.rbStoreLocal(receiver_loc, IRUBYOBJECT);
+					call.getStatic(self_type,
+							selfSendMethodAccessorName(selector_pos),
+							METHODACCESSOR_TYPE);
+					call.invokeVirtual(METHODACCESSOR_TYPE, METHODACCESSOR_GET);
+					call.rbLoadLocal(receiver_loc, IRUBYOBJECT);
+				} else if (opcode == INVOKESUPER) {
+					call.rbStoreLocal(receiver_loc, IRUBYOBJECT);
+					call.getStatic(self_type, superSendMethodAccessorName(),
+							METHODACCESSOR_TYPE);
+					call.invokeVirtual(METHODACCESSOR_TYPE, METHODACCESSOR_GET);
+					call.rbLoadLocal(receiver_loc, IRUBYOBJECT);
+				} else {
+					call.dup(); // dup receiver for do_select
+					call.rbStoreLocal(receiver_loc, IRUBYOBJECT);
+					emit_push_selector(call, selector_pos);
+					call.invokeInterface(IRUBYOBJECT, DO_SELECT_METHOD);
+					call.rbLoadLocal(receiver_loc, IRUBYOBJECT);
+				}
+
+				if (last_arg_loc != -1) {
+					for (int i = 0; i < nargs; i++) {
+						int restore_pos = last_arg_loc + nargs - i - 1;
+						// System.out.println("restoring from " +
+						// restore_pos);
+						call.rbLoadLocal(restore_pos, IRUBYOBJECT);
+					}
+				} else {
+					call.rbLoadLocal(all_arg_loc, IRUBYOBJECT_ARR);
+				}
+
+				if (call_block_idx != -1) {
+					call.rbLoadLocal(call_block_idx, RUBYBLOCK);
+				} else if (block_type != null) {
+
+					// instantiate block
+					call.newInstance(block_type);
+					call.dup();
+
+					emit_load_self(call, iseq, compiled_self_type,
+							type_of_self, self_idx);
+
+					call.rbLoadLocal(block_idx, RUBYBLOCK);
+
+					if (dvars_idx != -1) {
+						call.rbLoadLocal(dvars_idx, EXPOSED_LOCALS_TYPE);
 					}
 
-					if (last_arg_loc != -1) {
-						for (int i = 0; i < nargs; i++) {
-							int restore_pos = last_arg_loc + nargs - i - 1;
-							// System.out.println("restoring from " +
-							// restore_pos);
-							call.rbLoadLocal(restore_pos, IRUBYOBJECT);
-						}
-					} else {
-						call.rbLoadLocal(all_arg_loc, IRUBYOBJECT_ARR);
-					}
+					call.invokeConstructor(block_type, block_init_method);
 
-					if (call_block_idx != -1) {
-						call.rbLoadLocal(call_block_idx, RUBYBLOCK);
-					} else if (block_type != null) {
+				} else {
+					call.push((String) null);
+				}
 
-						// instantiate block
-						call.newInstance(block_type);
-						call.dup();
-
-						emit_load_self(call, iseq, compiled_self_type,
-								type_of_self, self_idx);
-
-						call.rbLoadLocal(block_idx, RUBYBLOCK);
-
-						if (dvars_idx != -1) {
-							call.rbLoadLocal(dvars_idx, EXPOSED_LOCALS_TYPE);
-						}
-
-						call.invokeConstructor(block_type, block_init_method);
-
-					} else {
-						call.push((String) null);
-					}
-
+				if ((flags & FLAG_REST_ARG) == FLAG_REST_ARG) {
+					assert (all_arg_loc != -1);
+					call.invokeVirtual(RUBYMETHOD, CALLN);
+				} else {
 					switch (nargs) {
 					case 0:
 						call.invokeVirtual(RUBYMETHOD, CALL0);
@@ -1561,41 +1698,40 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 						assert (all_arg_loc != -1);
 						call.invokeVirtual(RUBYMETHOD, CALLN);
 					}
-
-					if ((flags & FLAG_PUSH_RESULT) == 0) {
-						call.pop();
-					}
-					
 				}
-				
+
+				if ((flags & FLAG_PUSH_RESULT) == 0) {
+					call.pop();
+				}
+
 				locals_in_use = save;
-				
+
 				if (non_local_block_exit != 0) {
 					Label handler_end = call.mark();
-					
+
 					Label after = call.newLabel();
 					call.goTo(after);
-					
+
 					// handle non-local return
-					
+
 					if ((non_local_block_exit & FLAG_NONLOCAL_RETURN) != 0) {
-						call.catchException(handler_start, handler_end, NONLOCAL_RETURN_EXCEPTION);
+						call.catchException(handler_start, handler_end,
+								NONLOCAL_RETURN_EXCEPTION);
 						if (dvars_idx != -1) {
 							call.rbLoadLocal(dvars_idx, EXPOSED_LOCALS_TYPE);
 						} else {
-							call.push((String)null);
+							call.push((String) null);
 						}
-						call.invokeVirtual(NONLOCAL_RETURN_EXCEPTION, NONLOCAL_RETURN_PERFORM);
+						call.invokeVirtual(NONLOCAL_RETURN_EXCEPTION,
+								NONLOCAL_RETURN_PERFORM);
 						call.returnValue();
-						
+
 					}
-					
-					
+
 					call.mark(after);
-					
+
 				}
-				
-				
+
 				continue next_insn;
 			}
 
@@ -1776,7 +1912,7 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 				} else {
 					call.rbLoadLocal(dvars_idx, EXPOSED_LOCALS_TYPE);
 				}
-				
+
 				call.rbLoadLocal(result_idx, IRUBYOBJECT);
 
 				call.invokeConstructor(NONLOCAL_RETURN_EXCEPTION,
@@ -1794,6 +1930,15 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 				call.push((String) null);
 				call.invokeConstructor(NONLOCAL_BREAK_EXCEPTION,
 						NONLOCAL_BREAK_CONSTRUCTOR);
+				call.throwException();
+				continue next_insn;
+			}
+
+			case Instructions.NONLOCAL_NEXT: {
+				call.newInstance(NONLOCAL_NEXT_EXCEPTION);
+				call.dup();
+				call.invokeConstructor(NONLOCAL_NEXT_EXCEPTION,
+						NONLOCAL_NEXT_CONSTRUCTOR);
 				call.throwException();
 				continue next_insn;
 			}
@@ -1935,19 +2080,18 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 
 		ra.endMethod();
 
-		
 		byte[] bytes = cw.toByteArray();
 
 		if (DEBUG_WRITE_CLASSES) {
-		try {
-			String name = fullName + ".rclass";
-			FileOutputStream fo = new FileOutputStream(name);
-			fo.write(bytes);
-			fo.close();
-			System.out.println("wrote " + name);
-		} catch (IOException ex) {
-			ex.printStackTrace();
-		}
+			try {
+				String name = fullName + ".rclass";
+				FileOutputStream fo = new FileOutputStream(name);
+				fo.write(bytes);
+				fo.close();
+				System.out.println("wrote " + name);
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
 		}
 
 		Class bc = runtime.getClassLoader().doDefineClass(fullName, bytes);
@@ -2009,6 +2153,7 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 			call.swap();
 			// all_args N argN
 			call.arrayStore(IRUBYOBJECT);
+			// empty
 		}
 	}
 

@@ -407,7 +407,7 @@ public class RegularExpressionTranslator {
 
 	private boolean extension(String javaExtension)
 	{
-		assert current() == ':';
+		//assert current() == ':';
 		advanceAndExpectMore();
 		append(javaExtension);
 		if (!parseRegularExpression(true))

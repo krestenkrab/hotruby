@@ -299,10 +299,11 @@ public class MethodCallExpression extends Expression {
 
 			arg_count += 1;
 			ctx.emit_getlocal(loc);
-			ctx.free_temp(loc);
 
 			ctx.emit_send(method + "=", arg_count, has_rest_arg, has_block_arg,
 					push, block);
+
+			ctx.free_temp(loc);
 		}
 	}
 

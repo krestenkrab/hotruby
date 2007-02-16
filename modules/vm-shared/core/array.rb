@@ -101,7 +101,7 @@ class Array
      case val.class
      when ::Fixnum
         return self.at(val) if length==nil
-        range = (val)...(val+length)        
+        range = (val)..(val+length)        
      when ::Range
         range = val
      else

@@ -21,7 +21,7 @@ import com.trifork.hotruby.objects.IRubyModule;
 
 public class CodeGen implements Opcodes, CompilerConsts {
 
-	public static final boolean DEBUG_WRITE_CLASSES = false;
+	public static final boolean DEBUG_WRITE_CLASSES = true;
 	private final RubyRuntime runtime;
 
 	public CodeGen(RubyRuntime runtime) {

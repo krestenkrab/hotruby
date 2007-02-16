@@ -93,6 +93,8 @@ public class CaseExpression extends Expression {
 			ctx.set_stack_depth(st);
 
 			elseExpr.compile(ctx, push);
+		} else {
+			NilExpression.instance.compile(ctx, push);
 		}
 
 		ctx.mark(after_case_expr);
