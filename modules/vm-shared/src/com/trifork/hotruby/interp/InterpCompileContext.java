@@ -663,6 +663,11 @@ public class InterpCompileContext implements CompileContext, Instructions {
 		iseq.add_insn(FAST_GE, upper16(sel), lower16(sel));
 	}
 
+	public void emit_eqtilde() {
+		int sel = iseq.add_selector("=~");
+		iseq.add_insn(FAST_EQTILDE, upper16(sel), lower16(sel));
+	}
+
 	public void emit_gt() {
 		int sel = iseq.add_selector("<");
 		iseq.add_insn(FAST_GT, upper16(sel), lower16(sel));

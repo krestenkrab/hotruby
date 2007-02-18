@@ -29,12 +29,12 @@ public abstract class RubyBaseClassRegexp extends RubyClass {
         meta.register_instance_method("==", new PublicMethod1() {
             @Override
             public IRubyObject call(IRubyObject receiver, IRubyObject arg, RubyBlock block) {
-                return ((RubyRegexp)receiver).op_eq2(arg);
+                return ((RubyRegexp)receiver).fast_eq2(arg, null);
             }});
 		meta.register_instance_method("=~", new PublicMethod1() {
 			public IRubyObject call(IRubyObject receiver, IRubyObject expr,
 					RubyBlock b) {
-				return ((RubyRegexp) receiver).op_eqmatch(expr);
+				return ((RubyRegexp) receiver).fast_eqtilde(expr, null);
 			}
 		});
 		meta.register_instance_method("initialize", new PublicMethodN() {

@@ -924,6 +924,16 @@ public class BindingContext implements Instructions {
 						continue next_insn;
 					}
 
+					case FAST_EQTILDE: {
+						IRubyObject arg = (IRubyObject) stack[--sp];
+						IRubyObject rcv = (IRubyObject) stack[--sp];
+						Selector sel = lexical_bindings.selectors[ui(
+								code[pc++], code[pc++])];
+						state.setStackPointer(sp);
+						stack[sp++] = rcv.fast_eqtilde(arg, sel);
+						continue next_insn;
+					}
+
 					case FAST_BIT_OR: {
 						IRubyObject arg = (IRubyObject) stack[--sp];
 						IRubyObject rcv = (IRubyObject) stack[--sp];

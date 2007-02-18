@@ -197,6 +197,9 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 	private static final Method FAST_EQ2_METHOD = new Method("fast_eq2",
 			IRUBYOBJECT, new Type[] { IRUBYOBJECT, SELECTOR_TYPE });
 
+	private static final Method FAST_EQTILDE_METHOD = new Method("fast_eqtilde",
+			IRUBYOBJECT, new Type[] { IRUBYOBJECT, SELECTOR_TYPE });
+
 	private static final Method FAST_GT_METHOD = new Method("fast_gt",
 			IRUBYOBJECT, new Type[] { IRUBYOBJECT, SELECTOR_TYPE });
 
@@ -1854,6 +1857,13 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 				continue next_insn;
 			}
 
+			case FAST_EQTILDE: {
+				int sel_idx = ui(code[pc++], code[pc++]);
+				emit_push_selector(call, sel_idx);
+				call.invokeInterface(IRUBYOBJECT, FAST_EQTILDE_METHOD);
+				continue next_insn;
+			}
+
 			case FAST_GT: {
 				int sel_idx = ui(code[pc++], code[pc++]);
 				emit_push_selector(call, sel_idx);
@@ -1988,11 +1998,10 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 		if (self_is_module) {
 			return Type.getType("L"
 					+ meta.get_base_class_name().replace('.', '/') + ";");
-		} else {
-			return Type.getType("L"
-					+ ((MetaClass) meta).get_instance_class_name().replace('.',
-							'/') + ";");
 		}
+		return Type.getType("L"
+				+ ((MetaClass) meta).get_instance_class_name().replace('.',
+						'/') + ";");
 	}
 
 	private Type compile_block(ISeq iseq, boolean context_has_dvars) {

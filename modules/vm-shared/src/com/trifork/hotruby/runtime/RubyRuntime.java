@@ -393,6 +393,11 @@ public abstract class RubyRuntime {
 			return gval;
 		}
 	}
+	
+	public void makeThreadLocal(String name) {
+		Global g = getGlobal(name);
+		g.becomeThreadLocal();
+	}
 
 	public abstract MetaClass meta_Class();
 

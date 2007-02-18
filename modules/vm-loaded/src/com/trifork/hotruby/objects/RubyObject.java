@@ -59,9 +59,8 @@ public class RubyObject extends RubyBaseObject implements IRubyObject {
 	public RubyMethod do_select(Selector sel) {
 		if (singleton == null) {
 			return select(sel);
-		} else {
-			return singleton.select(this, sel);
 		}
+		return singleton.select(this, sel);
 	}
 
 	public boolean isFalse() {
@@ -137,6 +136,10 @@ public class RubyObject extends RubyBaseObject implements IRubyObject {
 		return do_select(selector).call(this, arg);
 	}
 
+	public IRubyObject fast_eqtilde(IRubyObject arg, Selector selector) {
+		return do_select(selector).call(this, arg);
+	}
+
 	public IRubyObject fast_cmp(IRubyObject arg, Selector selector) {
 		return do_select(selector).call(this, arg);
 	}
@@ -168,12 +171,12 @@ public class RubyObject extends RubyBaseObject implements IRubyObject {
 	public IRubyObject fast_bit_xor(IRubyObject arg, Selector sel) {
 		return do_select(sel).call(this, arg);
 	}
-
+	
 	protected final IRubyObject bool(boolean value) {
-		if (value)
+		if (value) {
 			return LoadedRubyRuntime.TRUE;
-		else
-			return LoadedRubyRuntime.FALSE;
+		}
+		return LoadedRubyRuntime.FALSE;
 	}
 
 	public String inspect() {
@@ -200,24 +203,21 @@ public class RubyObject extends RubyBaseObject implements IRubyObject {
 	public MetaClass get_meta_class() {
 		if (singleton == null) {
 			return get_class().get_meta_class();
-		} else {
-			return singleton.get_meta_class(this, false);
 		}
+		return singleton.get_meta_class(this, false);
 	}
 
 	public MetaModule get_meta_module() {
 		if (singleton == null) {
 			return get_class().get_meta_module();
-		} else {
-			return singleton.get_meta_class(this, false);
 		}
+		return singleton.get_meta_class(this, false);
 	}
 
 	public MetaClass get_singleton_meta_class() {
 		if (singleton == null) {
 			singleton = new SingletonState();
 		}
-
 		return singleton.get_meta_class(this, true);
 	}
 
@@ -239,5 +239,4 @@ public class RubyObject extends RubyBaseObject implements IRubyObject {
 		if (acc == null) { return LoadedRubyRuntime.NIL; }
 		return acc.get(this);
 	}
-	
 }

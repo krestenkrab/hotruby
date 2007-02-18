@@ -106,6 +106,7 @@ public class ISeqBuilder implements ConstantPool, Instructions {
 		case FAST_RSHIFT:
 		case FAST_EQ2:
 		case FAST_EQ3:
+		case FAST_EQTILDE:
 			stack_depth -= 1;
 			return;
 		

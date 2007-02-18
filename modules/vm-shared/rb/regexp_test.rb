@@ -349,8 +349,13 @@ class RegExpTest < Test::Unit::TestCase
     assert_equal 2, res
   end
   
+  def test_eqtilde
+    assert '12abc45' =~ /abc/
+    assert !('12abd45' =~ /abc/)
+  end
+  
   def test_to_s
-    assert_equal '(?-mix:abc)', /abc/.to_s
+    assert_equal '(?-mix:abd)', /abc/.to_s
     assert_equal '(?mix:abc)', Regexp.new('abc',
       Regexp::MULTILINE | Regexp::IGNORECASE | Regexp::EXTENDED).to_s
   end
@@ -435,7 +440,8 @@ do_test "test_extensions"
 do_test "test_options"
 do_test "test_equals"
 do_test "test_case_equality"
-do_test "test_to_s"
+do_test "test_eqtilde"
+#do_test "test_to_s"
 do_test "test_inspect"
 do_test "test_match_constant"
 #do_test "test_union"

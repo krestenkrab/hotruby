@@ -3,15 +3,23 @@ package com.trifork.hotruby.objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.trifork.hotruby.runtime.Global;
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
+import com.trifork.hotruby.runtime.RubyRuntime;
 import com.trifork.hotruby.runtime.Selector;
 import com.trifork.hotruby.util.regexp.RegularExpressionTranslator;
 
 public class RubyRegexp extends RubyBaseRegexp {
+	private static Global GLOBAL_TILDE;
 	private String originalExpression;
 	private RegularExpressionTranslator translator;
 	Pattern pattern;
 	private int flags = 0;
+
+	public static void static_init(RubyRuntime runtime) {
+		GLOBAL_TILDE = runtime.getGlobal("$~");
+		GLOBAL_TILDE.becomeThreadLocal();
+	}
 
 	@Override
 	public String asSymbol() {
@@ -72,18 +80,25 @@ public class RubyRegexp extends RubyBaseRegexp {
 		String value = string.asSymbol();
 		Matcher match = pattern.matcher(value);
 
+		IRubyObject result;
 		if (!match.find()) {
-			return LoadedRubyRuntime.NIL;
+			result = LoadedRubyRuntime.NIL;
+		} else {
+			result = new RubyMatchData().initialize(match, value);
 		}
-		return new RubyMatchData().initialize(match, value);
+		
+		GLOBAL_TILDE.set(result);
+		
+		return result;
 	}
 	
 	public IRubyObject source() {
 		return new RubyString(originalExpression);
 	}
 
-	public IRubyObject op_eqmatch(IRubyObject expr) {
-		IRubyString string = RubyString.induce_from(expr);
+	@Override
+	public IRubyObject fast_eqtilde(IRubyObject arg, Selector selector) {
+		IRubyString string = RubyString.induce_from(arg);
 		String value = string.asSymbol();
 
 		if (translator.isValid())
@@ -97,15 +112,17 @@ public class RubyRegexp extends RubyBaseRegexp {
 		}
 		return LoadedRubyRuntime.NIL;
 	}
-    
+	
+	@Override
+	public IRubyObject fast_eq3(IRubyObject arg, Selector selector) {
+		// TODO Auto-generated method stub
+		return super.fast_eq3(arg, selector);
+	}
+	
     @Override
     public IRubyObject fast_eq2(IRubyObject arg, Selector selector) {
-        return op_eq2(arg);
-    }
-
-    public IRubyObject op_eq2(IRubyObject arg) {
         return bool(arg instanceof RubyRegexp
-            && ((RubyRegexp)arg).flags == flags
-            && originalExpression.equals(((RubyRegexp)arg).originalExpression));
+                && ((RubyRegexp)arg).flags == flags
+                && originalExpression.equals(((RubyRegexp)arg).originalExpression));
     }
 }

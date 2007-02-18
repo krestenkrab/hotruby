@@ -198,4 +198,6 @@ public interface CompileContext {
 	void emit_unwrap_raise();
 
 	void emit_ge();
+
+	void emit_eqtilde();
 }

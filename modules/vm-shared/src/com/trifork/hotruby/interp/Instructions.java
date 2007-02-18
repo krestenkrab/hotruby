@@ -104,6 +104,7 @@ public interface Instructions {
     public static final int FAST_RSHIFT = 81;
     public static final int FAST_EQ3 = 83;
     public static final int FAST_GE = 84;
+    public static final int FAST_EQTILDE = 85;
     
     public static final int LOCAL_JSR = 100;
     public static final int LOCAL_RETURN = 101;
