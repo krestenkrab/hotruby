@@ -355,7 +355,7 @@ class RegExpTest < Test::Unit::TestCase
   end
   
   def test_to_s
-    assert_equal '(?-mix:abd)', /abc/.to_s
+    assert_equal '(?-mix:abc)', /abc/.to_s
     assert_equal '(?mix:abc)', Regexp.new('abc',
       Regexp::MULTILINE | Regexp::IGNORECASE | Regexp::EXTENDED).to_s
   end
@@ -382,6 +382,43 @@ class RegExpTest < Test::Unit::TestCase
     assert_equal '(?-mix:abc)|(?-mix:def)', Regexp.union(/abc/, /def/).source
     assert_equal '(?-mix:abc)|(?-mix:def)|(?-mix:ghi)', Regexp.union(/abc/, /def/, /ghi/).source
     assert_equal 'abc|(?-mix:def)', Regexp.union('abc', /def/).source
+  end
+  
+  def test_globals
+    'abcdefghijklmnopqr' =~ /(c)(d)(e)(f)(g)(h)(i)(j)(k)(l)(m)(n)(o)(p)/
+    assert_equal 'cdefghijklmnop', $&
+    'abcdefghijklmnopqr' =~ /(c)(d)(e)(f)(g)(h)(i)(j)(k)(l)(m)(n)(o)(p)/
+    assert_equal 'ab', $`
+    'abcdefghijklmnopqr' =~ /(c)(d)(e)(f)(g)(h)(i)(j)(k)(l)(m)(n)(o)(p)/
+    assert_equal 'qr', $'
+    'abcdefghijklmnopqr' =~ /(c)(d)(e)(f)(g)(h)(i)(j)(k)(l)(m)(n)(o)(p)/
+    assert_equal 'c', $1
+    'abcdefghijklmnopqr' =~ /(c)(d)(e)(f)(g)(h)(i)(j)(k)(l)(m)(n)(o)(p)/
+    assert_equal 'd', $2
+    'abcdefghijklmnopqr' =~ /(c)(d)(e)(f)(g)(h)(i)(j)(k)(l)(m)(n)(o)(p)/
+    assert_equal 'l', $10
+    'abcdefghijklmnopqr' =~ /(c)(d)(e)(f)(g)(h)(i)(j)(k)(l)(m)(n)(o)(p)/
+    assert_equal 'p', $14
+
+    /(a)(b)(c)/.match('12abc45')
+    assert_equal 'abc', $&
+    /(a)(b)(c)/.match('12abc45')
+    assert_equal '12', $`
+    /(a)(b)(c)/.match('12abc45')
+    assert_equal '45', $'
+    /(a)(b)(c)/.match('12abc45')
+    assert_equal 'a', $1
+    /(a)(b)(c)/.match('12abc45')
+    assert_equal nil, $14
+    
+    /abc/.match('hello')
+    assert_equal nil, $&
+    /abc/.match('hello')
+    assert_equal nil, $`
+    /abc/.match('hello')
+    assert_equal nil, $'
+    /abc/.match('hello')
+    assert_equal nil, $1
   end
   
   private
@@ -441,7 +478,8 @@ do_test "test_options"
 do_test "test_equals"
 do_test "test_case_equality"
 do_test "test_eqtilde"
-#do_test "test_to_s"
+do_test "test_to_s"
 do_test "test_inspect"
 do_test "test_match_constant"
 #do_test "test_union"
+do_test "test_globals"

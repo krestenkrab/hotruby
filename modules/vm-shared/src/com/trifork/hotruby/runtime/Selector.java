@@ -1,8 +1,7 @@
 package com.trifork.hotruby.runtime;
 
 public abstract class Selector implements CallContext {
-
-	String name;
+	private String name;
 	private MetaModule caller;
 
 	public String getName() {
@@ -23,5 +22,4 @@ public abstract class Selector implements CallContext {
 
 	abstract void set(Selector selector);
 	public abstract Selector get();
-
 }
