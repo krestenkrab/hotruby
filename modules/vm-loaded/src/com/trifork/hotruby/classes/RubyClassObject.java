@@ -139,12 +139,12 @@ public class RubyClassObject extends RubyBaseClassObject {
 			}
 		});
 
-		meta.register_instance_method("p", new PublicMethod1() {
-
+		meta.register_instance_method("p", new PublicMethodN() {
 			@Override
-			public IRubyObject call(IRubyObject receiver, IRubyObject arg,
-					RubyBlock block) {
-				System.out.println(arg == null ? "NULL" : arg.inspect());
+			public IRubyObject call(IRubyObject receiver, IRubyObject[] args, RubyBlock block) {
+				for (int i = 0; i < args.length; i++) {
+					System.out.println(args[i] == null ? "NULL" : args[i].inspect());
+				}
 				return LoadedRubyRuntime.NIL;
 			}
 
