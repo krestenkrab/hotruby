@@ -106,6 +106,14 @@ public class RubyBignum extends RubyBaseBignum {
 		return new RubyFloat(float1 * value.doubleValue());
 	}
 
+	public IRubyNumeric inverse_mult(int num) {
+		return new RubyFloat(num * value.doubleValue());
+	}
+
+	public IRubyNumeric inverse_div(int num) {
+		return new RubyFloat(num / value.doubleValue());
+	}
+
 	public IRubyNumeric inverse_plus(int fixnum) {
 		return newInteger(value.add(BigInteger.valueOf(fixnum)));
 	}

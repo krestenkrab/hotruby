@@ -136,6 +136,14 @@ public class RubyFloat extends RubyBaseFloat {
 		return new RubyFloat(float1 * value);
 	}
 
+	public IRubyNumeric inverse_mult(int num) {
+		return new RubyFloat(num * value);
+	}
+
+	public IRubyNumeric inverse_div(int num) {
+		return new RubyFloat(num / value);
+	}
+
 	public IRubyNumeric inverse_plus(int fixnum) {
 		return new RubyFloat(fixnum + value);
 	}

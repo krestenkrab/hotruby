@@ -140,7 +140,15 @@ public class RubyFixnum extends RubyBaseFixnum {
 	public IRubyObject op_minus(IRubyObject op) {
 		return numeric(op).inverse_minus(value);
 	}
+
+	public IRubyObject op_mult(IRubyObject op) {
+		return numeric(op).inverse_mult(value);
+	}
 	
+	public IRubyObject op_div(IRubyObject op) {
+		return numeric(op).inverse_div(value);
+	}
+
 	public IRubyObject fast_bit_xor(IRubyObject arg, Selector sel) {
 		return RubyInteger.induced_from(arg).inverse_xor(value);
 	}
@@ -164,6 +172,14 @@ public class RubyFixnum extends RubyBaseFixnum {
 		return newInteger((long)fixnum + value);
 	}
 	
+	public IRubyNumeric inverse_mult(int fixnum) {
+		return newInteger((long)fixnum * value);
+	}
+
+	public IRubyNumeric inverse_div(int fixnum) {
+		return newInteger((long) fixnum / (long) value);
+	}
+
 	public int value() {
 		return value;
 	}
@@ -215,5 +231,4 @@ public class RubyFixnum extends RubyBaseFixnum {
 			return newInteger(1L + value);
 		}
 	}
-
 }

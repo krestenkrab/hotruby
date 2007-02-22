@@ -17,7 +17,14 @@ public class RubyClassFloat
 			public IRubyObject call(IRubyObject receiver, RubyBlock block) {
 				return ((RubyFloat) receiver).to_s();
 			}
-		}
-		);
+		});
+
+		meta.register_instance_method("to_f", 
+				new PublicMethod0() {
+				@Override
+				public IRubyObject call(IRubyObject receiver, RubyBlock block) {
+					return ((RubyFloat) receiver).to_f();
+				}
+			});
 	}
 }
