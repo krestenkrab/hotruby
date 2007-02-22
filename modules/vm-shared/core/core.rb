@@ -275,6 +275,14 @@ class Fixnum
     0 - self
   end
   
+  def abs
+    res = self
+    if res < 0
+      res = -res
+    end
+    res
+  end
+  
   def zero?
     self==0
   end
@@ -311,16 +319,26 @@ class FalseClass
   def or(other)
     other
   end
+  
+  def and(other)
+    false
+  end
+  
 end
 
 class TrueClass
+  def not
+    false
+  end
+
   def or(other)
     true
   end
   
-  def not
-    false
+  def and(other)  
+    other
   end
+
 end
 
 module Kernel
@@ -389,3 +407,15 @@ class NilClass
     true
   end
 end
+
+class Float
+  def +@
+    self
+  end
+  
+#  def -@
+#    0 - self
+#  end
+end
+
+require 'numeric.rb'

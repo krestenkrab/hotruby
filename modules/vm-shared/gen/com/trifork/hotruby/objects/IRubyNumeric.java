@@ -6,6 +6,8 @@ public interface IRubyNumeric
 	/** helper methods for converting argument types */
 	IRubyNumeric inverse_minus(int bignum);
 	IRubyNumeric inverse_plus(int fixnum);
+	IRubyNumeric inverse_mult(int fixnum);
+	IRubyNumeric inverse_div(int fixnum);
 	
 	IRubyNumeric inverse_mult(double float1);
 	IRubyObject inverse_plus(double float1);
