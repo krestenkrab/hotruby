@@ -19,6 +19,9 @@ public class Main {
 		if (true)
 		{
 			IRubyObject obj = rr.load("rb/test_require.rb", rr.getObject());
+//			IRubyObject obj = rr.load("rb/qnd.rb", rr.getObject());
+//			IRubyObject obj = rr.load("rb/rescuetest.rb", rr.getObject());
+//			IRubyObject obj = rr.load("rb/test/basic/String.rb", rr.getObject());
 //			IRubyObject obj = rr.load("rb/test/basic/Numeric.rb", rr.getObject());
 //			IRubyObject obj = rr.load("rb/test/basic/Array.rb", rr.getObject());
 			System.out.println("=> " + obj.inspect());
