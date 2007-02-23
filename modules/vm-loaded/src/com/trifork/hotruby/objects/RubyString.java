@@ -166,4 +166,14 @@ public class RubyString
 			return result;
 		 
 	}
+
+	public IRubyObject op_concat(IRubyObject arg) {
+		if (arg instanceof IRubyFixnum) {
+			IRubyFixnum num = (IRubyFixnum) arg;
+			value = value + (char)(num.intValue());
+		} else {
+			value = value + ((RubyString) RubyString.induce_from(arg)).value;
+		}
+		return this;
+	}
 }

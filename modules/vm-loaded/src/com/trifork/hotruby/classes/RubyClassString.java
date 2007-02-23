@@ -68,6 +68,13 @@ public class RubyClassString
 				return ((RubyString)receiver).op_eq2(arg);
 			}});
 
+		meta.register_instance_method("<<", new PublicMethod1() {
+
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject arg, RubyBlock block) {
+				return ((RubyString)receiver).op_concat(arg);
+			}});
+
 		meta.alias_instance_method("===", "==");
 	}
 }
