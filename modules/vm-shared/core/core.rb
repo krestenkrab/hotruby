@@ -88,6 +88,7 @@ class File
  # JavaIOFile = include_class('java.io.File') 
 
   def File.absolute?(string)
+    # Doesn't work - using regexps screws up $~and other globals:
     /^\// =~ string
   end
   
@@ -180,7 +181,9 @@ class String
      length == 0
   end
 
-  def chomp(aString=$/) 
+  def chomp(aString=$/)
+    # TODO: Must not use regular expressions, as it messes up $~ and other globals 
+    #if (aString.size >= size) && (index(aString) == size - aString.size)
     if /#{aString}$/ =~ self
        self[0,length-aString.length]
     else

@@ -20,9 +20,7 @@ public class RubyMatchData extends RubyBaseMatchData {
 		
 		if (args.length == 1) {
 			int val = RubyInteger.induced_from(args[0]).intValue();
-			if (val == 0) {
-				return get_match(0);
-			}
+			return get_match(val);
 		}
 		
 		IRubyArray result = LoadedRubyRuntime.instance.newArray();

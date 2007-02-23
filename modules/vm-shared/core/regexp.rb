@@ -21,8 +21,15 @@ class Regexp
   end
 
   #def self.escape(s)
-  #def self.last_match(index=nil)
   #def self.quote(s)
+
+  def self.last_match(idx=nil)
+    if $~ != nil && idx != nil
+      $~[idx]
+    else
+      $~
+    end
+  end
   
   def ===(other)
     self =~ other

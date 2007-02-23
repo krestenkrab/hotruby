@@ -2,7 +2,7 @@ require 'test/unit/testcase'
 require 'test/unit/testresult'
 #require 'test/unit'
 
-class RegExpTest < Test::Unit::TestCase
+class RegexpTest < Test::Unit::TestCase
   def test_simple
     assert_match(['bcd'], /bcd/, 'abcde')
   end
@@ -386,7 +386,9 @@ class RegExpTest < Test::Unit::TestCase
   
   def test_globals
     'abcdefghijklmnopqr' =~ /(c)(d)(e)(f)(g)(h)(i)(j)(k)(l)(m)(n)(o)(p)/
+    match = $~
     assert_equal 'cdefghijklmnop', $&
+    assert_equal 'cdefghijklmnop', match[0]
     'abcdefghijklmnopqr' =~ /(c)(d)(e)(f)(g)(h)(i)(j)(k)(l)(m)(n)(o)(p)/
     assert_equal 'ab', $`
     'abcdefghijklmnopqr' =~ /(c)(d)(e)(f)(g)(h)(i)(j)(k)(l)(m)(n)(o)(p)/
@@ -399,9 +401,12 @@ class RegExpTest < Test::Unit::TestCase
     assert_equal 'l', $10
     'abcdefghijklmnopqr' =~ /(c)(d)(e)(f)(g)(h)(i)(j)(k)(l)(m)(n)(o)(p)/
     assert_equal 'p', $14
+    'abcdefghijklmnopqr' =~ /(c)(d)(e)(f)(g)(h)(i)(j)(k)(l)(m)(n)(o)(p)/
 
     /(a)(b)(c)/.match('12abc45')
+    match = $~
     assert_equal 'abc', $&
+    assert_equal 'abc', match[0]
     /(a)(b)(c)/.match('12abc45')
     assert_equal '12', $`
     /(a)(b)(c)/.match('12abc45')
@@ -412,13 +417,33 @@ class RegExpTest < Test::Unit::TestCase
     assert_equal nil, $14
     
     /abc/.match('hello')
+    match = $~
     assert_equal nil, $&
+    assert_equal nil, match
     /abc/.match('hello')
     assert_equal nil, $`
     /abc/.match('hello')
     assert_equal nil, $'
     /abc/.match('hello')
     assert_equal nil, $1
+  end
+
+  def test_last_match
+    'abcdefghijklmnopqr' =~ /(c)(d)(e)(f)(g)(h)(i)(j)(k)(l)(m)(n)(o)(p)/
+    last_match = Regexp.last_match
+    last_match_zero = Regexp.last_match 0
+    last_match_one = Regexp.last_match 1
+    assert_equal 'cdefghijklmnop', last_match[0]
+    assert_equal 'cdefghijklmnop', last_match_zero
+    assert_equal('c', last_match_one)
+
+    /abc/.match('hello')
+    last_match = Regexp.last_match
+    last_match_zero = Regexp.last_match 0
+    last_match_one = Regexp.last_match 1
+    assert_equal nil, last_match
+    assert_equal nil, last_match_zero
+    assert_equal nil, last_match_one
   end
   
   private
@@ -448,7 +473,7 @@ end
 
 def do_test(name)
   p name
-  tc = RegExpTest.new(name)
+  tc = RegexpTest.new(name)
   tr = Test::Unit::TestResult.new
   tc.run(tr) do |event,name|
     #p "test:#{event} #{name}"
@@ -483,3 +508,4 @@ do_test "test_inspect"
 do_test "test_match_constant"
 #do_test "test_union"
 do_test "test_globals"
+do_test "test_last_match"
