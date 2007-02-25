@@ -44,7 +44,10 @@ class RegexpTest < Test::Unit::TestCase
   end
 
   def test_select
-    # TODO: The RubyDoc description is wrong
+    m = /(.)(.)(\d+)(\d)/.match("THX1138.")
+    a = []
+    m.select {|element| a << element }
+    assert_equal(['HX1138', 'H', 'X', '113', '8'], a)
   end
 
   def test_pre_match
@@ -58,15 +61,20 @@ class RegexpTest < Test::Unit::TestCase
   end
 
   def test_length
-    # TODO
+    m = /(.)(.)(\d+)(\d)/.match("THX1138.")
+    assert_equal 5, m.length
   end
 
   def test_offset
-    # TODO
+    m = /(.)(.)(\d+)(\d)/.match("THX1138.")
+    assert_equal([1, 7], m.offset(0))
+    assert_equal([6, 7], m.offset(4))
+    #assert_raises(IndexError) { m.offset(40) }
   end
 
   def test_size
-    # TODO
+    m = /(.)(.)(\d+)(\d)/.match("THX1138.")
+    assert_equal 5, m.size
   end
 
   def test_string
@@ -76,7 +84,11 @@ class RegexpTest < Test::Unit::TestCase
   end
 
   def test_captures
-    # TODO
+    f1,f2,f3,f4 = /(.)(.)(\d+)(\d)/.match("THX1138.").captures
+    assert_equal "H", f1
+    assert_equal "X", f2
+    assert_equal "113", f3
+    assert_equal "8", f4
   end
 
   def test_values_at

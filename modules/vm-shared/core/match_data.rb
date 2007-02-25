@@ -1,17 +1,18 @@
 class MatchData
   # Defined "natively":
   # * []
-  # * to_a
   # * begin
   # * end
+  # * length
   # * string
+  # * to_a
   
   def to_s
     self[0]
   end
 
   def select
-    # TODO
+    to_a.each { |e| yield e }
   end
 
   def pre_match
@@ -24,20 +25,17 @@ class MatchData
     s[e, s.length - e]
   end
 
-  def length
-    # TODO
-  end
-
-  def offset
-    # TODO
+  def offset(index)
+    [self.begin(index), self.end(index)]
   end
 
   def size
-    # TODO
+    length
   end
 
   def captures
-    # TODO
+    a = to_a
+    a[1, a.size - 1]
   end
 
   def values_at(*indices)

@@ -84,4 +84,8 @@ public class RubyMatchData extends RubyBaseMatchData {
 		s.setFrozen(true);
 		return s;
 	}
+
+	public IRubyObject length() {
+		return new RubyFixnum(match.groupCount() + 1);
+	}
 }

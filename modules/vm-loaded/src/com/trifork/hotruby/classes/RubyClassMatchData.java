@@ -34,12 +34,12 @@ public class RubyClassMatchData
 				return ((RubyMatchData)receiver).end(arg);
 			}
 		});
-//		meta.register_instance_method("pre_match", new PublicMethod0() {
-//			@Override
-//			public IRubyObject call(IRubyObject receiver, RubyBlock block) {
-//				return ((RubyMatchData)receiver).pre_match();
-//			}
-//		});
+		meta.register_instance_method("length", new PublicMethod0() {
+			@Override
+			public IRubyObject call(IRubyObject receiver, RubyBlock block) {
+				return ((RubyMatchData)receiver).length();
+			}
+		});
 		meta.register_instance_method("string", new PublicMethod0() {
 			@Override
 			public IRubyObject call(IRubyObject receiver, RubyBlock block) {
