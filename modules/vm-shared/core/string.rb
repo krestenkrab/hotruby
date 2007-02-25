@@ -93,10 +93,8 @@ class String
 
     if (arg.class == String)
       return nil if arg.length > self.length
-      i = ignore_beginning
-      while (i <= self.length - arg.length - ignore_ending)
+      ignore_beginning.upto(self.length - arg.length - ignore_ending) do |i|
         return i if (self[i,arg.length] == arg)
-        i = i + 1
       end
     elsif (arg.class == Fixnum)
       return index("" << arg, fixnum)
