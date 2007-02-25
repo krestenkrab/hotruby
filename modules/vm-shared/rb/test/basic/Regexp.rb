@@ -470,27 +470,12 @@ class RegexpTest < Test::Unit::TestCase
   end
   
   private
-#  def assert(val, msg)
-#    p "Fejl: #{msg}" if !val
-#    fail if !val
-#  end
-
-#  def assert_equal(val1, val2)
-#    p "Fejl: #{val1} != #{val2}" if val1 != val2
-#    
-#  end
-#  
   def assert_match(result, regexp, input)
     match = regexp.match(input).to_a
     if (match != result)
       p "No match #{regexp}: Expected #{result}, was #{match}"
     end
     assert_equal result, regexp.match(input).to_a
-  end
-  
-  def assert_no_match2(regexp, input)
-    p regexp
-    assert_no_match(regexp, input)
   end
 end
 

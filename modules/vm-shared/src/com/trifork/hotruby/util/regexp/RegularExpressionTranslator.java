@@ -7,8 +7,6 @@ import java.util.regex.Pattern;
 
 /**
  * Translates from a Ruby regular expression to a Java regular expression.
- * 
- * @author ofo
  */
 public class RegularExpressionTranslator {
 	public static final int IGNORECASE = 1;
@@ -36,18 +34,14 @@ public class RegularExpressionTranslator {
 	private int pos;
 	private boolean valid;
 
-	public static List<String> match(String regex, String s, int flags)
-	{
+	public static List<String> match(String regex, String s, int flags) {
 		List<String> result = new ArrayList<String>();
 		RegularExpressionTranslator myMatcher = new RegularExpressionTranslator(regex, flags);
-		if (myMatcher.isValid())
-		{
+		if (myMatcher.isValid()) {
 			Pattern pattern = myMatcher.getPattern();
 			Matcher matcher = pattern.matcher(s);
-			if (matcher.find())
-			{
-				for (int i=0; i<matcher.groupCount() + 1; i++ )
-				{
+			if (matcher.find()) {
+				for (int i=0; i<matcher.groupCount() + 1; i++ ) {
 					result.add(matcher.group(i));
 				}
 			}
@@ -55,8 +49,7 @@ public class RegularExpressionTranslator {
 		return result;
 	}
 
-	public RegularExpressionTranslator(String regex, int flags)
-	{
+	public RegularExpressionTranslator(String regex, int flags)	{
 		try {
 			originalExp = regex;
 			newExp = new StringBuilder();
@@ -66,65 +59,49 @@ public class RegularExpressionTranslator {
 				| checkFlag(flags, EXTENDED, Pattern.COMMENTS)
 				| checkFlag(flags, MULTILINE, Pattern.DOTALL);
 			valid = parseRegularExpression(false);
-			if (valid)
-			{
+			if (valid) {
 				pattern = Pattern.compile(newExp.toString(), newFlags);
-			}
-			else
-			{
+			} else {
 				pattern = null;
 			}
-//			System.out.println("Oversat: " + newExp + ", " + newFlags);
-		}
-		catch (IllegalRegularExpressionException e)
-		{
+		} catch (IllegalRegularExpressionException e) {
 			System.out.println("Error: " + e.getMessage());
 			throw e;
 		}
 	}
 	
-	int checkFlag(int flags, int flagValue, int translatedValue)
-	{
+	int checkFlag(int flags, int flagValue, int translatedValue) {
 		return (flags & flagValue) == 0 ? 0 : translatedValue;
 	}
 
-	public boolean isValid()
-	{
+	public boolean isValid() {
 		return valid;
 	}
 	
-	public Pattern getPattern()
-	{
+	public Pattern getPattern() {
 		return pattern;
 	}
 
-	private boolean parseRegularExpression(boolean inGroup)
-	{
-		while(!finished())
-		{
-			switch(current())
-			{
+	private boolean parseRegularExpression(boolean inGroup) {
+		while(!finished()) {
+			switch(current()) {
 			case '[':
-				if (!characterClass())
-				{
+				if (!characterClass()) {
 					return false;
 				}
 				break;
 			case '{':
-				if (!repetition())
-				{
+				if (!repetition()) {
 					return false;
 				}
 				break;
 			case '(':
-				if (!group())
-				{
+				if (!group()) {
 					return false;
 				}
 				break;
 			case ')':
-				if (inGroup)
-				{
+				if (inGroup) {
 					return true;
 				}
 				throw new IllegalRegularExpressionException("Unmatched )");
@@ -143,36 +120,28 @@ public class RegularExpressionTranslator {
 	/**
 	 * [abc]
 	 */
-	private boolean characterClass()
-	{
+	private boolean characterClass() {
 		assert current() == '[';
 		append('[');
 		advanceAndExpectMore();
 		
-		for (; current() == '^'; advanceAndExpectMore())
-		{
+		for (; current() == '^'; advanceAndExpectMore()) {
 			append('^');
 		}
 		
 		startingCharacters('-');
 		
-		for (; current() != ']'; advance())
-		{
-			if (!hasMore())
-			{
+		for (; current() != ']'; advance()) {
+			if (!hasMore()) {
 				return false; // Fail silently
 			}
-			if (current() == '[')
-			{
+			if (current() == '[') {
 				posixClass();
 				break;
-			}
-			else if (current() == '\\')
-			{
+			} else if (current() == '\\') {
 				append('\\');
 				advanceAndExpectMore();
-				switch(current())
-				{
+				switch(current()) {
 					// Character classes
 				case 'd':
 				case 'D':
@@ -191,7 +160,7 @@ public class RegularExpressionTranslator {
 					// perhaps this should be the default rule?
 				case '\\':
 				case '?':
-					//append(current());
+					// append(current());
 					break;
 				default:
 					throw new IllegalRegularExpressionException(
@@ -199,16 +168,11 @@ public class RegularExpressionTranslator {
 							+ Integer.toHexString(current()) + "): "
 							+ originalExp);
 				}
-			}
-			else if (current() == '-')
-			{
+			} else if (current() == '-') {
 				advanceAndExpectMore();
-				if (current() == '-')
-				{
+				if (current() == '-') {
 					throw new IllegalRegularExpressionException("Invalid regular expression");
-				}
-				else if (current() == ']')
-				{
+				} else if (current() == ']') {
 					append("\\-]");
 					return true;
 				}
@@ -222,10 +186,8 @@ public class RegularExpressionTranslator {
 
 	private void startingCharacters(char c) {
 		boolean startingChar = false;
-		for (; current() == c; advanceAndExpectMore())
-		{
-			if (!startingChar)
-			{
+		for (; current() == c; advanceAndExpectMore()) {
+			if (!startingChar) {
 				append(c);
 				startingChar = true;
 			}
@@ -235,12 +197,9 @@ public class RegularExpressionTranslator {
 	/**
 	 * [:digit:], ...
 	 */
-	private void posixClass()
-	{
-		for (String[] pclass : POSIX_CLASSES)
-		{
-			if (continues(pclass[0]))
-			{
+	private void posixClass() {
+		for (String[] pclass : POSIX_CLASSES) {
+			if (continues(pclass[0])) {
 				append(pclass[1]);
 				return;
 			}
@@ -251,51 +210,41 @@ public class RegularExpressionTranslator {
 	/**
 	 * {min,max}
 	 */
-	private boolean repetition()
-	{
+	private boolean repetition() {
 		assert current() == '{';
 		append('{');
 		advanceAndExpectMore();
-		if (!number())
-		{
+		if (!number()) {
 			return false;
 		}
-		if(current() == '}')
-		{
+		if(current() == '}') {
 			append('}');
 			return true;
 		}
-		if (current() != ',')
-		{
+		if (current() != ',') {
 			return false;
 		}
 		append(',');
 		advanceAndExpectMore();
-		if (current() == '}')
-		{
+		if (current() == '}') {
 			append('}');
 			return true;
 		}
-		if (!number())
-		{
+		if (!number()) {
 			return false;
 		}
-		if (current() != '}')
-		{
+		if (current() != '}') {
 			return false;
 		}
 		append('}');
 		return true;
 	}
 
-	private boolean number()
-	{
-		if (!Character.isDigit(current()))
-		{
+	private boolean number() {
+		if (!Character.isDigit(current())) {
 			return false;
 		}
-		while(Character.isDigit(current()))
-		{
+		while(Character.isDigit(current())) {
 			append(current());
 			advanceAndExpectMore();
 		}
@@ -305,17 +254,14 @@ public class RegularExpressionTranslator {
 	/**
 	 * (regexp), (?extension)
 	 */
-	private boolean group()
-	{
+	private boolean group() {
 		assert current() == '(';
 		advanceAndExpectMore();
-		if (current() == '?')
-		{
+		if (current() == '?') {
 			return extension();
 		}
 		append('(');
-		if (!parseRegularExpression(true))
-		{
+		if (!parseRegularExpression(true)) {
 			return false;
 		}
 		append(')');
@@ -325,12 +271,10 @@ public class RegularExpressionTranslator {
 	/**
 	 * \A, ...
 	 */
-	private void escape()
-	{
+	private void escape() {
 		assert current() == '\\';
 		advanceAndExpectMore();
-		switch(current())
-		{
+		switch(current()) {
 			// Anchors
 		case 'A':
 		case 'z':
@@ -379,12 +323,10 @@ public class RegularExpressionTranslator {
 	/**
 	 * (? extension)
 	 */
-	private boolean extension()
-	{
+	private boolean extension() {
 		assert current() == '?';
 		advanceAndExpectMore();
-		switch(current())
-		{
+		switch(current()) {
 		case ':': 
 			return extension("(?:"); // Group without backreference
 		case '=': 
@@ -405,13 +347,11 @@ public class RegularExpressionTranslator {
 		}
 	}
 
-	private boolean extension(String javaExtension)
-	{
-		//assert current() == ':';
+	private boolean extension(String javaExtension) {
+		// assert current() == ':';
 		advanceAndExpectMore();
 		append(javaExtension);
-		if (!parseRegularExpression(true))
-		{
+		if (!parseRegularExpression(true)) {
 			return false;
 		}
 		append(')');
@@ -420,13 +360,11 @@ public class RegularExpressionTranslator {
 
 	/**
 	 * (?# comment )
-	 *
+	 * 
 	 */
-	private boolean comment()
-	{
+	private boolean comment() {
 		assert current() == '#';
-		while (current() != ')')
-		{
+		while (current() != ')') {
 			advanceAndExpectMore();
 		}
 		return true;
@@ -435,8 +373,7 @@ public class RegularExpressionTranslator {
 	/**
 	 * (?imx), (?-imx), (?ims:R), (?-imx:R)
 	 */
-	private boolean options()
-	{
+	private boolean options() {
 		assert current() == '-'
 			|| current() == 'i'
 			|| current() == 'm'
@@ -445,31 +382,24 @@ public class RegularExpressionTranslator {
 		while (current() == '-'
 			|| current() == 'i'
 			|| current() == 'm'
-			|| current() == 'x')
-		{
-			if (current() == 'm')
-			{
+			|| current() == 'x') {
+			if (current() == 'm') {
 				// Multiline in Ruby => dot-all in Java
 				append('s');
-			}
-			else
-			{
+			} else {
 				append(current());
 			}
 			advanceAndExpectMore();
 		}
-		if (current() == ')')
-		{
+		if (current() == ')') {
 			append(')');
 			return true;
 		}
-		if (current() != ':')
-		{
+		if (current() != ':') {
 			throw new IllegalRegularExpressionException("undefined (?...) inline option: /"
 					+ originalExp + "/");
 		}
-		if (!parseRegularExpression(true))
-		{
+		if (!parseRegularExpression(true)) {
 			return false;
 		}
 		append(')');
@@ -484,11 +414,9 @@ public class RegularExpressionTranslator {
 	 * True if the input continues with the given string. Also, if that is the
 	 * case, the input position is advanced to just after the given string.
 	 */
-	private boolean continues(String s)
-	{
+	private boolean continues(String s) {
 		int length = s.length();
-		if (!originalExp.regionMatches(pos, s, 0, length))
-		{
+		if (!originalExp.regionMatches(pos, s, 0, length)) {
 			return false;
 		}
 		advance(length);
@@ -498,34 +426,29 @@ public class RegularExpressionTranslator {
 	/**
 	 * Character at current position in input.
 	 */
-	private char current()
-	{
+	private char current() {
 		return originalExp.charAt(pos);
 	}
 
 	/**
 	 * Advances 1 character in input.
 	 */
-	private void advance()
-	{
+	private void advance() {
 		advance(1);
 	}
 	
 	/**
 	 * Advances "length" characters in input.
 	 */
-	private void advance(int length)
-	{
+	private void advance(int length) {
 		pos += length;
 	}
 
 	/**
 	 * Errs if at the end of input, advances 1 character in input otherwise.
 	 */
-	private void advanceAndExpectMore()
-	{
-		if (!hasMore())
-		{
+	private void advanceAndExpectMore() {
+		if (!hasMore()) {
 			throw new IllegalRegularExpressionException("Unexpected end of regular expression");
 		}
 		advance();
@@ -534,32 +457,28 @@ public class RegularExpressionTranslator {
 	/**
 	 * True if there is at least one more character besides current().
 	 */
-	private boolean hasMore()
-	{
+	private boolean hasMore() {
 		return pos + 1 < originalExp.length();
 	}
 	
 	/**
 	 * True if we have passed the last character in input.
 	 */
-	private boolean finished()
-	{
+	private boolean finished() {
 		return pos >= originalExp.length();
 	}
 
 	/**
 	 * Appends given char to output.
 	 */
-	private void append(char c)
-	{
+	private void append(char c) {
 		newExp.append(c);
 	}
 	
 	/**
 	 * Appends given string to output.
 	 */
-	private void append(String s)
-	{
+	private void append(String s) {
 		newExp.append(s);
 	}
 }
