@@ -17,6 +17,12 @@ public class RubyString
 		if (value == null) { throw new NullPointerException(); }
 	}
 
+	public IRubyObject initialize(IRubyObject arg) {
+		IRubyString string = RubyString.induce_from(arg);
+		value = string.asSymbol();
+		return LoadedRubyRuntime.NIL;
+	}
+
 	public String asSymbol() {
 		return value;
 	}
@@ -175,5 +181,19 @@ public class RubyString
 			value = value + ((RubyString) RubyString.induce_from(arg)).value;
 		}
 		return this;
+	}
+
+	public IRubyObject op_compare(IRubyObject arg) {
+		String other = ((RubyString)RubyString.induce_from(arg)).value;
+		int comparison = value.compareTo(other);
+		int result;
+		if (comparison > 0) {
+			result = 1;
+		} else if (comparison < 0) {
+			result = -1;
+		} else {
+			result = 0;
+		}
+		return new RubyFixnum(result);
 	}
 }

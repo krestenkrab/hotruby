@@ -45,6 +45,27 @@ public class RubyRegexp extends RubyBaseRegexp {
 		GLOBAL_AFTER_MATCHED.becomeThreadLocal();
 	}
 
+	public static IRubyObject escape(IRubyObject arg) {
+		IRubyString string = RubyString.induce_from(arg);
+		String value = string.asSymbol();
+		value = value.replace("\\", "\\\\").
+			replace("(", "\\(").
+			replace(")", "\\)").
+			replace("[", "\\[").
+			replace("]", "\\]").
+			replace("{", "\\{").
+			replace("}", "\\}").
+			replace("|", "\\|").
+			replace(".", "\\.").
+			replace("$", "\\$").
+			replace("^", "\\^").
+			replace("+", "\\+").
+			replace("-", "\\-").
+			replace("?", "\\?").
+			replace("*", "\\*");
+		return new RubyString(value);
+	}
+
 	@Override
 	public String asSymbol() {
 		return originalExpression;

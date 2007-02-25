@@ -22,10 +22,33 @@ class RegexpTest < Test::Unit::TestCase
   end
   
   def test_escape
-    assert_match(['\[{'], /\\\[\{/, 'abc\[{def')
-    assert_match(['bFc'], /b\Fc/, 'abFcd')
-    assert_match(['b.c'], /b\.c/, 'ab.cd')
-    assert_no_match(/b\.d/, 'abcde')
+    assert_equal 'abc', Regexp.escape('abc')
+    #TODO Escapes do not work in HotRuby strings
+    #assert_equal 'a\\\\c', Regexp.escape('a\\c')
+    assert_equal 'a\(c', Regexp.escape('a(c')
+    assert_equal 'a\[c', Regexp.escape('a[c')
+    assert_equal 'a\]c', Regexp.escape('a]c')
+    assert_equal 'a\{c', Regexp.escape('a{c')
+    assert_equal 'a\}c', Regexp.escape('a}c')
+    assert_equal 'a\|c', Regexp.escape('a|c')
+    assert_equal 'a\.c', Regexp.escape('a.c')
+    assert_equal 'a\$c', Regexp.escape('a$c')
+    assert_equal 'a\^c', Regexp.escape('a^c')
+    assert_equal 'a\+c', Regexp.escape('a+c')
+    assert_equal 'a\?c', Regexp.escape('a?c')
+    assert_equal 'a\*c', Regexp.escape('a*c')
+    assert_equal 'a\-c', Regexp.escape('a-c')
+
+    assert_equal 'a&c', Regexp.escape('a&c')
+    assert_equal 'a/c', Regexp.escape('a/c')
+    assert_equal 'a:c', Regexp.escape('a:c')
+  end
+
+  def test_quote
+    assert_equal 'abc', Regexp.quote('abc')
+    #TODO Escapes do not work in HotRuby strings
+    #assert_equal 'a\\\\c', Regexp.quote('a\\c')
+    assert_equal 'a\(c', Regexp.quote('a(c')
   end
   
   def test_too_many_ending_parentheses
@@ -485,6 +508,7 @@ do_test "test_simple"
 do_test "test_constructors"
 do_test "test_specialchars"
 do_test "test_escape"
+do_test "test_quote"
 do_test "test_too_many_ending_parentheses"
 do_test "test_group"
 do_test "test_alternation"
@@ -506,6 +530,6 @@ do_test "test_eqtilde"
 do_test "test_to_s"
 do_test "test_inspect"
 do_test "test_match_constant"
-#do_test "test_union"
+do_test "test_union"
 do_test "test_globals"
 do_test "test_last_match"

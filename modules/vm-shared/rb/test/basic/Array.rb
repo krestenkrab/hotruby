@@ -51,6 +51,14 @@ class ArrayTest < Test::Unit::TestCase
       assert_raises(ArgumentError){ Array.new(-1){ Hash.new } }
    end
 
+  def test_op_eq
+    assert([] == [])
+    assert([] != [1])
+    assert([1] != [])
+    assert([1] == [1])
+    assert(['a'] == ['a'])
+    assert(['b'] != ['a'])
+  end
 
 end
 
@@ -72,3 +80,4 @@ do_test "test_size_errors"
 #do_test "test_array"
 #do_test "test_size_with_block"
 #do_test "test_size_with_block_errors"
+do_test "test_op_eq"

@@ -1,5 +1,6 @@
 require 'test/unit/testcase'
 require 'test/unit/testresult'
+#require 'test/unit'
 
 class StringTest < Test::Unit::TestCase
 
@@ -280,7 +281,10 @@ class StringTest < Test::Unit::TestCase
 
   # Test '<=>'
   def test_op_comparison
-    #TODO
+    assert_equal 0, 'a' <=> 'a'
+    assert_equal -1, 'A' <=> 'a'
+    assert_equal 1, 'b' <=> 'a'
+    assert_equal -1, 'a' <=> 'b'
   end
 
   def test_insert 
@@ -466,3 +470,4 @@ do_test "test_rindex"
 do_test "test_index"
 do_test "test_op_append"
 do_test "test_concat"
+do_test "test_op_comparison"

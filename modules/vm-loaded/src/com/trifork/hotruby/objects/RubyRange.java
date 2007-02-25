@@ -58,9 +58,8 @@ public class RubyRange extends RubyBaseRange {
 					&& (include_last ? num.fast_le(last, SEL_LE) : num.fast_lt(
 							last, SEL_LT)).isTrue());
 
-		} else {
-			return bool(false);
 		}
+		return bool(false);
 	}
 
 	public IRubyObject last() {

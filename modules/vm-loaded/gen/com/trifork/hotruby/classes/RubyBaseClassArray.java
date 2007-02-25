@@ -68,10 +68,8 @@ public abstract class RubyBaseClassArray extends RubyClass {
 	public RubyMethod select(Selector sel) {
 		if (sel instanceof SelectArray) {
 			return ((SelectArray) sel).get_RubyClassArray();
-		} else {
-			return LoadedRubyRuntime.resolve_method((RubyClass) this, sel,
-					SelectArray.class);
 		}
+		return LoadedRubyRuntime.resolve_method(this, sel, SelectArray.class);
 	}
 
 	public RubyClass get_class() {

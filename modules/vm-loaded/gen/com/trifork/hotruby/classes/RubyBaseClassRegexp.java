@@ -73,6 +73,12 @@ public abstract class RubyBaseClassRegexp extends RubyClass {
 				return ((RubyRegexp) receiver).source();
 			}
 		});
+		meta.register_module_method("escape", new PublicMethod1() {
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject arg, RubyBlock block) {
+				return RubyRegexp.escape(arg);
+			}
+		});
 	}
 
 	public interface SelectRegexp {

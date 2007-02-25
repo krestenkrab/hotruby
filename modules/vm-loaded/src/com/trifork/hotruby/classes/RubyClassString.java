@@ -19,14 +19,12 @@ public class RubyClassString
 		super.init(meta);
 
 		meta.register_instance_method("split_by_string", new PublicMethod2() {
-
 			@Override
 			public IRubyObject call(IRubyObject receiver, IRubyObject arg1, IRubyObject arg2, RubyBlock block) {
 				return ((RubyString)receiver).split_by_string((RubyString)arg1, (RubyFixnum)arg2);
 			}});
 		
 		meta.register_instance_method("gsub", new PublicMethod2() {
-
 			@Override
 			public IRubyObject call(IRubyObject receiver, IRubyObject arg1, IRubyObject arg2, RubyBlock block) {
 				return ((RubyString)receiver).gsub((RubyRegexp)arg1, (RubyString)arg2);
@@ -48,7 +46,6 @@ public class RubyClassString
 			}});
 		
 		meta.register_instance_method("[]", new PublicMethod1() {
-
 			@Override
 			public IRubyObject call(IRubyObject receiver, IRubyObject arg, RubyBlock block) {
 				return ((RubyString)receiver).at_x(arg);
@@ -62,17 +59,27 @@ public class RubyClassString
 		});
 
 		meta.register_instance_method("==", new PublicMethod1() {
-
 			@Override
 			public IRubyObject call(IRubyObject receiver, IRubyObject arg, RubyBlock block) {
 				return ((RubyString)receiver).op_eq2(arg);
 			}});
 
 		meta.register_instance_method("<<", new PublicMethod1() {
-
 			@Override
 			public IRubyObject call(IRubyObject receiver, IRubyObject arg, RubyBlock block) {
 				return ((RubyString)receiver).op_concat(arg);
+			}});
+
+		meta.register_instance_method("<=>", new PublicMethod1() {
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject arg, RubyBlock block) {
+				return ((RubyString)receiver).op_compare(arg);
+			}});
+
+		meta.register_instance_method("initialize", new PublicMethod1() {
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject arg, RubyBlock block) {
+				return ((RubyString)receiver).initialize(arg);
 			}});
 
 		meta.alias_instance_method("===", "==");

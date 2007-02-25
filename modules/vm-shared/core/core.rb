@@ -7,6 +7,7 @@ p "loading core..."
 Kernel.eval_file 'object.rb', Object
 Kernel.eval_file 'array.rb', Object
 Kernel.eval_file 'regexp.rb', Object
+Kernel.eval_file 'match_data.rb', Object
 
 ##
 ## the very first thing we need to define is "load" and "require".  from there, we can
@@ -227,7 +228,7 @@ class String
     result= []
     while (md = pattern.match(self[pos,lim-pos])) 
       result << md[0]
-      pos += md.end
+      pos += md.end(0)
     end
   #  p "returning #{result}"
     result
@@ -240,10 +241,10 @@ class String
     result= []
     str = ""
     while (md = pattern.match(str=self[pos,lim-pos])) 
-      app = str[0, md.begin]
+      app = str[0, md.begin(0)]
    #   p "str[#{pos},#{lim-pos}]=#{str} ... + #{app}"
       result << app
-      pos += md.end
+      pos += md.end(0)
     end
    #   p "str[#{pos},#{lim-pos}]=#{str}"
    #   p "result => #{result}"

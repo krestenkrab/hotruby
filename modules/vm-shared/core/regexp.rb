@@ -1,11 +1,16 @@
 class Regexp
   # Defined "natively":
+  # self.escape
   # * ==
   # * =~
   # * initialize
   # * match
   # * options
   # * source
+
+  def self.quote(s)
+    self.escape(s)
+  end
 
   IGNORECASE = 1
   EXTENDED = 2
@@ -17,11 +22,16 @@ class Regexp
   end
   
   def self.union(*expressions)
-    Regexp.new(do_union expressions)
+    return Regexp.new('(?!)') if expressions.size == 0
+    return expressions[0] if expressions.size == 1 && expressions[0].class == Regexp
+    i, first, result = [0, true, String.new("")]
+    while (i < expressions.size)
+      result << '|' if !first
+      result << part_of_union(expressions[i])
+      first, i = [false, i + 1]
+    end
+    Regexp.new(result)
   end
-
-  #def self.escape(s)
-  #def self.quote(s)
 
   def self.last_match(idx=nil)
     if $~ != nil && idx != nil
@@ -57,19 +67,11 @@ class Regexp
   end
   
   private
-  def self.do_union(*expressions)
-    case expressions.size
-      when 0: '(?!)'
-      when 1: part_of_union(expressions[0])
-      else part_of_union(expressions[0]) + '|'+ do_union(expressions[1,-1])
-    end
-  end
-  
   def self.part_of_union(part)
     if part.class == Regexp
       part.to_s
     else
-      '' + part
+      return self.escape('' + part)
     end
   end
   
@@ -86,7 +88,4 @@ class Regexp
       '-' + positive_options(flags ^ 7)
     end
   end
-  
-#irb(main):004:0> Regexp.union(/abc/xm, /def/).to_s
-#=> "(?-mix:(?mx-i:abc)|(?-mix:def))"
 end
