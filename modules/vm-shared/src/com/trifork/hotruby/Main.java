@@ -5,7 +5,6 @@ import com.trifork.hotruby.runtime.RubyConfig;
 import com.trifork.hotruby.runtime.RubyRuntime;
 
 public class Main {
-
 	public static void main(String[] args) throws Exception
 	{
 		RubyConfig cfg = new RubyConfig();
@@ -19,11 +18,14 @@ public class Main {
 		if (true)
 		{
 			IRubyObject obj = rr.load("rb/test_require.rb", rr.getObject());
+//			IRubyObject obj = rr.load("rb/oles_test.rb", rr.getObject());
 //			IRubyObject obj = rr.load("rb/qnd.rb", rr.getObject());
 //			IRubyObject obj = rr.load("rb/rescuetest.rb", rr.getObject());
 //			IRubyObject obj = rr.load("rb/test/basic/String.rb", rr.getObject());
 //			IRubyObject obj = rr.load("rb/test/basic/Numeric.rb", rr.getObject());
 //			IRubyObject obj = rr.load("rb/test/basic/Array.rb", rr.getObject());
+//			IRubyObject obj = rr.load("rb/test/basic/Regexp.rb", rr.getObject());
+//			IRubyObject obj = rr.load("rb/test/basic/MatchData.rb", rr.getObject());
 			System.out.println("=> " + obj.inspect());
 			return;
 		}
