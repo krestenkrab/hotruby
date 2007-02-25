@@ -423,4 +423,5 @@ class Float
 end
 
 require 'numeric.rb'
+require 'integer.rb'
 require 'string.rb'

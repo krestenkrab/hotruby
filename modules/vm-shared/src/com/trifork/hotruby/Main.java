@@ -26,6 +26,7 @@ public class Main {
 //			IRubyObject obj = rr.load("rb/test/basic/Array.rb", rr.getObject());
 //			IRubyObject obj = rr.load("rb/test/basic/Regexp.rb", rr.getObject());
 //			IRubyObject obj = rr.load("rb/test/basic/MatchData.rb", rr.getObject());
+//			IRubyObject obj = rr.load("rb/test/basic/Integer.rb", rr.getObject());
 			System.out.println("=> " + obj.inspect());
 			return;
 		}
