@@ -19,7 +19,7 @@ public abstract class RubyNumeric
 	}
 
 	public static RubyInteger newInteger(BigInteger value) {
-		if (value.bitLength() < 32) {
+		if (value.bitLength() < 31) { // A Fixnum holds Integer values that can be represented in a native machine word (minus 1 bit).
 			return new RubyFixnum(value.intValue());
 		} else {
 			return new RubyBignum(value);

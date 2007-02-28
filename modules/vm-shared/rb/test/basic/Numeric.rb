@@ -5,6 +5,21 @@ require 'test/unit/testresult'
 # Tests Numeric operators for fixnums, bignums and floats
 #
 class NumericTest < Test::Unit::TestCase
+
+  def test_fixnum_bignum_ranges
+    n = 1073741823 # 2^30-1
+    assert_equal(Fixnum, n.class);
+
+    n = 1073741824 # 2^30
+    assert_equal(Bignum, n.class)
+
+    n = -1073741824 # -2^30
+    assert_equal(Fixnum, n.class);
+
+    n = -1073741825 # -2^30-1
+    assert_equal(Bignum, n.class)
+  end
+
   def test_unaryplus
     # Fixnums
     assert_equal(10, +10)
@@ -46,9 +61,9 @@ class NumericTest < Test::Unit::TestCase
   
   def test_eql?
     assert_equal(false, 1.eql?(1.0))
-#    assert_equal(true, (1.0).eql?(1.0))
-#    assert_equal(false, 1.eql?(2))
-#    assert_equal(false, (1.0).eql?(2.0))
+    assert_equal(true, (1.0).eql?(1.0))
+    assert_equal(false, 1.eql?(2))
+    assert_equal(false, (1.0).eql?(2.0))
   end
 
   def test_integer?
@@ -59,7 +74,15 @@ class NumericTest < Test::Unit::TestCase
   end
 
   def test_modulo
-    #TODO
+    assert_equal(1, 13.modulo(4))
+    assert_equal(-3, 13.modulo(-4))
+    assert_equal(3, (-13).modulo(4))
+    assert_equal(-1, (-13).modulo(-4))
+
+    assert_equal(3.5, 11.5.modulo(4))
+    assert_equal(-0.5, 11.5.modulo(-4))
+    assert_equal(0.5, (-11.5).modulo(4))
+    assert_equal(-3.5, (-11.5).modulo(-4))
   end
 
   def test_nonzero?
@@ -72,7 +95,15 @@ class NumericTest < Test::Unit::TestCase
   end
 
   def test_remainder
-    #TODO
+    assert_equal(1, 13.remainder(4))
+    assert_equal(1, 13.remainder(-4))
+    assert_equal(-1, (-13).remainder(4))
+    assert_equal(-1, (-13).remainder(-4))
+
+    assert_equal(3.5, (11.5).remainder(4))
+    assert_equal(3.5, (11.5).remainder(-4))
+    assert_equal(-3.5, (-11.5).remainder(4))
+    assert_equal(-3.5, (-11.5).remainder(-4))
   end
 
   def test_zero?
@@ -95,14 +126,15 @@ def do_test(name)
   p tr.to_s
 end
 
-do_test "test_unaryplus"
-do_test "test_unaryminus"
-do_test "test_abs"
-do_test "test_coerce"
-do_test "test_divmod"
-do_test "test_eql?"
-do_test "test_integer?"
-do_test "test_modulo"
-do_test "test_nonzero?"
-do_test "test_remainder"
-do_test "test_zero?"
+do_test "test_fixnum_bignum_ranges"
+#do_test "test_unaryplus"
+#do_test "test_unaryminus"
+#do_test "test_abs"
+#do_test "test_coerce"
+#do_test "test_divmod"
+#do_test "test_eql?"
+#do_test "test_integer?"
+#do_test "test_modulo"
+#do_test "test_nonzero?"
+#do_test "test_remainder"
+#do_test "test_zero?"

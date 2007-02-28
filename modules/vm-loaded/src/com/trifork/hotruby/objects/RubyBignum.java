@@ -107,11 +107,16 @@ public class RubyBignum extends RubyBaseBignum {
 	}
 
 	public IRubyNumeric inverse_mult(int num) {
-		return new RubyFloat(num * value.doubleValue());
+		BigInteger res = BigInteger.valueOf(num).multiply(value);
+		if (res.bitLength() <= 30) {
+			return new RubyFixnum(res.intValue());
+		} else {
+			return new RubyBignum(res);
+		}
 	}
 
 	public IRubyNumeric inverse_div(int num) {
-		return new RubyFloat(num / value.doubleValue());
+		return new RubyBignum(BigInteger.valueOf(num).divide(value));
 	}
 
 	public IRubyNumeric inverse_plus(int fixnum) {

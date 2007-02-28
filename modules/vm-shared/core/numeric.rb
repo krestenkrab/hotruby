@@ -1,4 +1,5 @@
 class Numeric
+
   def coerce(aNumeric)
     if (self.class == aNumeric.class)
       return [aNumeric, self]
@@ -19,6 +20,10 @@ class Numeric
   
   def integer?
     return self.instance_of? Integer
+  end
+  
+  def modulo(aNumeric)
+    divmod(aNumeric)[1]
   end
   
   def nonzero?
