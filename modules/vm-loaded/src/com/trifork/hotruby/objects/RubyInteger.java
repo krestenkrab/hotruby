@@ -13,10 +13,19 @@ public abstract class RubyInteger extends RubyBaseInteger implements IRubyIntege
 		if (obj instanceof RubyInteger) {
 			return (RubyInteger) obj;
 		} else {
-			throw LoadedRubyRuntime.instance.newArgumentError("argument not an integer");
+			throw LoadedRubyRuntime.instance.newArgumentError("argument not an integer, got: " + obj.get_class().toString());
 		}
 	}
 
+	public static RubyInteger induced_from_allow_string(IRubyObject obj) {
+		if (obj instanceof RubyString) {
+			String intStr = ((RubyString) obj).value;
+			return RubyInteger.newInteger(Integer.parseInt(intStr));
+			//TODO, perhaps an error-message here instead of numberformatexception
+		}
+		return induced_from(obj);
+	}
+	
 
 	public abstract IRubyObject inverse_bit_or(int fixnum);
 

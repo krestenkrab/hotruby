@@ -7,6 +7,7 @@ p "loading core..."
 Kernel.eval_file 'object.rb', Object
 Kernel.eval_file 'array.rb', Object
 Kernel.eval_file 'regexp.rb', Object
+Kernel.eval_file 'time.rb', Object
 Kernel.eval_file 'match_data.rb', Object
 
 ##
