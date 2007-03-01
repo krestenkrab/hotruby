@@ -3,6 +3,17 @@ require 'test/unit/testresult'
 #require 'test/unit'
 
 class IntegerTest < Test::Unit::TestCase
+
+  def test_times
+    i = 0
+    10.times {i = i + 1}
+    assert_equal(10, i)
+    
+    j = 1
+    3.times {|n| j = j + n}
+    assert_equal(4, j)
+  end
+  
   def test_upto
     a = []
     5.upto(9) { |i| a << i }
@@ -40,5 +51,6 @@ def do_test(name)
   p tr.to_s
 end
 
+do_test "test_times"
 do_test "test_upto"
 do_test "test_downto"

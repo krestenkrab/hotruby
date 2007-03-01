@@ -14,4 +14,9 @@ class Integer < Numeric
       i = i - 1
     end
   end
+  
+  def times (&block) 
+    0.upto(self-1, &block)
+    self
+  end
 end

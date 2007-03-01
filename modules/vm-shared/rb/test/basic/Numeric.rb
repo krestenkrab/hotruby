@@ -20,6 +20,7 @@ class NumericTest < Test::Unit::TestCase
     assert_equal(Bignum, n.class)
   end
 
+
   def test_unaryplus
     # Fixnums
     assert_equal(10, +10)
@@ -126,7 +127,7 @@ def do_test(name)
   p tr.to_s
 end
 
-do_test "test_fixnum_bignum_ranges"
+#do_test "test_fixnum_bignum_ranges"
 #do_test "test_unaryplus"
 #do_test "test_unaryminus"
 #do_test "test_abs"
