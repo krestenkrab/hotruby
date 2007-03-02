@@ -1,12 +1,13 @@
 package com.trifork.hotruby.ast;
 
 import com.trifork.hotruby.interp.CompileContext;
+import com.trifork.hotruby.util.regexp.RegularExpressionTranslator;
 
 public class RegularExpression extends Expression {
 
-    public static final int REGEX_OPTION_I = 0x01;
-    public static final int REGEX_OPTION_X = 0x02;
-    public static final int REGEX_OPTION_M = 0x04;
+    public static final int REGEX_OPTION_I = RegularExpressionTranslator.IGNORECASE;
+    public static final int REGEX_OPTION_X = RegularExpressionTranslator.EXTENDED;
+    public static final int REGEX_OPTION_M = RegularExpressionTranslator.MULTILINE;
     public static final int REGEX_OPTION_O = 0x08;
     public static final int REGEX_OPTION_N = 0x10;
     public static final int REGEX_OPTION_E = 0x20;

@@ -3,6 +3,10 @@ require 'test/unit/testresult'
 #require 'test/unit'
 
 class StringTest < Test::Unit::TestCase
+  def test_literals
+    assert_equal('ab' << 10 << 'cd', "ab\ncd")
+    #assert_equal(2, "\\\\".length)
+  end
 
   def test_constructor
     # TODO
@@ -465,6 +469,7 @@ def do_test(name)
   p tr.to_s
 end
 
+do_test "test_literals"
 #do_test "test_op_mod"
 do_test "test_rindex"
 do_test "test_index"

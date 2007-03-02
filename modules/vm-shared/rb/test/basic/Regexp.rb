@@ -198,8 +198,7 @@ class RegexpTest < Test::Unit::TestCase
     assert_match(['a3c'], /a[[:alnum:]]c/, '12a3c45')
     assert_match(['abc'], /a[[:alpha:]]c/, '12abc45')
     assert_match(['a c'], /a[[:blank:]]c/, '12a c45')
-    # Doesn't work currently because the parser does not convert \n to a newline
-    # TODO assert_match(["a\nc"], /a[[:cntrl:]]c/, "12a\nc45")
+    assert_match(["a\nc"], /a[[:cntrl:]]c/, "12a\nc45")
     assert_match(['a.c'], /a[[:graph:]]c/, "12a.c45")
     assert_match(['abc'], /a[[:lower:]]c/, "12abc45")
     assert_match(['abc'], /a[[:print:]]c/, "12abc45")
@@ -238,8 +237,7 @@ class RegexpTest < Test::Unit::TestCase
     assert_no_match(/abc\Z/, '12abc34')
     assert_match(['abc'], /abc\Z/, '12abc')
     assert_no_match(/ab\Zc/, '12abc34')
-    # Doesn't work currently because the parser does not convert \n to a newline
-    # TODO assert_match(['abc'], /abc\Z/, "12abc\n")
+    assert_match(['abc'], /abc\Z/, "12abc\n")
     
     # \b
     assert_match(['cd'], /\bcd/, 'ab cd')
@@ -283,17 +281,10 @@ class RegexpTest < Test::Unit::TestCase
     assert_match(['abbc', 'b'], /a(?>(b)*)c/, '12abbc45')
 
     # Unknown extension
-    # TODO assert_raise(RegexpError) do
-    #  Regexp.new('a(?<b*)c')
-    #end
+    # TODO assert_raise(RegexpError) { Regexp.new('a(?<b*)c') }
   end
 
   def test_options
-    # TODO: Cannot fully test "MULTILINE" option, since escape sequences are not
-    #       interpreted in hotruby
-    # TODO: Cannot test options given in explicit regular expressions, since
-    #       they are not given to the created Regexp class.
-  
     assert_equal 1, Regexp::IGNORECASE
     assert_equal 2, Regexp::EXTENDED
     assert_equal 4, Regexp::MULTILINE
@@ -301,7 +292,7 @@ class RegexpTest < Test::Unit::TestCase
     # Ignorecase
     assert_no_match(Regexp.new('abc', 0), '12aBc45')
     assert_match(['aBc'], Regexp.new('abc', Regexp::IGNORECASE), '12aBc45')
-    # TODO assert_match(['aBc'], /abc/i, '12aBc45')
+    assert_match(['aBc'], /abc/i, '12aBc45')
     assert_match(['abcaBc'], /abc(?i)abc/, '12abcaBc45')
     assert_match(['abcaBc'], /abc(?i:abc)/, '12abcaBc45')
     assert_no_match(/abc(?i)abc(?-i)abc/, '12abcaBcaBc45')
@@ -311,36 +302,31 @@ class RegexpTest < Test::Unit::TestCase
     assert Regexp.new('abc', Regexp::IGNORECASE).casefold?
 		
     # Extended
-# TODO    s = <<HERE
-#      a #A comment
-#      # Another comment
-#      bc
-#HERE
-#    assert_match(['abc'], Regexp.new(s, Regexp::EXTENDED), '12abc45')
-    # TODO assert_match(['abc'], /a #A comment
-    #  # Another comment
-    #  bc/x, '12abc45')
-#    t = <<HERE
-#      a #A comment
-#      (?-x) # Another comment
-#      bc
-#HERE
-#    assert_no_match(Regexp.new(t, Regexp::EXTENDED), '12abc45')
+    s = "\n  a #comment\n  #Another comment\n  bc\n"
+    assert_match(['abc'], Regexp.new(s, Regexp::EXTENDED), '12abc45')
+    assert_match(['abc'], /a #A comment
+      # Another comment
+      bc/x, '12abc45')
+    t = "\n  a #A comment\n  (?-x) # Another comment\n  bc\n"
+    assert_no_match(Regexp.new(t, Regexp::EXTENDED), '12abc45')
 
     # Multiline
     assert_no_match(/12a\nc45/, 'a.b')
-#    assert_match(['abc'], /^abc/, "12\nabc45")
-# TODO: Convert these to Ruby when character esccaping works
-#	    assertMatch("^abc", "12\nabc45", RegularExpressionTranslator.MULTILINE).withResult("abc");
-#	    assertMatch("abc(?m)a\nc", "12abca\nc45").withResult("abca\nc");
-#	    assert_match(['abc'], /abc$/, "12abc\n45")
-#	    assertMatch("abc$", "12abc\n45", RegularExpressionTranslator.MULTILINE).withResult("abc");
-#	    assertMatch("abc(?m)abc$", "12abcabc\n45").withResult("abcabc");
-#	    assertNoMatch("a.c", "12a\nc45");
-#	    assertMatch("a.c", "12a\nc45", RegularExpressionTranslator.MULTILINE).withResult("a\nc");
-#	    assertMatch("a.c(?m)a.c", "12abca\nc45").withResult("abca\nc");
-#	    assertNoMatch("a.c(?-m)a.c", "12a\nca\nc45", RegularExpressionTranslator.MULTILINE);
-	    
+    assert_match(['abc'], /^abc/, "12\nabc45")
+    assert_match(['abc'], /^abc/m, "12\nabc45")
+    assert_match(['abc'], Regexp.new('^abc', Regexp::MULTILINE), "12\nabc45")
+    assert_match(["abca\nc"], /abc(?m)a\nc/, "12abca\nc45")
+    assert_match(['abc'], /abc$/, "12abc\n45")
+    assert_match(['abc'], /abc$/m, "12abc\n45")
+    assert_match(['abc'], Regexp.new('abc$', Regexp::MULTILINE), "12abc\n45")
+    assert_match(['abcabc'], /abc(?m)abc$/, "12abcabc\n45")
+    assert_no_match(/a.c/, "12a\nc45")
+    assert_match(["a\nc"], /a.c/m, "12a\nc45")
+    assert_match(["a\nc"], Regexp.new('a.c', Regexp::MULTILINE), "12a\nc45")
+    assert_match(["abca\nc"], /a.c(?m)a.c/, "12abca\nc45")
+    assert_no_match(/a.c(?-m)a.c/m, "12a\nca\nc45")
+    assert_no_match(Regexp.new('a.c(?-m)a.c', Regexp::MULTILINE), "12a\nca\nc45")
+
     # Total confusion of option switching
     assert_no_match(/(?i)a(?i-i)bc/, '12aBc45')
     assert_no_match(/a(?i-i)bc/, '12aBc45')

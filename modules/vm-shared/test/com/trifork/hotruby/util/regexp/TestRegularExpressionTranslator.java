@@ -321,12 +321,12 @@ public class TestRegularExpressionTranslator {
 	    assertNoMatch("abc(?-i)abc", "12aBcaBc45", RegularExpressionTranslator.IGNORECASE);
 		
 		// Extended
-	    String s = "   a #A comment\n" +
-                   "   # Another comment\n" +
+	    String s = "   a #A comment\r\n" +
+                   "   # Another comment\r\n" +
                    "   bc";
 	    assertMatch(s, "12abc45", RegularExpressionTranslator.EXTENDED).withResult("abc");
-	    String t = "   a #A comment\n" +
-        "   (?-x)# Another comment\n" +
+	    String t = "   a #A comment\r\n" +
+        "   (?-x)# Another comment\r\n" +
         "   bc";
 	    assertNoMatch(t, "12abc45", RegularExpressionTranslator.EXTENDED);
 

@@ -25,6 +25,18 @@ public class ConstantStringExpression extends Expression implements HereDocHolde
 	private String text;
 
 	public ConstantStringExpression(String text, int kind) {
+		switch (kind) {
+		case SINGLE_QUOTE:
+		//	System.out.println("Single quote");
+			break;
+		case DOUBLE_QUOTE:
+		//	System.out.println("Double quote, regexp, command output");
+			text = text.replace("\\n", "\n");
+			break;
+		case HEREDOC:
+		//	System.out.println("Heredoc");
+			break;
+		}
 		this.text = text;
 	}
 
