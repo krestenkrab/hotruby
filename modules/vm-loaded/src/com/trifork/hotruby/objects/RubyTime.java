@@ -1,10 +1,16 @@
 package com.trifork.hotruby.objects;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Locale;
 import java.util.TimeZone;
+
+import javax.swing.plaf.ListUI;
 
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
 import com.trifork.hotruby.runtime.RaisedException;
@@ -62,42 +68,44 @@ public class RubyTime extends RubyBaseTime {
 	{
 		TimeZone tz = getTZ();
 		boolean isUtcZone = tz.getID().equalsIgnoreCase("UTC");
-		//if the tim zone is not UTC then print the offset (e.g. +0100) as "time zone"
+
+		//if the time zone is not UTC then print the offset (e.g. +0100)
 		String formatString = "EEE MMM dd HH:mm:ss " + (isUtcZone ?  "zzz" : "ZZZ") + " yyyy";
-		SimpleDateFormat sdf = new SimpleDateFormat(formatString);
+		SimpleDateFormat sdf = new SimpleDateFormat(formatString, Locale.US);
 		sdf.setTimeZone(tz);
+		
+		//TODO .. the printed string is platform depended. 
+		/*
+		 * Time.mktime 2005, 1, 1:
+		 *   Mac, Sat Jan 01 00:00:00 +0100 2005
+		 *   Windows, Sat Jan 01 00:00:00 Rom, normaltid 2005
+		 */
 		return sdf.format(new Date(when));
 	}
-	
-	//year [, month, day, hour, min, sec, usec]
-	public static RubyTime instanceFromRubyArgs(IRubyObject[] rArgs, TimeZone zone)
-	{
-		return new RubyTime(verifyAndExtractTimeFromArgs(zone, rArgs), zone);
-	}
-	
+
 	/**
-	 * Extracts and verifies the parameters.
 	 * 
-	 * @param zone the timezone
-	 * @param rArgs args on the form: year [, month, day, hour, min, sec, usec]
-	 * @return the time in millis from the epoch if the parameters are valid
-	 * @throws RaisedException if any of the parameters fall outside their valid range.
+	 * @param rArgs arguments on the form: year [, month, day, hour, min, sec, usec]
+	 * @param zone the time zone to use
+	 * @returna RubyTime with the specifed time set.
+ 	 * @throws RaisedException if any of the parameters fall outside their valid range.
 	 */
-	private static long verifyAndExtractTimeFromArgs(TimeZone zone, IRubyObject[] rArgs) {
+	public static RubyTime instance(IRubyObject[] rArgs, TimeZone zone)
+	{
 		int numOfArgs = rArgs.length;
-			
+		
 		int year = RubyFixnum.induced_from_allow_string(rArgs[0]).intValue();
 		int month = 1;
 		int day = 1;
 		int hour = 0;
 		int min = 0;
 		int sec = 0;
-		int secToAdd = 0;
+		int secsToAdd = 0;
 		
 		switch (numOfArgs) {
 			case 7:
 				long usec = RubyBignum.induced_from_allow_string(rArgs[6]).longValue();
-				secToAdd = (int) (usec / 1000000);
+				secsToAdd = (int) (usec / 1000000);
 			case 6:
 				sec = RubyFixnum.induced_from_allow_string(rArgs[5]).intValue();
 			case 5:
@@ -107,9 +115,9 @@ public class RubyTime extends RubyBaseTime {
 			case 3:
 				day = RubyFixnum.induced_from_allow_string(rArgs[2]).intValue();
 			case 2:
-				month = RubyTime.getMonth(rArgs[1]); //specialcase to handle month.. can be e.g. "FEB"
+				//month is special case; besides a number it can also be a three letter string like "MAY"
+				month = getMonth(rArgs[1]); 
 		}
-		
 		if (isOutsideRange(month, 1, 12) ||
 			isOutsideRange(day, 1, 31) ||
 			isOutsideRange(hour, 0, 23) ||
@@ -120,8 +128,8 @@ public class RubyTime extends RubyBaseTime {
 		}
 		
 		Calendar when = GregorianCalendar.getInstance(zone);
-		when.set(year, (month-1), day, hour, min, (sec + secToAdd));
-		return when.getTimeInMillis();
+		when.set(year, (month-1), day, hour, min, (sec + secsToAdd));
+		return new RubyTime(when.getTimeInMillis(), zone);
 	}
 	
 	private static boolean isOutsideRange(int val, int from, int to)

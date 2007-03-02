@@ -44,7 +44,7 @@ public class RubyClassTime
 					//TODO - implement
 				} else if (1 <= args.length && args.length <= 7)
 				{
-					return RubyTime.instanceFromRubyArgs(args, zone);
+					return RubyTime.instance(args, zone);
 				}
 				throw LoadedRubyRuntime.instance.newArgumentError("wrong number of arguments");
 			}
@@ -59,7 +59,7 @@ public class RubyClassTime
 					//TODO - implement
 				} else if (1 <= args.length && args.length <= 7)
 				{
-					return RubyTime.instanceFromRubyArgs(args, utcZone);
+					return RubyTime.instance(args, utcZone);
 				}
 				throw LoadedRubyRuntime.instance.newArgumentError("wrong number of arguments");
 			}
