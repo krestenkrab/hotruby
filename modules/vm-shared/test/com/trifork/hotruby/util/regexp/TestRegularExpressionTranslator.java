@@ -335,7 +335,7 @@ public class TestRegularExpressionTranslator {
 	    assertNoMatch("a.b", "12a\nc45");
 	    assertMatch("^abc", "12\nabc45").withResult("abc");
 	    assertMatch("^abc", "12\nabc45", RegularExpressionTranslator.MULTILINE).withResult("abc");
-	    assertMatch("abc(?m)a\nc", "12abca\nc45").withResult("abca\nc");
+	    assertMatch("abc(?m)a\\nc", "12abca\nc45").withResult("abca\nc");
 	    assertMatch("abc$", "12abc\n45").withResult("abc");
 	    assertMatch("abc$", "12abc\n45", RegularExpressionTranslator.MULTILINE).withResult("abc");
 	    assertMatch("abc(?m)abc$", "12abcabc\n45").withResult("abcabc");

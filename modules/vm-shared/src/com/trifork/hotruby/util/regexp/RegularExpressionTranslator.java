@@ -275,6 +275,9 @@ public class RegularExpressionTranslator {
 		assert current() == '\\';
 		advanceAndExpectMore();
 		switch(current()) {
+			// Newline
+		case 'n':
+			
 			// Anchors
 		case 'A':
 		case 'z':

@@ -3,9 +3,80 @@ require 'test/unit/testresult'
 #require 'test/unit'
 
 class StringTest < Test::Unit::TestCase
-  def test_literals
-    assert_equal('ab' << 10 << 'cd', "ab\ncd")
-    #assert_equal(2, "\\\\".length)
+  SINGLE_QUOTE = 39
+  BACKSLASH = 92
+
+  ALERT = 7
+  BACKSPACE = 8
+  ESCAPE = 27
+  FORMFEED = 12
+  NEWLINE = 10
+  RETURN = 13
+  SPACE = 32
+  TAB = 9
+  VERTICAL_TAB = 11
+
+  def test_character_escapes
+    assert_equal('' << SINGLE_QUOTE, '\'')
+    assert_equal('' << SINGLE_QUOTE, "\'")
+    
+    assert_equal('' << BACKSLASH, "\\")
+    assert_equal('' << BACKSLASH, '\\')
+
+    assert_equal('' << ALERT, "\a")
+    assert_equal('' << BACKSLASH << 'a', '\a')
+
+    assert_equal('' << BACKSPACE, "\b")
+    assert_equal('' << BACKSLASH << 'b', '\b')
+
+    assert_equal('' << ESCAPE, "\e")
+    assert_equal('' << BACKSLASH << 'e', '\e')
+
+    assert_equal('' << FORMFEED, "\f")
+    assert_equal('' << BACKSLASH << 'f', '\f')
+
+    assert_equal('' << NEWLINE, "\n")
+    assert_equal('' << BACKSLASH << 'n', '\n')
+
+    assert_equal('' << RETURN, "\r")
+    assert_equal('' << BACKSLASH << 'r', '\r')
+
+    assert_equal('' << SPACE, "\s")
+    assert_equal('' << BACKSLASH << 's', '\s')
+
+    assert_equal('' << TAB, "\t")
+    assert_equal('' << BACKSLASH << 't', '\t')
+    
+    assert_equal('' << VERTICAL_TAB, "\v")
+    assert_equal('' << BACKSLASH << 'v', '\v')
+    
+    # Escapes with no definition
+    assert_equal('o', "\o")
+    assert_equal('' << BACKSLASH << 'o', '\o')
+    assert_equal('u', "\u")
+    assert_equal('' << BACKSLASH << 'u', '\u')
+  end
+  
+  def test_octal_escape
+    assert_equal('' << 2, "\2")
+    assert_equal('' << BACKSLASH << '2', '\2')
+    assert_equal('' << 2, "\02")
+    assert_equal('' << 2, "\002")
+    assert_equal('' << 0 << '2', "\0002")
+
+    assert_equal('' << 13, "\15")
+    assert_equal('' << BACKSLASH << '15', '\15')
+
+    assert_equal('' << 108, "\154")
+    assert_equal('' << BACKSLASH << '154', '\154')
+
+    assert_equal('888', "\888")
+    assert_equal('' << BACKSLASH << '154', '\154')
+
+    assert_equal('' << 108 << '3', "\1543")
+    assert_equal('' << BACKSLASH << '1543', '\1543')
+
+    assert_equal('' << 2 << 'v', "\2v")
   end
 
   def test_constructor
@@ -469,7 +540,8 @@ def do_test(name)
   p tr.to_s
 end
 
-do_test "test_literals"
+do_test "test_character_escapes"
+do_test "test_octal_escape"
 #do_test "test_op_mod"
 do_test "test_rindex"
 do_test "test_index"
