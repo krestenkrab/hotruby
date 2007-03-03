@@ -79,6 +79,17 @@ class StringTest < Test::Unit::TestCase
     assert_equal('' << 2 << 'v', "\2v")
   end
 
+  def test_hex_escape
+    assert_equal('' << 2, "\x02")
+    assert_equal('' << BACKSLASH << 'x02', '\x02')
+
+    assert_equal('' << 2, "\x2")
+    assert_equal('' << BACKSLASH << 'x2', '\x2')
+
+    assert_equal('' << 2 << 'v', "\x2v")
+    assert_equal('' << BACKSLASH << 'x2v', '\x2v')
+  end
+
   def test_constructor
     # TODO
     # Returns a new string object containing a copy of str.
@@ -542,6 +553,7 @@ end
 
 do_test "test_character_escapes"
 do_test "test_octal_escape"
+do_test "test_hex_escape"
 #do_test "test_op_mod"
 do_test "test_rindex"
 do_test "test_index"

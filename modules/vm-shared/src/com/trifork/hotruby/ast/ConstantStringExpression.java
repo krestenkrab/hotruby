@@ -98,6 +98,18 @@ public class ConstantStringExpression extends Expression implements HereDocHolde
 					}
 					found = true;
 				}
+				if (isDoubleQuote && c2 == 'x') {
+					// Hex escape
+					int hexValue = 0;
+					int j=0;
+					for (; j<2 && i+j+2<length && Character.isDigit(s.charAt(i+j+2)); j++) {
+						hexValue *= 8;
+						hexValue += s.charAt(i+j+2) - '0';
+					}
+					builder.append((char)hexValue);
+					i += j + 1;
+					found = true;
+				}
 				if (found || isDoubleQuote) {
 					continue;
 				}
