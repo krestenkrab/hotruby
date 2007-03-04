@@ -12,13 +12,27 @@ public class IntegerExpression extends Expression {
 		return text + "r" + radix;
 	}
 
+	/**
+	 * @deprecated Use the version taking a line number!
+	 */
 	public IntegerExpression(String text, int radix) {
 		this.text = text;
 		this.radix = radix;
 	}
 
+	public IntegerExpression(int line, String text, int radix) {
+		super(line);
+		this.text = text;
+		this.radix = radix;
+	}
+
 	public IntegerExpression(int line) {
+		super(line);
 		text = Integer.toString(line, radix = 10);
+	}
+	
+	public String getText() {
+		return text;
 	}
 
 	void compile(CompileContext ctx, boolean push) {
@@ -31,9 +45,7 @@ public class IntegerExpression extends Expression {
 	public Expression const_fold_negate() {
 		if (text.charAt(0) == '-') {
 			return new IntegerExpression(text.substring(1), radix);
-		} else {
-			return new IntegerExpression("-" + text, radix);
 		}
+		return new IntegerExpression("-" + text, radix);
 	}
-
 }

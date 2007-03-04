@@ -40,6 +40,10 @@ public abstract class RubyCode {
 	public void setBody(Expression exp) {
 		this.body = exp;
 	}
+	
+	public Expression getBody() {
+		return body;
+	}
 
 	public int line() {
 		return line;

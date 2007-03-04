@@ -6,7 +6,12 @@ public abstract class Expression implements Cloneable {
 
 	protected int line;
 
-	public Expression() {}
+	/**
+	 * @deprecated Use the version taking a line number instead!
+	 */
+	public Expression() {
+		// Nothing to do...
+	}
 	
 	public Expression(int line) {
 		this.line = line;

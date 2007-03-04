@@ -6,10 +6,9 @@ import com.trifork.hotruby.interp.Instructions;
 
 public class AssignmentExpression extends BinaryExpression {
 
-	public AssignmentExpression(Expression left, String operator,
+	public AssignmentExpression(int line, Expression left, String operator,
 			Expression returnExp_) {
-		super(left, operator, returnExp_);
-		// TODO Auto-generated constructor stub
+		super(line, left, operator, returnExp_);
 	}
 	
 	@Override
@@ -32,7 +31,7 @@ public class AssignmentExpression extends BinaryExpression {
 		
 		String eval = operator.substring(0, operator.length()-1);
 		
-		BinaryExpression new_right = new BinaryExpression(left, eval, right);
+		BinaryExpression new_right = new BinaryExpression(line(), left, eval, right);
 		
 		new_right.compile(ctx, true);
 		left.compile_assignment(ctx, push);
@@ -40,9 +39,9 @@ public class AssignmentExpression extends BinaryExpression {
 	//	throw new InternalError("not implemented: "+operator);
 	}
 
-	public static Expression build(Expression left, String operator, Expression right) {
+	public static Expression build(int line, Expression left, String operator, Expression right) {
 		
-		return new AssignmentExpression(left, operator, right);
+		return new AssignmentExpression(line, left, operator, right);
 		
 /*		
 		if (! "=".equals(operator)) {

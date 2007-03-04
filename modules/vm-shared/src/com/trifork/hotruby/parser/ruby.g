@@ -415,7 +415,7 @@ assignmentExpression returns [Expression expr]
 			|	op=operator_LOGICAL_OR_ASSIGN)
 			(REST_ARG_PREFIX expr2=rangeExpression { expr2=new RestArgExpression(expr2); }
 			| expr2=notExpression )
-			{ expr= AssignmentExpression.build (expr, op, expr2); }
+			{ expr= AssignmentExpression.build (line(), expr, op, expr2); }
 			)*
 		;
 
@@ -855,12 +855,12 @@ literal returns[Expression expr=null]
 		;
 
 numeric returns[Expression expr=null]
-		:	integer_value:INTEGER	{expr = new IntegerExpression(integer_value.getText(), 10);}
-		|	hex_value:HEX			{expr = new IntegerExpression(hex_value.getText(), 16);}
-		|	binary_value:BINARY		{expr = new IntegerExpression(binary_value.getText(), 2);}
-		|	octal_value:OCTAL		{expr = new IntegerExpression(octal_value.getText(), 8);}
-		|	float_value:FLOAT		{expr = new FloatExpression(float_value.getText());}
-		|	ascii_value:ASCII_VALUE	{ expr=new IntegerExpression(String.valueOf((int)ascii_value.getText().charAt(1)), 10); } 
+		:	integer_value:INTEGER	{expr = new IntegerExpression(line(), integer_value.getText(), 10);}
+		|	hex_value:HEX			{expr = new IntegerExpression(line(), hex_value.getText(), 16);}
+		|	binary_value:BINARY		{expr = new IntegerExpression(line(), binary_value.getText(), 2);}
+		|	octal_value:OCTAL		{expr = new IntegerExpression(line(), octal_value.getText(), 8);}
+		|	float_value:FLOAT		{expr = new FloatExpression(line(), float_value.getText());}
+		|	ascii_value:ASCII_VALUE	{ expr=new IntegerExpression(line(), String.valueOf((int)ascii_value.getText().charAt(1)), 10); } 
 		;
 
 

@@ -5,9 +5,9 @@
 	<classpathentry path="ruby" kind="src"/>
 	<classpathentry path="test" kind="src"/>
 	<classpathentry path="org.eclipse.jdt.launching.JRE_CONTAINER" kind="con"/>
-	<classpathentry sourcepath="ANTLR_HOME/antlrsrc.zip" path="ANTLR_HOME/antlr.jar" kind="var"/>
 	<classpathentry sourcepath="/Users/krab/source/asm-2.2.3/src" path="lib/asm-commons-2.2.3.jar" kind="lib"/>
 	<classpathentry sourcepath="/Users/krab/source/asm-2.2.3/src" path="lib/asm-2.2.3.jar" kind="lib"/>
 	<classpathentry path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4" kind="con"/>
+	<classpathentry sourcepath="ANTLR_HOME/antlrsrc.zip" path="ANTLR_HOME/antlr.jar" kind="var"/>
 	<classpathentry path="bin" kind="output"/>
 </classpath>

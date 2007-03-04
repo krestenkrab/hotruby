@@ -6,7 +6,15 @@ public class FloatExpression extends Expression {
 
 	private String text;
 
+	/**
+	 * @deprecated Use the version taking a line number instead!
+	 */
 	public FloatExpression(String text) {
+		this.text = text;
+	}
+
+	public FloatExpression(int line, String text) {
+		super(line);
 		this.text = text;
 	}
 

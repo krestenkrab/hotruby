@@ -16,12 +16,26 @@ public class BinaryExpression extends Expression {
 		}
 	}
 	
-	public BinaryExpression(Expression left, String operator, Expression right) {
-		
+	public BinaryExpression(int line, Expression left, String operator, Expression right) {
+		super(line);
 		this.left = left;
 		this.operator = operator;
 		this.right = right;
-		
+	}
+	
+	/**
+	 * @deprecated Use the version taking a line number instead!
+	 */
+	public BinaryExpression(Expression left, String operator, Expression right) {
+		this(0, left, operator, right);
+	}
+
+	public Expression getLeft() {
+		return left;
+	}
+	
+	public Expression getRight() {
+		return right;
 	}
 
 	@Override

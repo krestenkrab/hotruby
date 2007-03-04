@@ -14,6 +14,10 @@ public class ClassExpression extends Expression {
 		this.superExpression = superExpression;
 		this.code = code;
 	}
+	
+	public ClassCode getCode() {
+		return code;
+	}
 
 	@Override
 	void compile(CompileContext ctx, boolean push) {
