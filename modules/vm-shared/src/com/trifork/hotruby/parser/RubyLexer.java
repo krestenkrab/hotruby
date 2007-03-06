@@ -779,7 +779,8 @@ public class RubyLexer extends RubyLexerBase
 		// {-1}
 		// a > -1
 		// a ? -1 : -2
-		switch (last_token_.getType())
+		int type = last_token_.getType();
+		switch (type)
 		{
 			case LINE_BREAK:
 			case SEMI:
@@ -809,10 +810,11 @@ public class RubyLexer extends RubyLexerBase
 			case RESCUE_MODIFIER:
 				return true;
 			case FUNCTION:
-				return seen_whitespace_ &&
-					((' ' != LA(1)) && ('\t' != LA(1)));
+				return seen_whitespace_
+					&& ' ' != LA(1)
+					&& '\t' != LA(1);
 			default:
-				return is_operator(last_token_.getType());
+				return is_operator(type);
 		}
 	}
 

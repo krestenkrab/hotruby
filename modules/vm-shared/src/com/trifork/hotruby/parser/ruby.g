@@ -590,7 +590,7 @@ commandPart[Expression base] returns [Expression expr]
 	:
 		  DOT expr=methodCallAfterDot[expr, false] 
 		| COLON2 expr=methodCallAfterDot[expr, true] 
-		| (LBRACK_ARRAY_ACCESS|LBRACK)
+		| (LBRACK_ARRAY_ACCESS)
 				(args=arrayReferenceArgument)?
 		  RBRACK! { expr = new MethodCallExpression(scope(), line, expr, "[]", args, null, false); }
 		  
@@ -915,7 +915,7 @@ arrayAccess returns [SequenceExpression args = null]
 
 arrayExpression returns [ArrayExpression expr = null]
 		{ SequenceExpression args = null; }
-		:	LBRACK!
+		:	(LBRACK! | LBRACK_ARRAY_ACCESS!)
 				(args=arrayReferenceArgument)?
 			RBRACK! 
 		{ expr = new ArrayExpression(line(), args); }
@@ -1486,31 +1486,31 @@ BXOR				:	'^'		;
 BOR					:	'|'		;
 BAND				:	'&'		{if (!expect_operator(1)) {$setType(BLOCK_ARG_PREFIX);}};
 POWER				:	"**"		;
-COMPARE			:	"<=>"	;
+COMPARE				:	"<=>"	;
 GREATER_OR_EQUAL	:	">="	;
 LESS_OR_EQUAL		:	"<="	;
 EQUAL				:	"=="	;
 CASE_EQUAL			:	"==="	;
-NOT_EQUAL			:	"!="		;
+NOT_EQUAL			:	"!="	;
 MATCH				:	"=~"	;
-NOT_MATCH			:	"!~"		;
+NOT_MATCH			:	"!~"	;
 //LEFT_SHIFT			:	"<<"	;
 RIGHT_SHIFT			:	">>"	;
 
 ASSOC				:	"=>"	;
 LOGICAL_AND		:	"&&"		;
-LOGICAL_OR			:	"||"		;
+LOGICAL_OR			:	"||"	;
 
 ASSIGN				:	'='		{if (!just_seen_whitespace()) {$setType(ASSIGN_WITH_NO_LEADING_SPACE);}};
 PLUS_ASSIGN			:	"+="	;
-MINUS_ASSIGN		:	"-="		;
-STAR_ASSIGN		:	"*="		;
-//DIV_ASSIGN		:	"/="		;
+MINUS_ASSIGN		:	"-="	;
+STAR_ASSIGN			:	"*="	;
+//DIV_ASSIGN		:	"/="	;
 //MOD_ASSIGN		:	"%="	;
 POWER_ASSIGN		:	"**="	;
-BAND_ASSIGN		:	"&="		;
-BXOR_ASSIGN		:	"^="	;
-BOR_ASSIGN			:	"|="		;
+BAND_ASSIGN			:	"&="	;
+BXOR_ASSIGN			:	"^="	;
+BOR_ASSIGN			:	"|="	;
 //LEFT_SHIFT_ASSIGN	:	"<<="	;
 RIGHT_SHIFT_ASSIGN	:	">>="	;
 LOGICAL_AND_ASSIGN	:	"&&="	;
@@ -1907,7 +1907,7 @@ FLOAT_WITH_LEADING_DOT
 protected
 NON_ZERO_DECIMAL
 options{ignore=UNDER_SCORE; }
-		:	('1'..'9'	('0'..'9')*)
+		:	('-')? ('1'..'9' ('0'..'9')*)
 		;
 
 protected

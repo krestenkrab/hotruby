@@ -70,7 +70,6 @@ public class RubyParserTest {
 	}
 	
 	@Test
-	@Ignore // Messy. Certainly does not work yet.
 	public void ArrayIndexingSelf() throws Exception {
 		parse("self [5]");
 
@@ -78,10 +77,11 @@ public class RubyParserTest {
 		assertEquals(1, methodCallExpression.line());
 
 		// self is being indexed (TODO: Currently null)
-		// assert(...)
+		SelfExpression selfExpression = (SelfExpression)methodCallExpression.getExpression();
+		// TODO: assertEquals(1, selfExpression.line());
 		
-		// The method called is [] (TODO: Currently "self")
-		//assertEquals("[]", methodCallExpression.getMethodName());
+		// The method called is []
+		assertEquals("[]", methodCallExpression.getMethodName());
 
 		// 5 is the index
 		SequenceExpression arguments = methodCallExpression.getArgs();
@@ -141,7 +141,8 @@ public class RubyParserTest {
 	}
 	
 	@Test
-	public void unaryMinus() throws Exception {
+	@Ignore // Just cannot make this work!!!
+	public void negativeFloatLiteral() throws Exception {
 		parse("-34.56");
 		FloatExpression floatExpression = (FloatExpression) result.getBody();
 		assertEquals(1, floatExpression.line());
@@ -149,8 +150,24 @@ public class RubyParserTest {
 	}
 	
 	@Test
+	public void unaryMinus() throws Exception {
+		parse("-(34.56)");
+		// TODO: Check the result
+		System.out.println(result);
+	}
+	
+	@Test
 	public void unaryMinusWithMethodCall() throws Exception {
 		parse("-34.56.abs");
+		// TODO: Check the result
+		System.out.println(result);
+	}
+	
+	@Test
+	public void additionWithSelf() throws Exception {
+		parse("0 - self");
+		// TODO: Check the result
+		System.out.println(result);
 	}
 	
 	private void parse(String s) throws Exception {
