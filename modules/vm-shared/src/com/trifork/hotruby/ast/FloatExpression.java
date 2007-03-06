@@ -17,6 +17,10 @@ public class FloatExpression extends Expression {
 		super(line);
 		this.text = text;
 	}
+	
+	public String getText() {
+		return text;
+	}
 
 	@Override
 	void compile(CompileContext ctx, boolean push) {

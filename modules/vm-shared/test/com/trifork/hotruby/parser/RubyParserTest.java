@@ -2,15 +2,23 @@ package com.trifork.hotruby.parser;
 
 import java.io.StringReader;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
+import com.trifork.hotruby.ast.ArrayExpression;
 import com.trifork.hotruby.ast.AssignmentExpression;
 import com.trifork.hotruby.ast.ClassCode;
 import com.trifork.hotruby.ast.ClassExpression;
+import com.trifork.hotruby.ast.FloatExpression;
+import com.trifork.hotruby.ast.FunctionExpression;
 import com.trifork.hotruby.ast.IdentifierExpression;
 import com.trifork.hotruby.ast.IntegerExpression;
+import com.trifork.hotruby.ast.MethodCallExpression;
 import com.trifork.hotruby.ast.SelfExpression;
+import com.trifork.hotruby.ast.SequenceExpression;
 import com.trifork.hotruby.ast.TopLevelCode;
+import com.trifork.hotruby.ast.UnaryExpression;
+
 import static org.junit.Assert.*;
 
 public class RubyParserTest {
@@ -44,11 +52,105 @@ public class RubyParserTest {
 	@Test
 	public void arrayIndexing() throws Exception {
 		parse("a[5]");
+		MethodCallExpression methodCallExpression = (MethodCallExpression)result.getBody();
+		assertEquals(1, methodCallExpression.line());
+
+		// a is being indexed
+		FunctionExpression functionExpression = (FunctionExpression) methodCallExpression.getExpression();
+		assertEquals(1, functionExpression.line());
+		assertEquals("a", functionExpression.getName());
+		
+		// The method called is []
+		assertEquals("[]", methodCallExpression.getMethodName());
+
+		// 5 is the index
+		SequenceExpression arguments = methodCallExpression.getArgs();
+		assertEquals(1, arguments.size());
+		assertEquals("5", ((IntegerExpression)arguments.get(0)).getText());
+	}
+	
+	@Test
+	@Ignore // Messy. Certainly does not work yet.
+	public void ArrayIndexingSelf() throws Exception {
+		parse("self [5]");
+
+		MethodCallExpression methodCallExpression = (MethodCallExpression)result.getBody();
+		assertEquals(1, methodCallExpression.line());
+
+		// self is being indexed (TODO: Currently null)
+		// assert(...)
+		
+		// The method called is [] (TODO: Currently "self")
+		//assertEquals("[]", methodCallExpression.getMethodName());
+
+		// 5 is the index
+		SequenceExpression arguments = methodCallExpression.getArgs();
+		assertEquals(1, arguments.size());
+		assertEquals("5", ((IntegerExpression)arguments.get(0)).getText());
+	}
+	
+	@Test
+	public void methodCallWithNoArguments() throws Exception {
+		parse("a.b");
+		MethodCallExpression methodCallExpression = (MethodCallExpression) result.getBody();
+		assertEquals(1, methodCallExpression.line());
+		
+		// No arguments
+		assertNull(methodCallExpression.getArgs());
+		
+		// Receiver is a
+		FunctionExpression receiver = (FunctionExpression) methodCallExpression.getExpression();
+		assertEquals(1, receiver.line());
+		assertEquals("a", receiver.getName());
+		
+		// Method is b
+		assertEquals("b", methodCallExpression.getMethodName());
+	}
+
+	@Test
+	public void methodCallWithArrayLiteral() throws Exception {
+		parse("a([5])");
+		assertMethodCallWithArrayLiteral();
 	}
 	
 	@Test
 	public void methodCallWithArrayLiteralAndNoParentheses() throws Exception {
 		parse("a [5]");
+		assertMethodCallWithArrayLiteral();
+	}
+	
+	private void assertMethodCallWithArrayLiteral() {
+		MethodCallExpression methodCallExpression = (MethodCallExpression)result.getBody();
+		assertEquals(1, methodCallExpression.line());
+
+		// No expression in the method call
+		assertNull(methodCallExpression.getExpression());
+		
+		// The method called is a
+		assertEquals("a", methodCallExpression.getMethodName());
+
+		// [5] is the argument
+		SequenceExpression arguments = methodCallExpression.getArgs();
+		assertEquals(1, arguments.size());
+		ArrayExpression arrayExpression = (ArrayExpression) arguments.get(0);
+		assertEquals(1, arrayExpression.line());
+		SequenceExpression sequenceExpression = arrayExpression.getExpression();
+		assertEquals(1, sequenceExpression.line());
+		assertEquals(1, sequenceExpression.size());
+		assertEquals("5", ((IntegerExpression)sequenceExpression.get(0)).getText());
+	}
+	
+	@Test
+	public void unaryMinus() throws Exception {
+		parse("-34.56");
+		FloatExpression floatExpression = (FloatExpression) result.getBody();
+		assertEquals(1, floatExpression.line());
+		assertEquals("-34.56", floatExpression.getText());
+	}
+	
+	@Test
+	public void unaryMinusWithMethodCall() throws Exception {
+		parse("-34.56.abs");
 	}
 	
 	private void parse(String s) throws Exception {

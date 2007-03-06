@@ -36,6 +36,14 @@ public class MethodCallExpression extends Expression {
 	public void setArgs(SequenceExpression args) {
 		this.args = args;
 	}
+	
+	public SequenceExpression getArgs() {
+		return args;
+	}
+	
+	public Expression getExpression() {
+		return expr;
+	}
 
 	public static MethodCallExpression make(RubyCode scope, Expression expr2) {
 		if (expr2 instanceof MethodCallExpression) {
@@ -130,7 +138,7 @@ public class MethodCallExpression extends Expression {
 				} else if (args.size() == 1 && !args.get(0).isRestArg()) {
 					args.get(0).compile(ctx, true);
 				} else {
-					ArrayExpression ae = new ArrayExpression(args);
+					ArrayExpression ae = new ArrayExpression(line, args);
 					ae.compile(ctx, true);
 					ctx.emit_make_returnvalue();
 				}

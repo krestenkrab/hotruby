@@ -182,53 +182,47 @@ public class SequenceExpression extends Expression implements AssocHolder {
 	void compile_to_stack(CompileContext ctx) {
 		if (args == null || args.size() == 0) {
 			throw new InternalError("empty sequence");
-
-		} else {
-
-			if (args.size() == 1) {
-				throw new InternalError("compile to stack: sequence of size 1");
-			}
-
-			if (has_rest_arg) {
-				throw new InternalError("compile to stack: rhs with restarg");
-			}
-
-			for (int i = 0; i < args.size(); i++) {
-				Expression expression = args.get(i);
-				expression.compile(ctx, true);
-			}
 		}
 
+		if (args.size() == 1) {
+			throw new InternalError("compile to stack: sequence of size 1");
+		}
+
+		if (has_rest_arg) {
+			throw new InternalError("compile to stack: rhs with restarg");
+		}
+
+		for (int i = 0; i < args.size(); i++) {
+			Expression expression = args.get(i);
+			expression.compile(ctx, true);
+		}
 	}
 
 	void compile_to_array(CompileContext ctx) {
 		if (args == null || args.size() == 0) {
 			throw new InternalError("empty sequence");
-		} else {
+		}
 
-			if (args.size() == 1 && !(args.get(0) instanceof RestArgExpression)) {
-				args.get(0).compile(ctx, true);
-				ctx.emit_internal_to_a();
+		if (args.size() == 1 && !(args.get(0) instanceof RestArgExpression)) {
+			args.get(0).compile(ctx, true);
+			ctx.emit_internal_to_a();
+			return;
+		}
+
+		for (int i = 0; i < args.size(); i++) {
+			boolean islast = (i == (args.size() - 1));
+			Expression expression = args.get(i);
+
+			if (islast && expression instanceof RestArgExpression) {
+				((RestArgExpression) expression).compile(ctx, true, args
+						.size() - 1);
+				ctx.emit_new_array(0, true);
 				return;
 			}
-
-			for (int i = 0; i < args.size(); i++) {
-				boolean islast = (i == (args.size() - 1));
-				Expression expression = args.get(i);
-
-				if (islast && expression instanceof RestArgExpression) {
-					((RestArgExpression) expression).compile(ctx, true, args
-							.size() - 1);
-					ctx.emit_new_array(0, true);
-					return;
-
-				} else {
-					assert !(expression instanceof RestArgExpression);
-					expression.compile(ctx, true);
-				}
-			}
-			ctx.emit_new_array(args.size(), false);
+			assert !(expression instanceof RestArgExpression);
+			expression.compile(ctx, true);
 		}
+		ctx.emit_new_array(args.size(), false);
 	}
 
 	/**
@@ -281,10 +275,7 @@ public class SequenceExpression extends Expression implements AssocHolder {
 			} else if (howmany - i != 1) {
 				ctx.emit_dup_n(howmany - i);
 				pop_at_end += 1;
-			} else {
-
 			}
-
 			expr.compile_assignment(ctx, false);
 		}
 
@@ -387,5 +378,4 @@ public class SequenceExpression extends Expression implements AssocHolder {
 			ctx.emit_setlocal(first_local+i);
 		}
 	}
-
 }

@@ -194,10 +194,7 @@ public class RubyLexer extends RubyLexerBase
 			{
 				throw new TokenStreamIOException(((CharStreamIOException)cse).io);
 			}
-			else
-			{
-				throw new TokenStreamException(cse.getMessage());
-			}
+			throw new TokenStreamException(cse.getMessage());
 		}
 	}
 
@@ -294,10 +291,7 @@ public class RubyLexer extends RubyLexerBase
 
 			return true;
 		 }
-		 else
-		 {
-		 	return false;
-		 }
+	 	return false;
 	}
 
 	private boolean keywordOrOperatorToMethodName(Token token)
@@ -514,7 +508,8 @@ public class RubyLexer extends RubyLexerBase
 
 	protected boolean expect_array_access()
 	{
-		switch (last_token_.getType())
+		int lastType = last_token_.getType();
+		switch (lastType)
 		{
 			case IDENTIFIER:
 			case CONSTANT:
@@ -813,15 +808,8 @@ public class RubyLexer extends RubyLexerBase
 			case RESCUE_MODIFIER:
 				return true;
 			case FUNCTION:
-				if (seen_whitespace_ &&
-					((' ' != LA(1)) && ('\t' != LA(1))))
-				{
-					return true;
-				}
-				else
-				{
-					return false;
-				}
+				return seen_whitespace_ &&
+					((' ' != LA(1)) && ('\t' != LA(1)));
 			default:
 				return is_operator(last_token_.getType());
 		}

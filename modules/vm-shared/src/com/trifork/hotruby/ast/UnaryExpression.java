@@ -7,10 +7,18 @@ public class UnaryExpression extends Expression {
 	final String operator;
 	final Expression expr;
 
-	public UnaryExpression(String string, Expression expr) {
+	public UnaryExpression(int line, String string, Expression expr) {
+		super(line);
 		this.operator = string;
 		this.expr = expr;
-		
+	}
+	
+	public String getOperator() {
+		return operator;
+	}
+	
+	public Expression getExpression() {
+		return expr;
 	}
 	
 	@Override

@@ -6,8 +6,13 @@ public class ArrayExpression extends Expression implements MethodDenominator {
 
 	private final SequenceExpression init;
 
-	public ArrayExpression(SequenceExpression initializer) {
+	public ArrayExpression(int line, SequenceExpression initializer) {
+		super(line);
 		this.init = initializer;
+	}
+	
+	public SequenceExpression getExpression() {
+		return init;
 	}
 
 	@Override
@@ -23,10 +28,9 @@ public class ArrayExpression extends Expression implements MethodDenominator {
 				((RestArgExpression)exp).compile(ctx, push, arg_count);
 				has_rest_arg = true;
 				break;
-			}  else {
-				exp.compile(ctx, push);
-				arg_count += 1;
 			}
+			exp.compile(ctx, push);
+			arg_count += 1;
 		}
 		
 		//System.out.println("st:"+ctx.get_stack_depth()+" after loop");

@@ -162,7 +162,7 @@ statement returns [Expression expr]
 			(IF_MODIFIER		expr2=expression { expr=new IfThenElseExpression(line, expr2, expr, NilExpression.instance); }
 			|UNLESS_MODIFIER	expr2=expression { expr=new IfThenElseExpression(line, expr2, NilExpression.instance, expr); }
 			|WHILE_MODIFIER		expr2=expression { expr=new WhileExpression(line, expr2, expr, true); }
-			|UNTIL_MODIFIER		expr2=expression { expr=new WhileExpression(line, new UnaryExpression("not", expr2), expr, true); }
+			|UNTIL_MODIFIER		expr2=expression { expr=new WhileExpression(line, new UnaryExpression(line, "not", expr2), expr, true); }
 			|RESCUE_MODIFIER	{ line = line(); } expr2=expression
 				{ rescues = new java.util.ArrayList<RescueClause>(); 
 				  rescues.add (new RescueClause(line, null, null, expr2));
@@ -421,7 +421,7 @@ assignmentExpression returns [Expression expr]
 
 //not
 notExpression returns [Expression expr]
-		:	keyword_not expr=notExpression { expr = new UnaryExpression("not", expr); }
+		:	keyword_not expr=notExpression { expr = new UnaryExpression(line(), "not", expr); }
 		|	expr=ternaryIfThenElseExpression
 		;
 
@@ -476,9 +476,9 @@ equalityExpression  returns [Expression expr] { Expression expr2; String op=null
 			expr2=relationalExpression
 			{ 
 				if ("!=".equals(op)) {
-					expr=new UnaryExpression ("not", new BinaryExpression(expr, "==", expr2)); 
+					expr=new UnaryExpression(line(), "not", new BinaryExpression(expr, "==", expr2)); 
 				} else if ("!~".equals(op)) {
-					expr=new UnaryExpression ("not", new BinaryExpression(expr, "=~", expr2)); 
+					expr=new UnaryExpression(line(), "not", new BinaryExpression(expr, "=~", expr2)); 
 				} else {
 					expr=new BinaryExpression(expr, op, expr2); 
 				}
@@ -568,7 +568,7 @@ unaryExpression returns [Expression expr] { Expression expr2; String op=null; ja
 			{
 				if (ops!=null) {
 					for(int i = ops.size()-1; i>=0; i--) {
-						expr=new UnaryExpression(ops.get(i), expr);	
+						expr=new UnaryExpression(line(), ops.get(i), expr);	
 					}	
 				}	
 			}
@@ -590,7 +590,7 @@ commandPart[Expression base] returns [Expression expr]
 	:
 		  DOT expr=methodCallAfterDot[expr, false] 
 		| COLON2 expr=methodCallAfterDot[expr, true] 
-		| (LBRACK_ARRAY_ACCESS|LBRACK)
+		| (LBRACK_ARRAY_ACCESS)
 				(args=arrayReferenceArgument)?
 		  RBRACK! { expr = new MethodCallExpression(scope(), line, expr, "[]", args, null, false); }
 		  
@@ -915,10 +915,10 @@ arrayAccess returns [SequenceExpression args = null]
 
 arrayExpression returns [ArrayExpression expr = null]
 		{ SequenceExpression args = null; }
-		:	LBRACK!
+		:	(LBRACK! | LBRACK_ARRAY_ACCESS!)
 				(args=arrayReferenceArgument)?
 			RBRACK! 
-		{ expr = new ArrayExpression(args); }
+		{ expr = new ArrayExpression(line(), args); }
 		;
 
 keyValuePair[AssocHolder assoc]
@@ -1065,7 +1065,7 @@ untilExpression returns[Expression expr=null]
 		:	keyword_until test=expression doOrTermialOrColon
 			(body=compoundStatement)?
 			"end"
-			{ expr = new WhileExpression(line, new UnaryExpression("!", test),body, false); }
+			{ expr = new WhileExpression(line, new UnaryExpression(line, "!", test),body, false); }
 		;
 
 moduleDefinition returns[Expression expr=null]
@@ -1476,8 +1476,6 @@ COLON2				:	"::"		{if (expect_leading_colon2())	{$setType(LEADING_COLON2);}};
 NOT					:	'!'		;
 BNOT				:	'~'		;
 //DIV				:	'/'		;
-PLUS				:	'+'		{if (expect_unary())	{$setType(UNARY_PLUS);}};
-MINUS				:	'-'		{if (expect_unary())	{$setType(UNARY_MINUS);}};
 //MOD				:	'%'		;
 STAR				:	'*'		{if (!expect_operator(1)) {$setType(REST_ARG_PREFIX);}};	//'f * g' can parsed as 'f(*g)' or '(f) * (g)'
 LESS_THAN			:	'<'		;
@@ -1894,6 +1892,9 @@ INTEGER
 				)
 		;
 
+PLUS				:	'+'		{if (expect_unary())	{$setType(UNARY_PLUS);}};
+MINUS				:	'-'		{if (expect_unary())	{$setType(UNARY_MINUS);}};
+
 protected
 UNDER_SCORE
 		:	'_'
@@ -1907,7 +1908,7 @@ FLOAT_WITH_LEADING_DOT
 protected
 NON_ZERO_DECIMAL
 options{ignore=UNDER_SCORE; }
-		:	('1'..'9'	('0'..'9')*)
+		:	('-' | ) ('1'..'9'	('0'..'9')*)
 		;
 
 protected
