@@ -525,6 +525,7 @@ public class RubyLexer extends RubyLexerBase
 			case SINGLE_QUOTE_WARRAY:
 			case DOUBLE_QUOTE_WARRAY:
 			case LITERAL_end:
+			case LITERAL_self:
 				return true;
 			case FUNCTION:
 				return !seen_whitespace_;

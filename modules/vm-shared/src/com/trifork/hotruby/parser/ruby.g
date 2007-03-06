@@ -590,7 +590,7 @@ commandPart[Expression base] returns [Expression expr]
 	:
 		  DOT expr=methodCallAfterDot[expr, false] 
 		| COLON2 expr=methodCallAfterDot[expr, true] 
-		| (LBRACK_ARRAY_ACCESS)
+		| (LBRACK_ARRAY_ACCESS|LBRACK)
 				(args=arrayReferenceArgument)?
 		  RBRACK! { expr = new MethodCallExpression(scope(), line, expr, "[]", args, null, false); }
 		  
@@ -915,7 +915,7 @@ arrayAccess returns [SequenceExpression args = null]
 
 arrayExpression returns [ArrayExpression expr = null]
 		{ SequenceExpression args = null; }
-		:	(LBRACK! | LBRACK_ARRAY_ACCESS!)
+		:	LBRACK!
 				(args=arrayReferenceArgument)?
 			RBRACK! 
 		{ expr = new ArrayExpression(line(), args); }
@@ -1065,7 +1065,7 @@ untilExpression returns[Expression expr=null]
 		:	keyword_until test=expression doOrTermialOrColon
 			(body=compoundStatement)?
 			"end"
-			{ expr = new WhileExpression(line, new UnaryExpression(line, "!", test),body, false); }
+			{ expr = new WhileExpression(line, new UnaryExpression(line(), "!", test),body, false); }
 		;
 
 moduleDefinition returns[Expression expr=null]
@@ -1476,6 +1476,8 @@ COLON2				:	"::"		{if (expect_leading_colon2())	{$setType(LEADING_COLON2);}};
 NOT					:	'!'		;
 BNOT				:	'~'		;
 //DIV				:	'/'		;
+PLUS				:	'+'		{if (expect_unary())	{$setType(UNARY_PLUS);}};
+MINUS				:	'-'		{if (expect_unary())	{$setType(UNARY_MINUS);}};
 //MOD				:	'%'		;
 STAR				:	'*'		{if (!expect_operator(1)) {$setType(REST_ARG_PREFIX);}};	//'f * g' can parsed as 'f(*g)' or '(f) * (g)'
 LESS_THAN			:	'<'		;
@@ -1892,9 +1894,6 @@ INTEGER
 				)
 		;
 
-PLUS				:	'+'		{if (expect_unary())	{$setType(UNARY_PLUS);}};
-MINUS				:	'-'		{if (expect_unary())	{$setType(UNARY_MINUS);}};
-
 protected
 UNDER_SCORE
 		:	'_'
@@ -1908,7 +1907,7 @@ FLOAT_WITH_LEADING_DOT
 protected
 NON_ZERO_DECIMAL
 options{ignore=UNDER_SCORE; }
-		:	('-' | ) ('1'..'9'	('0'..'9')*)
+		:	('1'..'9'	('0'..'9')*)
 		;
 
 protected
