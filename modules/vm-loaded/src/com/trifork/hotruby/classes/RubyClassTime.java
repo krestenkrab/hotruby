@@ -38,30 +38,14 @@ public class RubyClassTime
 		meta.register_module_method("local", new PublicMethodN() {
 			@Override
 			public IRubyObject call(IRubyObject receiver, IRubyObject[] args, RubyBlock block) {
-				TimeZone zone = TimeZone.getDefault();
-				if (args.length == 10)
-				{
-					//TODO - implement
-				} else if (1 <= args.length && args.length <= 7)
-				{
-					return RubyTime.instance(args, zone);
-				}
-				throw LoadedRubyRuntime.instance.newArgumentError("wrong number of arguments");
+				return RubyTime.initialize(args, TimeZone.getDefault());
 			}
 		});
 		
 		meta.register_module_method("gm", new PublicMethodN() {
 			@Override
 			public IRubyObject call(IRubyObject receiver, IRubyObject[] args, RubyBlock block) {
-				TimeZone utcZone = TimeZone.getTimeZone("UTC");
-				if (args.length == 10)
-				{
-					//TODO - implement
-				} else if (1 <= args.length && args.length <= 7)
-				{
-					return RubyTime.instance(args, utcZone);
-				}
-				throw LoadedRubyRuntime.instance.newArgumentError("wrong number of arguments");
+				return RubyTime.initialize(args, TimeZone.getTimeZone("UTC"));
 			}
 		});
 	
