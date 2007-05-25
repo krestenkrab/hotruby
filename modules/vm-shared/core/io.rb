@@ -11,6 +11,13 @@ class IO
       print '\n'
    end
 
+   def write(*vals)
+      if (vals.size==1) && (Array === vals[0])
+        vals = vals[0]
+      end
+      vals.each { |v| print v }
+   end
+
    def flush
    
    end

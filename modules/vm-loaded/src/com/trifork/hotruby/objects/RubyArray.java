@@ -325,7 +325,7 @@ public class RubyArray extends RubyBaseArray {
 
 		System.out.println(LoadedRubyRuntime.instance.caller(0));
 
-		throw new InternalError("not implemented: idx=" + idx.get_class());
+		throw getRuntime().newRuntimeError("not implemented: idx=" + idx.get_class());
 	}
 
 	// implementation of []

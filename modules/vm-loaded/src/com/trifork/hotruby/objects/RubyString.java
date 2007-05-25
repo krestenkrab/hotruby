@@ -144,6 +144,35 @@ public class RubyString
 		 return new RubyString(sb.toString());
 	}
 	
+	
+	public IRubyObject rb_sub(RubyRegexp regexp, RubyString string) {
+		
+		 Matcher m = regexp.pattern.matcher(value);
+		 StringBuffer sb = new StringBuffer();
+		 if (m.find()) {
+		     m.appendReplacement(sb, string.asSymbol());
+		 }
+		 m.appendTail(sb);
+
+		 return new RubyString(sb.toString());
+	}
+	
+	
+	public IRubyObject rb_sub_bang(RubyRegexp regexp, RubyString string) {
+		
+		 Matcher m = regexp.pattern.matcher(value);
+		 StringBuffer sb = new StringBuffer();
+		 if (m.find()) {
+		     m.appendReplacement(sb, string.asSymbol());
+		 }
+		 m.appendTail(sb);
+
+		 value = sb.toString();
+		 return this;
+	}
+	
+	
+	
 	@Override
 	public IRubyObject fast_eq2(IRubyObject arg, Selector selector) {
 		return op_eq2(arg);

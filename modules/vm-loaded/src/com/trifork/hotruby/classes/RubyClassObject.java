@@ -215,13 +215,15 @@ public class RubyClassObject extends RubyBaseClassObject {
 					RubyBlock block) {
 				throw getRuntime().newNoMethodError(
 						"cannot find method " + name + " in "
-								+ receiver.get_class());
+								+ receiver.inspect()
+								+ " (a " + receiver.get_class() + ")");
 			}
 
 			@Override
 			public IRubyObject call(IRubyObject receiver, RubyBlock block) {
 				throw getRuntime().newNoMethodError(
-						"cannot find method in " + receiver.inspect());
+						"cannot find method in " + receiver.inspect()
+						+ " (a " + receiver.get_class() + ")");
 			}
 
 			@Override
@@ -229,7 +231,8 @@ public class RubyClassObject extends RubyBaseClassObject {
 					IRubyObject arg2, RubyBlock block) {
 				throw getRuntime().newNoMethodError(
 						"cannot find method " + name + " in "
-								+ receiver.inspect());
+								+ receiver.inspect() 
+								+ " (a " + receiver.get_class() + ")");
 			}
 
 			@Override
@@ -238,7 +241,8 @@ public class RubyClassObject extends RubyBaseClassObject {
 				throw getRuntime().newNoMethodError(
 						"cannot find method "
 								+ (args.length > 0 ? args[0] : "?") + " in "
-								+ receiver.inspect());
+								+ receiver.inspect()
+								+ " (a " + receiver.get_class() + ")");
 			}
 
 			@Override

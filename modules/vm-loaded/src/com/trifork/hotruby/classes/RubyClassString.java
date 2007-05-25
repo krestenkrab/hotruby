@@ -42,6 +42,22 @@ public class RubyClassString
 			
 		});
 		
+		meta.register_instance_method("sub", new PublicMethod2() {
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject arg1, IRubyObject arg2, RubyBlock block) {
+				return ((RubyString)receiver).rb_sub((RubyRegexp)arg1, (RubyString)arg2);
+			}
+			
+		});
+		
+		meta.register_instance_method("sub!", new PublicMethod2() {
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject arg1, IRubyObject arg2, RubyBlock block) {
+				return ((RubyString)receiver).rb_sub_bang((RubyRegexp)arg1, (RubyString)arg2);
+			}
+			
+		});
+		
 		meta.register_instance_method("hex", new PublicMethod0() {
 
 			@Override
