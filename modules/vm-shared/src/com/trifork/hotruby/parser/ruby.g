@@ -1830,7 +1830,9 @@ ESC
 //of letters, digits, and underscores
 IDENTIFIER
 options{testLiterals=true;}
-		:	('a'..'z'|'_') ('a'..'z'|'A'..'Z'|'_'|'0'..'9')*		
+		:   '_' '_' 'E' 'N' 'D' '_' '_' 
+			      			{$setType(Token.EOF_TYPE);}	
+		|	('a'..'z'|'_') ('a'..'z'|'A'..'Z'|'_'|'0'..'9')*		
 			('?'	{$setType(FUNCTION);}	//PREDICATE_FUNCTION
 			|'!'	{$setType(FUNCTION);}	//DESTRUCTIVE_FUNCTION
 			| {if (last_token_is_dot_or_colon2()) {$setType(FUNCTION);}}

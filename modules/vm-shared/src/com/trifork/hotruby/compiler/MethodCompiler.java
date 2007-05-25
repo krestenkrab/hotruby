@@ -1,7 +1,5 @@
 package com.trifork.hotruby.compiler;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
@@ -338,8 +336,6 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 			"make_return_value", IRUBYOBJECT, new Type[] { IRUBYOBJECT,
 					RUBY_RUNTIME_TYPE });
 
-	private static final boolean DEBUG_WRITE_CLASSES = CodeGen.DEBUG_WRITE_CLASSES;
-
 	private final RubyRuntime runtime;
 
 	private Type self_type;
@@ -377,7 +373,10 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 
 	private BindingContext bound_method;
 
+	private String name;
+
 	public RubyMethod compile(MethodISeq miseq) {
+		this.name = miseq.getName();
 		bound_method = miseq.binding();
 		ISeq iseq = bound_method.getISeq();
 		// MetaModule dyn_meta = bound.getDynamicContext();
@@ -428,7 +427,7 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 		arr.returnValue();
 		arr.endMethod();
 
-		gen_get_dvar_names(cw, iseq);
+		gen_get_dvar_names(cw, iseq, self_type);
 
 		MethodVisitor call = cw.visitMethod(ACC_PUBLIC, impl_method.getName(),
 				impl_method.getDescriptor(), null, new String[0]);
@@ -444,32 +443,24 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 
 		byte[] bytes = cw.toByteArray();
 
-		if (DEBUG_WRITE_CLASSES) {
-			try {
-				String name = fullName + ".rclass";
-				FileOutputStream fo = new FileOutputStream(name);
-				fo.write(bytes);
-				fo.close();
-				System.out.println("wrote " + name);
-			} catch (IOException ex) {
-				ex.printStackTrace();
-			}
-		}
+		CodeGen.debug_write_class(fullName, bytes);
 
 		Class bc = runtime.getClassLoader().doDefineClass(fullName, bytes);
 		try {
 			Constructor cons = bc.getConstructor(new Class[] {
 					MetaModule.class, MetaModule.class, ModuleFrame.class });
-			return (RubyMethod) cons.newInstance(new Object[] { lex_meta,
+			CompiledMethod cm = (CompiledMethod) cons.newInstance(new Object[] { lex_meta,
 					bound_method.getDynamicContext(),
 					bound_method.getModuleStack() });
+			cm.setMethodISeq(miseq);
+			return cm;
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			return null;
 		}
 	}
 
-	private void gen_get_dvar_names(ClassWriter cw, ISeq iseq) {
+	private void gen_get_dvar_names(ClassWriter cw, ISeq iseq, Type self_type) {
 		GeneratorAdapter dv = begin_method(cw, ACC_PUBLIC, GET_DVAR_NAMES);
 
 		String[] dvars = iseq.getDVarNames();
@@ -485,8 +476,12 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 		dv.endMethod();
 	}
 
-	String selfSendMethodAccessorName(int idx) {
-		return "selfsend_" + idx;
+	String selfSendMethodAccessorName(int idx, String name) {
+		return "selfsend_" + encode_method_name(name);
+	}
+
+	private String encode_method_name(String name2) {
+		return RubyRuntime.encodeMethodName(name2);
 	}
 
 	void emit_load_runtime(GeneratorAdapter ga) {
@@ -534,7 +529,7 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 		String[] self_methods = ctx.getISeq().getSelfMethods();
 		for (int i = 0; i < self_methods.length; i++) {
 
-			String field_name = selfSendMethodAccessorName(i);
+			String field_name = selfSendMethodAccessorName(i, self_methods[i]);
 			FieldVisitor fv = cw.visitField(ACC_STATIC, field_name,
 					METHODACCESSOR_TYPE.getDescriptor(), null, null);
 			fv.visitEnd();
@@ -714,6 +709,7 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 
 		// this is the numbr of locals used by RBC 0..N-1
 		int num_code_locals = iseq.getNumLocals();
+		int num_code_args = iseq.code_args == -1 ? 0 : iseq.code_args;
 		int locals_in_use = num_code_locals + 1;
 
 		// _idx refers to java-level local index
@@ -760,7 +756,10 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 					call.invokeConstructor(COMPILED_BLOCK_DVARS,
 							COMPILED_BLOCK_DVARS_CONSTRUCTOR);
 				} else {
-					assert false;
+					call.push((String)null);
+
+					call.invokeConstructor(COMPILED_BLOCK_DVARS,
+							COMPILED_BLOCK_DVARS_CONSTRUCTOR);
 				}
 			} else {
 				call.newInstance(COMPILED_METHOD_DVARS);
@@ -782,7 +781,7 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 				+ iseq.default_parm_count // default parms
 				+ (iseq.has_block_parm ? 1 : 0) // block parm
 				+ (iseq.has_rest_parm ? 1 : 0); // rest parm
-
+		
 		int real_given_args_count_idx = -1;
 
 		boolean[] handled_dynamics = new boolean[iseq.num_dynamics];
@@ -857,15 +856,6 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 					parm_loc++;
 				}
 
-				if (iseq.has_block_parm) {
-					emit_load_runtime(call);
-					call.rbLoadLocal(block_idx, RUBYBLOCK);
-					call.invokeVirtual(LOADED_RUBY_RUNTIME, NEW_PROC);
-					set_parm(handled_dynamics, call, iseq, dvars_idx, self_idx,
-							parm_loc++);
-					arg_num++;
-				}
-
 				if (iseq.has_rest_parm) {
 					call.push(arg_num);
 					emit_load_runtime(call);
@@ -874,6 +864,15 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 							parm_loc++);
 				} else {
 					call.pop(); // pop IRubyObject[]
+				}
+
+				if (iseq.has_block_parm) {
+					emit_load_runtime(call);
+					call.rbLoadLocal(block_idx, RUBYBLOCK);
+					call.invokeVirtual(LOADED_RUBY_RUNTIME, NEW_PROC);
+					set_parm(handled_dynamics, call, iseq, dvars_idx, self_idx,
+							parm_loc++);
+					arg_num++;
 				}
 
 			} else if (iseq.has_block_parm) {
@@ -888,14 +887,24 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 			// this is a block or something else, we should not need
 			// to do anything
 
+			if (iseq.code_args==-1) {
+				call.rbLoadLocal(1, IRUBYOBJECT_ARR);
+				call.rbStoreLocal(2, IRUBYOBJECT_ARR);
+			}
 		}
 
+		call.push(true);
+		call.pop();
+		
 		// initialize locals beyond parms
-		for (int i = parms_size + 1; i < iseq.getNumLocals(); i++) {
+		for (int i = Math.max(num_code_args, parms_size + 1); i < iseq.getNumLocals(); i++) {
 			emit_load_nil(call);
 			set_parm(handled_dynamics, call, iseq, dvars_idx, local0_idx, i);
 		}
 
+		call.push(false);
+		call.pop();
+		
 		// generate method body
 
 		Map<Integer, Label> labels = new HashMap<Integer, Label>();
@@ -942,7 +951,7 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 				labels.put(new Integer(pc), l = call.mark());
 			}
 
-			// call.visitLineNumber(pc, l);
+			call.visitLineNumber(pc, l);
 
 			switch (opcode = code[insn_pc = pc++]) {
 
@@ -1034,15 +1043,17 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 							.putField(type_of_self, acc.getFieldName(),
 									IRUBYOBJECT);
 				} else {
-					int value_loc = locals_in_use++;
-					call.rbStoreLocal(value_loc, IRUBYOBJECT);
+					int value_loc = ++locals_in_use;
+//					call.rbStoreLocal(value_loc, IRUBYOBJECT);
 					call.getStatic(self_type, ivarAccessorName(idx),
 							RUBY_IVAR_ACCESSOR_TYPE);
+					call.swap();
 					emit_load_self(call, iseq, compiled_self_type,
 							type_of_self, self_idx);
-					call.rbLoadLocal(value_loc, IRUBYOBJECT);
+					call.swap();
+//					call.rbLoadLocal(value_loc, IRUBYOBJECT);
 					call.invokeVirtual(RUBY_IVAR_ACCESSOR_TYPE, IVAR_SET);
-					call.rbLoadLocal(value_loc, IRUBYOBJECT);
+					//call.rbLoadLocal(value_loc, IRUBYOBJECT);
 
 					locals_in_use--;
 				}
@@ -1164,7 +1175,7 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 				call.invokeStatic(COMPILEDCODEUTIL, CONVERT_RESTARG_TO_ARRAY);
 				// irubyobject[]
 				if (n_pre_args > 0) {
-					int arr_pos = locals_in_use++;
+					int arr_pos = ++locals_in_use;
 					call.rbStoreLocal(arr_pos, IRUBYOBJECT_ARR);
 					pop_args_into(call, n_pre_args, arr_pos);
 					call.rbLoadLocal(arr_pos, IRUBYOBJECT_ARR);
@@ -1182,10 +1193,12 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 
 				call.push(1);
 				call.newArray(IRUBYOBJECT);
-				int arr_pos = locals_in_use++;
+				int arr_pos = ++locals_in_use;
 				call.rbStoreLocal(arr_pos, IRUBYOBJECT_ARR);
 
 				pop_args_into(call, 1, arr_pos);
+				
+				--locals_in_use;
 
 				emit_load_runtime(call);
 				call.rbLoadLocal(arr_pos, IRUBYOBJECT_ARR);
@@ -1197,8 +1210,8 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 
 			case ARRAY_AT: {
 				int idx = code[pc++];
+				call.checkCast(IRUBYARRAY);
 				call.dup();
-				// call.checkCast(IRUBYARRAY);
 				call.push(idx);
 				call.invokeInterface(IRUBYARRAY, IRUBYARRAY_INT_AT);
 				continue next_insn;
@@ -1207,6 +1220,7 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 			case ARRAY_REST: {
 				int idx = code[pc++];
 				call.checkCast(IRUBYARRAY);
+				call.dup();
 				call.push(idx);
 				call.invokeInterface(IRUBYARRAY, IRUBYARRAY_INT_REST);
 				continue next_insn;
@@ -1289,6 +1303,12 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 				call.invokeVirtual(RAISEEXCEPTION_TYPE, GET_RUBY_EXCEPTION);
 				continue next_insn;
 
+			}
+			
+			case THROW: {
+				call.checkCast(RAISEEXCEPTION_TYPE);
+				call.throwException();
+				continue next_insn;
 			}
 
 				// arg1, arg2, ..., argN, (rest[M])? -> NEWARRAY(N, rest?)
@@ -1528,79 +1548,6 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 					
 					all_arg_loc = locals_in_use++;
 					call.rbStoreLocal(all_arg_loc, IRUBYOBJECT_ARR);
-
-					/*
-					// top-of-stack is varargs array
-
-					// arg0, arg1, .., argN, arg[V]
-					call.dup();
-					// arg0, arg1, .., argN, arg[V], arg[V]
-
-					int vargs = locals_in_use++;
-					call.rbStoreLocal(vargs, IRUBYOBJECT_ARR);
-					// arg0, arg1, .., argN, arg[V]
-
-					call.arrayLength();
-					// arg0, arg1, .., argN, V
-					call.dup();
-					// arg0, arg1, .., argN, V, V
-					int vpos = locals_in_use++;
-					call.rbStoreLocal(vpos, Type.INT_TYPE);
-					// arg0, arg1, .., argN, V
-
-					call.push(nargs);
-					// arg0, arg1, .., argN, V, N
-					call.math(GeneratorAdapter.ADD, Type.INT_TYPE);
-					// arg0, arg1, .., argN, V+N
-
-					call.newArray(IRUBYOBJECT);
-					// arg0, arg1, .., argN, all[V+N]
-
-					all_arg_loc = locals_in_use++;
-					call.rbStoreLocal(all_arg_loc, IRUBYOBJECT_ARR);
-					// arg0, arg1, .., argN
-
-					Label loop = call.mark();
-
-					call.rbLoadLocal(vpos, Type.INT_TYPE);
-
-					// arg0, arg1, .., argN, V
-
-					Label done = call.newLabel();
-					call.ifZCmp(GeneratorAdapter.EQ, done);
-					// arg0, arg1, .., argN
-
-					call.rbLoadLocal(all_arg_loc, IRUBYOBJECT_ARR);
-					// arg0, arg1, .., argN, all[V+N]
-					call.rbLoadLocal(vpos, Type.INT_TYPE);
-					// arg0, arg1, .., argN, all, V
-					call.push(1);
-					// arg0, arg1, .., argN, all, V, 1
-					call.math(GeneratorAdapter.SUB, Type.INT_TYPE);
-					// arg0, arg1, .., argN, all, V-1
-					call.dup();
-					// arg0, arg1, .., argN, all, V-1, V-1
-					call.rbStoreLocal(vpos, Type.INT_TYPE);
-					// arg0, arg1, .., argN, all, V-1
-					call.push(nargs);
-					// arg0, arg1, .., argN, all, V-1, N
-					call.math(GeneratorAdapter.ADD, Type.INT_TYPE);
-					// arg0, arg1, .., argN, all, V-1+N
-
-					call.rbLoadLocal(vargs, IRUBYOBJECT_ARR);
-					// arg0, arg1, .., argN, all, V-1+N, vargs
-					call.rbLoadLocal(vpos, Type.INT_TYPE);
-					// arg0, arg1, .., argN, all, V-1+N, vargs, V-1
-					call.arrayLoad(IRUBYOBJECT);
-					// arg0, arg1, .., argN, all, V-1+N, vargX
-					call.arrayStore(IRUBYOBJECT);
-					// arg0, arg1, .., argN
-					call.goTo(loop);
-
-					call.mark(done);
-
-					pop_args_into(call, nargs, all_arg_loc);
-					*/
 				} else {
 
 					if (nargs > 2) {
@@ -1629,7 +1576,7 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 				if (opcode == SELFSEND) {
 					call.rbStoreLocal(receiver_loc, IRUBYOBJECT);
 					call.getStatic(self_type,
-							selfSendMethodAccessorName(selector_pos),
+							selfSendMethodAccessorName(selector_pos, ctx.getISeq().getSelfMethods()[selector_pos]),
 							METHODACCESSOR_TYPE);
 					call.invokeVirtual(METHODACCESSOR_TYPE, METHODACCESSOR_GET);
 					call.rbLoadLocal(receiver_loc, IRUBYOBJECT);
@@ -1669,8 +1616,12 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 					emit_load_self(call, iseq, compiled_self_type,
 							type_of_self, self_idx);
 
-					call.rbLoadLocal(block_idx, RUBYBLOCK);
-
+					if (block_idx == -1) {
+						call.push((String)null);
+					} else {
+						call.rbLoadLocal(block_idx, RUBYBLOCK);
+					}
+					
 					if (dvars_idx != -1) {
 						call.rbLoadLocal(dvars_idx, EXPOSED_LOCALS_TYPE);
 					}
@@ -1680,6 +1631,32 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 				} else {
 					call.push((String) null);
 				}
+
+				if (dvars_idx != -1 && ((flags & FLAG_SEND_EVAL) == FLAG_SEND_EVAL)) {
+					call.rbLoadLocal(dvars_idx, EXPOSED_LOCALS_TYPE);
+
+					if ((flags & FLAG_REST_ARG) == FLAG_REST_ARG) {
+						assert (all_arg_loc != -1);
+						call.invokeVirtual(RUBYMETHOD, CALLN_EVAL);
+					} else {
+						switch (nargs) {
+						case 0:
+							call.invokeVirtual(RUBYMETHOD, CALL0_EVAL);
+							break;
+						case 1:
+							assert (last_arg_loc != -1);
+							call.invokeVirtual(RUBYMETHOD, CALL1_EVAL);
+							break;
+						case 2:
+							assert (last_arg_loc != -1);
+							call.invokeVirtual(RUBYMETHOD, CALL2_EVAL);
+							break;
+						default:
+							assert (all_arg_loc != -1);
+							call.invokeVirtual(RUBYMETHOD, CALLN);
+						}
+					}
+				} else {
 
 				if ((flags & FLAG_REST_ARG) == FLAG_REST_ARG) {
 					assert (all_arg_loc != -1);
@@ -1703,6 +1680,8 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 					}
 				}
 
+				}
+				
 				if ((flags & FLAG_PUSH_RESULT) == 0) {
 					call.pop();
 				}
@@ -1775,8 +1754,7 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 
 				for (int i = 0; i < howmany; i++) {
 					call.rbLoadLocal(--locals_in_use, IRUBYOBJECT);
-					call.cast(IRUBYOBJECT, IRUBYSTRING);
-					call.invokeInterface(IRUBYSTRING, AS_SYMBOL);
+					call.invokeInterface(IRUBYOBJECT, AS_SYMBOL);
 					call.invokeVirtual(STRING_BUILDER, APPEND_STRING);
 				}
 
@@ -1956,7 +1934,8 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 			default:
 				throw new InternalError("unhandled opcode in compiler: "
 						+ opcode + "; last_pc:" + last_insn_pc
-						+ "; last_opcode:" + last_opcode);
+						+ "; last_opcode:" + last_opcode
+						+ " while compiling " + name + " for " + self_type);
 
 			}
 		}
@@ -2058,9 +2037,9 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 
 		cw.visitSource(iseq.getFile(), null);
 
-		gen_get_dvar_names(cw, iseq);
+		gen_get_dvar_names(cw, iseq, block_self_type);
 
-		gen_block_constructor(cw, block_self_type, context_has_dvars);
+		gen_block_constructor(cw, block_self_type, context_has_dvars, iseq);
 
 		Type type_of_self = get_type_of_self(bound_method.getDynamicContext(),
 				bound_method.selfIsModule());
@@ -2069,6 +2048,13 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 				type_of_self, new Type[0]));
 		g.loadThis();
 		g.getField(block_self_type, "self", type_of_self);
+		g.returnValue();
+		g.endMethod();
+		
+		g = begin_method(cw, ACC_PROTECTED, new Method("nil", IRUBYOBJECT, new Type[0]));
+		
+		emit_load_nil(g);
+		
 		g.returnValue();
 		g.endMethod();
 
@@ -2091,17 +2077,7 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 
 		byte[] bytes = cw.toByteArray();
 
-		if (DEBUG_WRITE_CLASSES) {
-			try {
-				String name = fullName + ".rclass";
-				FileOutputStream fo = new FileOutputStream(name);
-				fo.write(bytes);
-				fo.close();
-				System.out.println("wrote " + name);
-			} catch (IOException ex) {
-				ex.printStackTrace();
-			}
-		}
+		CodeGen.debug_write_class(fullName, bytes);
 
 		Class bc = runtime.getClassLoader().doDefineClass(fullName, bytes);
 
@@ -2109,7 +2085,7 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 	}
 
 	private void gen_block_constructor(ClassWriter cw, Type block_self_type,
-			boolean context_has_dvars) {
+			boolean context_has_dvars, ISeq iseq) {
 		Type[] cons_args = context_has_dvars ? new Type[] { IRUBYOBJECT,
 				RUBYBLOCK, EXPOSED_LOCALS_TYPE } : new Type[] { IRUBYOBJECT,
 				RUBYBLOCK };
@@ -2146,6 +2122,25 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 			cons.putField(block_self_type, "dvars", EXPOSED_LOCALS_TYPE);
 		}
 
+		String[] dvar_names = iseq.getDVarNames();
+		if (dvar_names.length != 0) {
+			cons.push(dvar_names.length);
+			cons.newArray(STRING_TYPE);
+
+			for (int i = 0; i < dvar_names.length; i++) {
+				cons.dup();
+				cons.push(i);
+				cons.push(dvar_names[i]);
+				cons.arrayStore(STRING_TYPE);
+			}
+
+			cw.visitField(ACC_STATIC | ACC_PROTECTED, "DVAR_NAMES",
+					STRING_ARRAY_TYPE.getDescriptor(), null, null).visitEnd();
+			cons.putStatic(block_self_type, "DVAR_NAMES", STRING_ARRAY_TYPE);
+		}
+
+		
+		
 		cons.returnValue();
 		cons.endMethod();
 	}
@@ -2188,7 +2183,7 @@ public class MethodCompiler implements Opcodes, Instructions, CompilerConsts {
 		return 0xff & b;
 	}
 
-	private void emit_load_nil(RubyAdapter call) {
+	private void emit_load_nil(GeneratorAdapter call) {
 		call.getStatic(LOADED_RUBY_RUNTIME, "NIL", RUBYNILCLASS);
 	}
 

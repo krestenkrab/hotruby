@@ -231,24 +231,37 @@ public class SequenceExpression extends Expression implements AssocHolder {
 	@Override
 	public void compile_assignment(CompileContext ctx, boolean push) {
 
+		int stack_depth = ctx.get_stack_depth();
+
 		for (int i = 0; i < args.size(); i++) {
+			assert (stack_depth == ctx.get_stack_depth());
+			
 			Expression expr = args.get(i);
 			if (expr instanceof RestArgExpression) {
 				ctx.emit_array_rest(i);
+				assert (stack_depth+1 == ctx.get_stack_depth());
 			} else {
 				ctx.emit_array_at(i);
+				assert (stack_depth+1 == ctx.get_stack_depth());
 				
 				if (expr instanceof SequenceExpression) {
 					ctx.emit_internal_to_a();
+					assert (stack_depth+1 == ctx.get_stack_depth());
 				}
 				
 			}
+			assert (stack_depth+1 == ctx.get_stack_depth());
 			expr.compile_assignment(ctx, false);
+			assert (stack_depth == ctx.get_stack_depth());
 		}
 
 		if (!push) {
 			ctx.emit_pop();
+			assert (stack_depth-1 == ctx.get_stack_depth());
+		} else {
+			assert (stack_depth == ctx.get_stack_depth());			
 		}
+		
 	}
 
 	public boolean has_rest_arg() {

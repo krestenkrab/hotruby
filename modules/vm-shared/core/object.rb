@@ -9,10 +9,6 @@ class Object
      false
   end
   
-  def extend(klass)
-     self
-  end
-
   def not
     nil
   end

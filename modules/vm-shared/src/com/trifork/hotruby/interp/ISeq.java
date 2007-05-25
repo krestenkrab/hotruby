@@ -229,6 +229,8 @@ public class ISeq implements Instructions {
 			if (self_is_module) {
 				result[i] = dynamic_context.getModuleIVarAccessor(ivars[i]);
 			} else {
+				RubyIvarAccessor ria = dynamic_context.getInstanceIVarAccessor(ivars[i], false);
+				
 				result[i] = dynamic_context.getInstanceIVarAccessor(ivars[i], true);
 			}
 		}

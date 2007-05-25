@@ -234,6 +234,9 @@ public class MethodCallExpression extends Expression {
 			} else if ("==".equals(method)) {
 				ctx.emit_eq2();
 				return;
+			} else if ("===".equals(method)) {
+				ctx.emit_eq3();
+				return;
 			} else if ("=~".equals(method)) {
 				ctx.emit_eqtilde();
 				return;

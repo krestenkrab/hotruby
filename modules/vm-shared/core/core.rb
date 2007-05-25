@@ -2,13 +2,18 @@
 ## core.rb is loaded on start up
 ##
 
+p "BOOTING HOTRUBY"
+
 p "loading core..."
 
 Kernel.eval_file 'object.rb', Object
+Kernel.eval_file 'objectspace.rb', Object
 Kernel.eval_file 'array.rb', Object
 Kernel.eval_file 'regexp.rb', Object
+Kernel.eval_file 'hash.rb', Object
 Kernel.eval_file 'time.rb', Object
 Kernel.eval_file 'match_data.rb', Object
+Kernel.eval_file 'io.rb', Object
 
 ##
 ## the very first thing we need to define is "load" and "require".  from there, we can
@@ -42,6 +47,10 @@ class Exception
   
   def backtrace
     @stacktrace
+  end
+  
+  def set_backtrace(val)
+    @stacktrace = val
   end
   
   def to_s
@@ -220,6 +229,18 @@ class String
      
   end
   
+  def sub(pattern, replacement=nil)
+     case pattern.class
+     when String
+       sub_by_string(pattern, replacement) { |s| yield(s) }
+     when Regexp
+       sub_by_regexp(pattern, replacement) { |s| yield(s) }
+     else
+        raise ArgumentError, 'pattern must be string or regexp'
+     end
+     
+  end
+  
   private  
 
   def scan_by_regexp(pattern)
@@ -235,20 +256,24 @@ class String
     result
   end
   
+  def sub_by_regexp(pattern, replacement)
+     if (md = pattern.match(self))
+        return self[0, md.begin] + replacement + self[md.end, self.length-md.end]
+     end
+     
+     self
+  end
+  
   def split_by_regexp(pattern, limit)
-   # p "splitting #{self.to_s} by #{pattern.inspect}"
     pos= 0
     lim= self.length
     result= []
     str = ""
     while (md = pattern.match(str=self[pos,lim-pos])) 
       app = str[0, md.begin(0)]
-   #   p "str[#{pos},#{lim-pos}]=#{str} ... + #{app}"
       result << app
       pos += md.end(0)
     end
-   #   p "str[#{pos},#{lim-pos}]=#{str}"
-   #   p "result => #{result}"
     result
   end
   
@@ -365,6 +390,44 @@ module Kernel
     val
   end
   
+  class ThrowNameError < NameError
+   
+     def sym; @sym; end
+     def value; @value; end
+  
+     def initialize(sym, value)
+        super("missing catch for #{sym}")
+        @sym = sym
+        @value = value
+     end
+  end
+  
+  class ThrowMatcher 
+     def initialize(sym)
+        @sym = sym
+     end
+
+     def ===(ex)
+        (ThrowNameError==ex) && (@sym == ex.sym)
+     end
+  end
+  
+  def catch(sym)
+    begin
+       yield
+    rescue (ThrowMatcher.new(sym)) => e
+       e.value
+    end
+  end
+  
+  def throw(sym, value=nil)
+    raise ThrowNameError.new (sym, value)
+  end
+  
+end
+
+class Proc
+  alias :[] :call
 end
   
 class Module
@@ -383,7 +446,6 @@ class Module
     names.each {|name|
       sname = name.to_s
       script = "def #{sname}() @#{sname} end; def #{sname}=(val) @#{sname}=val end"
-      p "#{self}.module_eval #{script}"
       module_eval script;
     }
     nil
@@ -393,7 +455,6 @@ class Module
     names.each {|name|
       sname = name.to_s
       script = "def #{sname}=(val) @#{sname}=val end"
-      p "#{self}.module_eval #{script}"
       module_eval script;
     }
     nil

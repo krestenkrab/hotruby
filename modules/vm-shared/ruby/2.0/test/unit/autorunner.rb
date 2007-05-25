@@ -189,7 +189,7 @@ module Test
       end
 
       def keyword_display(array)
-        list = array.collect {|e, *| e.to_s}
+        list = array.collect {|e, ee| e.to_s}
         Array === array or list.sort!
         list.collect {|e| e.sub(/^(.)([A-Za-z]+)(?=\w*$)/, '\\1[\\2]')}.join(", ")
       end

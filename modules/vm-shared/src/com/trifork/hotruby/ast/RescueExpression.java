@@ -65,6 +65,10 @@ public class RescueExpression extends Expression {
 		// the following code assumes that the exception has been pushed
 		ctx.set_stack_depth(1);
 		
+		ctx.emit_dup();
+		int real_ex = ctx.alloc_temp(1);
+		ctx.emit_setlocal(real_ex);
+		
 		ctx.emit_unwrap_raise();
 		
 		ctx.emit_dup();
@@ -94,7 +98,7 @@ public class RescueExpression extends Expression {
 					test.compile(ctx, true);
 					ctx.emit_send("instance_of?", 1, false, false, true, null);
 					ctx.emit_branch_if(this_clause);
-
+					
 					assert dd == ctx.get_stack_depth();
 				}
 			}
@@ -119,6 +123,9 @@ public class RescueExpression extends Expression {
 			ctx.set_stack_depth(depth_before_next_clause);
 		}
 
+		ctx.emit_getlocal(real_ex);
+		ctx.emit_throw();
+		
 		ctx.mark(else_label);
 		if (elseStmt != null) {
 

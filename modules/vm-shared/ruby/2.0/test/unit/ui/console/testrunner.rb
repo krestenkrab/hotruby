@@ -56,6 +56,9 @@ module Test
           end
           
           def attach_to_mediator # :nodoc:
+            p "attach_to_mediator"
+            p "self=#{self.class}"
+
             @mediator.add_listener(TestResult::FAULT, &method(:add_fault))
             @mediator.add_listener(TestRunnerMediator::STARTED, &method(:started))
             @mediator.add_listener(TestRunnerMediator::FINISHED, &method(:finished))

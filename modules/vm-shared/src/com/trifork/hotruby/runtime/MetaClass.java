@@ -54,6 +54,11 @@ public final class MetaClass extends MetaModule {
 	protected boolean notify_new_instance_method(String method_name,
 			RubyMethod method, boolean is_in_descendant, String[] ivarNames) {
 
+		if ("mm2".equals(method_name)) {
+			System.out.print("");
+		}
+		
+
 		if (super.notify_new_instance_method(method_name, method,
 				is_in_descendant, ivarNames)) {
 			return true;
@@ -215,6 +220,22 @@ public final class MetaClass extends MetaModule {
 		return "com.trifork.hotruby.objects." + getPackageName() 
 			+ (base_name.startsWith("#") ? "Instance" : base_name);
 	}
+	
+	public RubyIvarAccessor getInstanceIVarAccessor(String name, boolean create) {
+		
+		RubyIvarAccessor result;
+		
+		if (super_meta != null) {
+			result = super_meta.getInstanceIVarAccessor(name, false);
+			if (result != null && result.isCompiled()) {
+				return result;
+			}
+		}
+		
+		return super.getInstanceIVarAccessor(name, create);
+	}
+
+
 
 	public RubyMethodAccessor getSuperMethodAccessor(String methodName, boolean is_module_method) {
 		if (this.super_meta != null) {

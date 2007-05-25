@@ -241,7 +241,7 @@ public abstract class RubyRuntime {
 		}
 	}
 
-	public String encodeMethodName(String name) {
+	public static String encodeMethodName(String name) {
 		StringBuilder sb = new StringBuilder();
 		encode(name, sb);
 		return sb.toString();
@@ -249,11 +249,12 @@ public abstract class RubyRuntime {
 
 	public MetaModule computeModuleForLoadedSelector(Object selector) {
 		String name = selector.getClass().getName();
-		if (!name.startsWith(COM_TRIFORK_HOTRUBY_SELECTORS)) {
+
+		int start = name.indexOf(COM_TRIFORK_HOTRUBY_SELECTORS);
+		if (start == -1) {
 			throw new Error("bad");
 		}
-
-		int first = COM_TRIFORK_HOTRUBY_SELECTORS.length();
+		int first = start + COM_TRIFORK_HOTRUBY_SELECTORS.length();
 		int last = name.lastIndexOf(".call");
 
 		if (last <= first) {
@@ -485,6 +486,13 @@ public abstract class RubyRuntime {
 	private ConstantAccessor STANDARD_ERROR;
 	private ConstantAccessor TYPE_ERROR;
 	private ConstantAccessor LOCAL_JUMP_ERROR;
+	
+	private ConstantAccessor ARGV;
+	private ConstantAccessor STDOUT;
+	private ConstantAccessor STDERR;
+	private ConstantAccessor STDIN;
+
+	private IRubyString main_file;
 
 	private void shared_init() {
 		trace_func = null;
@@ -509,6 +517,18 @@ public abstract class RubyRuntime {
 		TYPE_ERROR = meta_Object().getConstantAccessor("TypeError", null);
 		RUNTIME_ERROR = meta_Object().getConstantAccessor("RuntimeError", null);
 		LOCAL_JUMP_ERROR = meta_Object().getConstantAccessor("LocalJumpError", null);
+		
+		ARGV = meta_Object().getConstantAccessor("ARGV", null);
+		ARGV.set(newArray());
+
+		STDIN = meta_Object().getConstantAccessor("STDIN", null);
+		STDIN.set(newIO(0, "r"));
+
+		STDOUT = meta_Object().getConstantAccessor("STDOUT", null);
+		STDOUT.set(newIO(1, "w"));
+
+		STDERR = meta_Object().getConstantAccessor("STDERR", null);
+		STDERR.set(newIO(2, "w"));
 
 		this.select_new = getSelector(meta_Object(), "new");
 		this.select_to_str = getSelector(meta_Object(), "to_str");
@@ -518,6 +538,8 @@ public abstract class RubyRuntime {
 		
 		
 	}
+
+	public abstract IRubyObject newIO(int i, String string);
 
 	private void init_properties() {
 
@@ -547,6 +569,7 @@ public abstract class RubyRuntime {
 		arr2.add(newString("core.rb"));
 
 		getGlobal("$\"").set(arr2);
+		
 	}
 
 	IRubyArray getPath() {
@@ -570,6 +593,11 @@ public abstract class RubyRuntime {
 
 		if (!f.exists()) {
 			throw newArgumentError("cannot find " + file);
+		}
+		
+		if (main_file == null) {
+			main_file = newString(file);
+			getGlobal("$0").set(main_file);
 		}
 
 		return loadFile(f, run_in);
@@ -753,4 +781,10 @@ public abstract class RubyRuntime {
 	}
 
 	public abstract IRubyMethod newMethodObject(RubyMethod m, IRubyObject receiver);
+
+	public void end_runtime() {
+		for (IRubyProc proc : exit_handlers) {
+			proc.callMethod("call", new IRubyObject[0], null);
+		}
+	}
 }

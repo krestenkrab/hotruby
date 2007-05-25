@@ -1,5 +1,6 @@
 package com.trifork.hotruby.runtime;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.lang.reflect.Field;
 import java.util.HashSet;
@@ -213,11 +214,29 @@ public class CodeGen implements Opcodes, CompilerConsts {
 	}
 
 	private void debug_write_class(Type self_type, byte[] data) {
-		if (!DEBUG_WRITE_CLASSES) return;
 		
+		debug_write_class(self_type.getClassName(), data);
+	}
+	
+	public static void debug_write_class(String name, byte[] data) {
+		if (!DEBUG_WRITE_CLASSES) return;
+
+		String pkg = "dout";
+		String clazz = name;
+		int idx = name.lastIndexOf('.');
+		if (idx > 0) {
+			pkg = "dout/" + name.substring(0, idx).replace('.', '/');
+			clazz = name.substring(idx+1);
+		}
+
+		File dir = new File(pkg);
+		if (!dir.exists()) {
+			new File(pkg).mkdirs();
+		}
+			
 		try {
-			String fileName = self_type.getClassName()+".class";
-			FileOutputStream fo = new FileOutputStream(fileName);
+			String fileName = clazz+".class";
+			FileOutputStream fo = new FileOutputStream(new File(dir, fileName));
 			fo.write(data);
 			fo.close();
 		} catch (Exception ex) {

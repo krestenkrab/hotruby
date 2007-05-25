@@ -121,6 +121,7 @@ public class ISeqBuilder implements ConstantPool, Instructions {
 		case MAKERETURN:
 			return;
 
+		case THROW:
 		case SETINSTANCEVARIABLE:
 		case SETCONSTANT:
 		case SETGLOBAL:
@@ -348,6 +349,10 @@ public class ISeqBuilder implements ConstantPool, Instructions {
 	}
 
 	public int addGlobal(String gval) {
+		if (parent_iseq != null) {
+			return parent_iseq.addGlobal(gval);
+		}
+		
 		int idx = globals.indexOf(gval);
 		if (idx == -1) {
 			idx = globals.size();

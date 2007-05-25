@@ -9,6 +9,7 @@ import com.trifork.hotruby.objects.IRubyFloat;
 import com.trifork.hotruby.objects.IRubyObject;
 import com.trifork.hotruby.objects.IRubyString;
 import com.trifork.hotruby.objects.IRubySymbol;
+import com.trifork.hotruby.runtime.EvalContext;
 import com.trifork.hotruby.runtime.MetaClass;
 import com.trifork.hotruby.runtime.MetaModule;
 import com.trifork.hotruby.runtime.RubyBlock;
@@ -41,6 +42,8 @@ public interface CompilerConsts {
 
 	public static final Type RUBYBLOCK = Type.getType(RubyBlock.class);
 
+	public static final Type EVALCONTEXT = Type.getType(EvalContext.class);
+
 	public static final Method CALL0 = new Method("call", IRUBYOBJECT,
 			new Type[] { IRUBYOBJECT, RUBYBLOCK });
 
@@ -52,6 +55,18 @@ public interface CompilerConsts {
 
 	public static final Method CALLN = new Method("call", IRUBYOBJECT,
 			new Type[] { IRUBYOBJECT, IRUBYOBJECT_ARR, RUBYBLOCK });
+
+	public static final Method CALL0_EVAL = new Method("call_eval", IRUBYOBJECT,
+			new Type[] { IRUBYOBJECT, RUBYBLOCK, EVALCONTEXT });
+
+	public static final Method CALL1_EVAL = new Method("call_eval", IRUBYOBJECT,
+			new Type[] { IRUBYOBJECT, IRUBYOBJECT, RUBYBLOCK, EVALCONTEXT });
+
+	public static final Method CALL2_EVAL = new Method("call_eval", IRUBYOBJECT,
+			new Type[] { IRUBYOBJECT, IRUBYOBJECT, IRUBYOBJECT, RUBYBLOCK, EVALCONTEXT });
+
+	public static final Method CALLN_EVAL = new Method("call_eval", IRUBYOBJECT,
+			new Type[] { IRUBYOBJECT, IRUBYOBJECT_ARR, RUBYBLOCK, EVALCONTEXT });
 
 	public static final Method GET_ARITY = new Method("getArity",
 			Type.INT_TYPE, new Type[0]);

@@ -18,7 +18,7 @@ public class MultiAssignmentExpression extends Expression {
 		
 		if (rhs.size() > 1 && !push && !rhs.has_rest_arg()) {
 			
-			int first_local = ctx.alloc_temp(rhs.size());
+			int first_local = ctx.alloc_temp(rhs.size()+1);
 			
 			// optimize this common case
 			rhs.compile_to_locals(ctx, first_local);
@@ -28,7 +28,10 @@ public class MultiAssignmentExpression extends Expression {
 			
 		} else {
 			rhs.compile_to_array(ctx);
+			int save = ctx.alloc_temp(3);
 			lhs.compile_assignment(ctx, push);
+			ctx.free_temp(save);
+
 		}
 	}
 

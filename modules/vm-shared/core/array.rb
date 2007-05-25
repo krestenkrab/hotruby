@@ -24,6 +24,18 @@ module Enumerable
       result
    end
 
+   def sort_by
+     val = []
+     each { |v| val << Array[yield(v), v] }
+     val.sort! { |k1,k2| k1[0] <=> k2[0] }
+     val.collect { |v| v[1] }     
+   end
+
+   def each_with_index
+     index = 0
+     each { |val| yield(val, index); index += 1 }
+   end
+
 end
 
 ##
@@ -31,10 +43,19 @@ end
 ##
 class Array
 
+private
+   NOARG = Object.new
+
+public
+
    include Enumerable
 
    def Array.[] (*args) 
       args
+   end
+
+   def empty?
+      0 == size
    end
 
    def initialize( anInteger=0, anObject=nil ) 
@@ -100,7 +121,9 @@ class Array
    def [] (val, length=nil)
      case val.class
      when ::Fixnum
-        return self.at(val) if length==nil
+        if length==nil
+          return self.at(val) 
+        end
         range = (val)..(val+length)        
      when ::Range
         range = val
@@ -180,6 +203,31 @@ class Array
       end
    end
    
+   def reverse_each
+      idx = size-1;
+      while (idx >= 0)
+         yield self[idx]
+         idx -= 1
+      end
+   end
+   
+   def delete_if
+      idx = 0;
+      while (idx < size)
+         if yield(self[idx])
+           delete_at(idx)
+         else
+           idx += 1
+         end
+      end
+      self
+   end
+   
+   def push(*vals)
+      vals.each { |v| self << v }
+      self
+   end
+   
    def dup
      result = []
      each { |e| result << e }
@@ -193,5 +241,23 @@ class Array
       result
    end
    
-
+   def fetch(idx, ifnone=NOARG)
+      if idx < 0
+         idx += size
+      end
+      if idx < 0 || size <= idx
+        return yield(idx) if block_given?
+        raise IndexError, "index out of range" if ifnone==NOARG
+        ifnone
+      else
+        self.at(idx)
+      end
+   end
+   
+   def sort
+     result = dup
+     result.sort!
+     result
+   end
+   
 end

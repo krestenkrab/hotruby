@@ -272,7 +272,7 @@ module Test # :nodoc:
 end
 
 at_exit do
-  unless $! || Test::Unit.run?
+ # unless $! || Test::Unit.run?
     exit Test::Unit::AutoRunner.run
-  end
+ # end
 end

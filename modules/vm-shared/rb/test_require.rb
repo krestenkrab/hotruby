@@ -2,8 +2,8 @@
 
 
 require 'test/unit'
-#require 'test/unit/testresult'
-#require 'test/unit/testcase'
+require 'test/unit/testresult'
+require 'test/unit/testcase'
 
 class TC_MyTest < Test::Unit::TestCase
   # def setup

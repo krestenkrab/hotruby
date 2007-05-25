@@ -24,10 +24,10 @@ public class CompiledIVarAccessor extends RubyIvarAccessor {
 	public void setBaseClass(Class base)
 	{
 		try {
-			reflectedField = base.getDeclaredField(getFieldName());
+			reflectedField = base.getField(getFieldName());
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new InternalError("unable to get field");
+			throw new InternalError("unable to get field "+getFieldName()+" in "+base);
 		}
 	}
 
@@ -36,9 +36,17 @@ public class CompiledIVarAccessor extends RubyIvarAccessor {
 		IRubyObject result;
 		try {
 			result = (IRubyObject) reflectedField.get(self);
+		} catch (NullPointerException e) {
+			setBaseClass(self.getClass());
+			try {
+				result = (IRubyObject)reflectedField.get(self);
+			} catch (Exception e1) {
+				e.printStackTrace();
+				throw new InternalError("unable to access ivar "+name+" in "+self);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new InternalError("unable to access ivar");
+			throw new InternalError("unable to access ivar "+name+" in "+self);
 		}
 		if (result == null) {
 			return self.getRuntime().getNil();

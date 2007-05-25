@@ -147,6 +147,10 @@ public class InterpCompileContext implements CompileContext, Instructions {
 		iseq.add_insn(UNWRAP_RAISE);
 	}
 	
+	public void emit_throw() {
+		iseq.add_insn(THROW);
+	}
+	
 	// arr -> arr
 	// other -> [other]
 	public void emit_internal_to_a() {

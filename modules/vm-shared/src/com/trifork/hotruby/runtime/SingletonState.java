@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.trifork.hotruby.objects.IRubyClass;
+import com.trifork.hotruby.objects.IRubyModule;
 import com.trifork.hotruby.objects.IRubyObject;
 
 public class SingletonState {
@@ -24,7 +25,7 @@ public class SingletonState {
 
 	public MetaClass get_meta_class(IRubyObject object, boolean create) {
 		
-		assert !(object instanceof IRubyClass);
+		assert !(object instanceof IRubyModule);
 		
 		if (meta == null && !create) {
 			return (MetaClass) object.get_class().get_meta_module();

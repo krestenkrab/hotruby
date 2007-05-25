@@ -58,6 +58,7 @@ public interface IRubyObject
 	
 	IRubyClass get_class();
 	MetaClass get_singleton_meta_class();
+	MetaModule get_singleton_meta_module();
 	RubyRuntime getRuntime();
 	
 	SingletonState get_singleton_state(boolean create);

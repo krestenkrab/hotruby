@@ -1,6 +1,7 @@
 package com.trifork.hotruby.runtime;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -488,14 +489,23 @@ public class MetaModule implements CallContext {
 			return rm;
 		}
 		for (MetaModule mod : included) {
-			rm = mod.instance_methods.get(name);
+			rm = mod.lookup_instance_method(name, true);
 			if (rm != null) {
-				return rm;
+				if (isClass() && !recurse) {
+					return rm.specialize_for(this, false);
+				} else {
+					return rm;
+				}
 			}
 		}
 		if (!recurse && !this.isClass() && true) {
-			return getRuntime().meta_Module()
+			rm = getRuntime().meta_Module()
 					.lookup_instance_method(name, true);
+			if (isClass() && !recurse) {
+				return rm.specialize_for(this, false);
+			} else {
+				return rm;
+			}
 		} else {
 			return null;
 		}
@@ -541,8 +551,11 @@ public class MetaModule implements CallContext {
 		m = m.specialize_for(this, is_module);
 
 		if (selectorClass != null) {
+			
+			RubyMethodAccessor methodAccessor = getMethodAccessor(name, is_module);
+			methodAccessor.set(m);
 			getRuntime().gen.make_special_selector(sel, selectorClass,
-					getMethodAccessor(name, is_module));
+					methodAccessor);
 		}
 
 		return m;
@@ -586,7 +599,7 @@ public class MetaModule implements CallContext {
 		}
 	}
 
-	boolean instance_class_is_compiled = true;
+	boolean instance_class_is_compiled = false;
 
 	boolean module_class_is_compiled = true;
 
@@ -737,6 +750,20 @@ public class MetaModule implements CallContext {
 		}
 		
 		return getRuntime().newMethodObject(m, receiver);
+	}
+
+	public void copy_methods_to(MetaModule mm, boolean receiver_is_module) {
+		for (Map.Entry<String,RubyMethod> ent : instance_methods.entrySet()) {
+			if (receiver_is_module) {
+				mm.register_module_method(ent.getKey(), ent.getValue());
+			} else {
+				mm.register_instance_method(ent.getKey(), ent.getValue());
+			}
+		}
+	}
+
+	public Collection<String> public_instance_methods(boolean include_super) {
+		return instance_methods.keySet();
 	}
 
 }

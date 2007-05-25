@@ -814,7 +814,7 @@ public class BindingContext implements Instructions {
 						boolean is_module_method;
 						if (singleton) {
 							receiver = (IRubyObject) stack[--sp];
-							mc = receiver.get_singleton_meta_class();
+							mc = receiver.get_singleton_meta_module();
 							is_module_method = (receiver instanceof IRubyModule);
 						} else {
 							mc = this.dynamic_context;

@@ -200,4 +200,6 @@ public interface CompileContext {
 	void emit_ge();
 
 	void emit_eqtilde();
+
+	void emit_throw();
 }

@@ -41,12 +41,12 @@ public class BinaryExpression extends Expression {
 	@Override
 	void compile(CompileContext ctx, boolean push) {
 		
-		if (operator.equals("||")) {
+		if (operator.equals("||") || operator.equals("or")) {
 			new LogicalOrExpression(left, right).compile(ctx, push);
 			return;
 		}
 
-		if (operator.equals("&&")) {
+		if (operator.equals("&&") || operator.equals("and")) {
 			new LogicalAndExpression(left, right).compile(ctx, push);
 			return;
 		}

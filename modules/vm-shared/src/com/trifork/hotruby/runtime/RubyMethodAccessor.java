@@ -7,6 +7,11 @@ public class RubyMethodAccessor {
 	protected final String name;
 	private final boolean is_module;
 	
+	@Override
+	public String toString() {
+		return "accessor for " + (is_module ? "module" : "instance") + " method " + name + " in " + module.getName();
+	}
+	
 	public RubyMethodAccessor(MetaModule module, String name, boolean is_module) {
 		this.module = module;
 		this.name = name;

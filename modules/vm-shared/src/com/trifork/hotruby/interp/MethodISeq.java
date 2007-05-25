@@ -28,14 +28,21 @@ public class MethodISeq extends RubyMethod {
 	
 	public RubyMethod specialize_for(MetaModule module, boolean is_module) {
 		if (module == context.dynamic_context) {
-			return this;
+//			return this;
 		} 
 			
 		MethodCompiler mc = new MethodCompiler(context.getRuntime());
 		
-		return mc.compile(bind(module, is_module));
+		RubyMethod result = mc.compile(bind(module, is_module));
+		
+		return result;
 	}
 	
+	public void setMethodISeq(MethodISeq seq) {
+		// ignore
+	}
+
+
 	private final BindingContext context;
 
 	final ExposedLocals locals_when_bound;

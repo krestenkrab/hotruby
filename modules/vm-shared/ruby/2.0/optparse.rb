@@ -285,7 +285,7 @@ class OptionParser
       else
         t = Switch::RequiredArgument
       end
-      self >= t or incompatible_argument_styles(arg, t)
+      incompatible_argument_styles(arg, t) unless self >= t
       t
     end
 
@@ -543,6 +543,7 @@ class OptionParser
         block = pat.method(:convert).to_proc if pat.respond_to?(:convert)
       end
       @atype[t] = [pat, block]
+      
     end
 
     #
@@ -985,6 +986,7 @@ class OptionParser
 =end #'#"#`#
   def top
     @stack[-1]
+    
   end
 
 =begin
@@ -1102,11 +1104,12 @@ class OptionParser
         exception message
 =end #'#"#`#
   def notwice(obj, prv, msg)
-    unless !prv or prv == obj
+    if !prv or prv == obj
+    else
       begin
         raise ArgumentError, "argument #{msg} given twice: #{obj}"
       rescue
-        $@[0, 2] = nil
+        #$@[0, 2] = nil
         raise
       end
     end
@@ -1125,6 +1128,9 @@ class OptionParser
 
     opts.each do |o|
       # argument class
+      # 
+      # 
+
       next if search(:atype, o) do |pat, c|
         klass = notwice(o, klass, 'type')
         if not_style and not_style != Switch::NoArgument
@@ -1133,6 +1139,7 @@ class OptionParser
           default_pattern, conv = pat, c
         end
       end
+
 
       # directly specified pattern(any object possible to match)
       if !(String === o) and o.respond_to?(:match)
@@ -1154,7 +1161,8 @@ class OptionParser
         else
           raise ArgumentError, "argument pattern given twice"
         end
-        o.each {|(o, *v)| pattern[o] = v.fetch(0) {o}}
+        
+        o.each {|o, *v| pattern[o] = v.fetch(0) {o}}
       when Module
         raise ArgumentError, "unsupported argument type: #{o}"
       when *ArgumentStyle.keys
@@ -1189,9 +1197,11 @@ class OptionParser
           default_pattern, conv = search(:atype, o) unless default_pattern
         end
         ldesc << "--#{q}"
-        long << (o = q.downcase)
+        o = q.downcase
+        long << o
       when /^-(\[\^?\]?(?:[^\\\]]|\\.)*\])(.+)?/
         q, a = $1, $2
+        p "q.4=#{q}, a=#{a}"
         o = notwice(Object, klass, 'type')
         if a
           default_style = default_style.guess(arg = a)
@@ -1214,11 +1224,12 @@ class OptionParser
       else
         desc.push(o)
       end
+      
     end
-
     default_pattern, conv = search(:atype, default_style.pattern) unless default_pattern
     if !(short.empty? and long.empty?)
-      s = (style || default_style).new(pattern || default_pattern,
+      ssss = (style || default_style)
+      s = ssss.new(pattern || default_pattern,
                                        conv, sdesc, ldesc, arg, desc, block)
     elsif !block_given?
       raise ArgumentError, "no switch given" if style or pattern

@@ -1,5 +1,6 @@
 package com.trifork.hotruby.runtime;
 
+import com.trifork.hotruby.interp.MethodISeq;
 import com.trifork.hotruby.objects.IRubyObject;
 
 public abstract class RubyMethod {
@@ -166,6 +167,10 @@ public abstract class RubyMethod {
 			return call_eval(receiver, args, block, ctx);
 		}
 		}
+	}
+
+	public void setMethodISeq(MethodISeq seq) {
+		throw new InternalError("should not happen");
 	}
 
 }
