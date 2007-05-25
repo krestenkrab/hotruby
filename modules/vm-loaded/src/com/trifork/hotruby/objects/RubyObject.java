@@ -1,5 +1,6 @@
 package com.trifork.hotruby.objects;
 
+import com.trifork.hotruby.modules.RubyModuleObjectSpace;
 import com.trifork.hotruby.runtime.CallContext;
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
 import com.trifork.hotruby.runtime.MetaClass;
@@ -10,9 +11,14 @@ import com.trifork.hotruby.runtime.RubyMethod;
 import com.trifork.hotruby.runtime.RubyRuntime;
 import com.trifork.hotruby.runtime.Selector;
 import com.trifork.hotruby.runtime.SingletonState;
+import com.trifork.hotruby.util.L4RootManager;
 
 public class RubyObject extends RubyBaseObject implements IRubyObject {
 	SingletonState singleton;
+	
+	public RubyObject() {
+		RubyModuleObjectSpace.register(this);
+	}
 
 	public boolean isFrozen() {
 		return singleton != null && singleton.frozen;
@@ -219,6 +225,10 @@ public class RubyObject extends RubyBaseObject implements IRubyObject {
 			singleton = new SingletonState();
 		}
 		return singleton.get_meta_class(this, true);
+	}
+
+	public MetaModule get_singleton_meta_module() {
+		return get_singleton_meta_class();
 	}
 
 	public RubyRuntime getRuntime() {

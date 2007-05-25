@@ -86,9 +86,52 @@ public abstract class RubyClass extends RubyBaseClass {
 		return bool(false);
 	}
 
+	@Override
+	public IRubyObject fast_gt(IRubyObject arg, Selector selector) {
+		return op_gt(arg);
+	}
+
+	public IRubyObject op_gt(IRubyObject arg) {
+		if (arg instanceof RubyClass) {
+			return ((RubyClass)arg).is_subclass_of(this);
+		}
+		
+		return bool(false);
+	}
+
 	private IRubyObject is_subclass_of(RubyClass class1) {
 		boolean result = this.get_meta_class().is_subclass_of(class1.get_meta_class());
 		return bool(result);
+	}
+
+	@Override
+	public IRubyObject fast_eq3(IRubyObject arg, Selector selector) {
+		return op_eq3(arg);
+	}
+	
+	public IRubyObject op_eq3(IRubyObject arg) {
+		// test if receiver is an instance of this class
+		
+		if (arg == this) return bool(true);
+		
+		RubyClass clazz = (RubyClass) arg.get_class();
+		if (clazz == this) return bool(true);
+		return clazz.is_subclass_of(this);
+	}
+
+	@Override
+	public IRubyObject fast_ge(IRubyObject arg, Selector selector) {
+		return op_ge(arg);
+	}
+	
+	public IRubyObject op_ge(IRubyObject arg) {
+		if (arg == this) return bool(true);
+		
+		if (arg instanceof RubyClass) {
+			return ((RubyClass)arg).is_subclass_of ((RubyClass)this);
+		}
+		
+		return bool(false);
 	}
 
 }

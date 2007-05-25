@@ -69,6 +69,16 @@ public final class RubyModuleKernel extends RubyModule {
 				return LoadedRubyRuntime.NIL;
 			}});
 		
+		
+		meta.register_instance_method("breakpoint", new PublicMethod0() {
+
+			@Override
+			public IRubyObject call(IRubyObject receiver, RubyBlock block) {
+				return LoadedRubyRuntime.NIL;
+			}
+			
+		});
+		
 		meta.register_module_method("eval_file", new PublicMethod2() {
 			@Override
 			public IRubyObject call(IRubyObject receiver, IRubyObject arg1,
@@ -251,8 +261,13 @@ public final class RubyModuleKernel extends RubyModule {
 
 			@Override
 			public IRubyObject call(IRubyObject receiver, RubyBlock block) {
+				IRubyObject ex = curr_exception.get();
 				// re-raise current exception
-				throw new RaisedException(curr_exception.get());
+				if (ex == null) {
+					throw getRuntime().newRuntimeError("unspecified exception");
+				} else {
+					throw new RaisedException(ex);
+				}
 			}
 
 			@Override
@@ -276,9 +291,9 @@ public final class RubyModuleKernel extends RubyModule {
 					throw getRuntime().newArgumentError("argument to `raise' is not a class");
 				}
 				
-				IRubyObject exception = arg1.do_select(selector_new).call(receiver, arg2, (RubyBlock)null);
+				IRubyObject exception = arg1.do_select(selector_new).call(arg1, arg2, (RubyBlock)null);
 				
-				exception.do_select(selector_set_backtrace).call(receiver, arg3, (RubyBlock)null);
+				exception.do_select(selector_set_backtrace).call(exception, arg3, (RubyBlock)null);
 				
 				curr_exception.set(exception);
 				throw new RaisedException(exception);

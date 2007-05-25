@@ -135,4 +135,9 @@ public class RubyHash extends RubyBaseHash {
 		return this;
 	}
 
+	public IRubyObject has_key_p(IRubyObject arg, RubyBlock block) {
+		return bool(data.containsKey(arg));
+	}
+
+
 }

@@ -13,7 +13,7 @@ public abstract class RubyBaseClassNumeric
 		instance = (RubyClassNumeric)this; 
 		super.init(meta);
 	}
-	interface SelectNumeric { RubyMethod get_RubyClassNumeric(); }
+	public interface SelectNumeric { RubyMethod get_RubyClassNumeric(); }
 	public RubyMethod select(Selector sel) {
 		if(sel instanceof SelectNumeric) { return ((SelectNumeric)sel).get_RubyClassNumeric(); }
 		else { return LoadedRubyRuntime.resolve_method((RubyClass)this,sel,SelectNumeric.class); }

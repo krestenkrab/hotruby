@@ -10,6 +10,7 @@ import com.trifork.hotruby.objects.RubyString;
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
 import com.trifork.hotruby.runtime.MetaClass;
 import com.trifork.hotruby.runtime.RubyBlock;
+import com.trifork.hotruby.runtime.RubyMethod;
 import com.trifork.hotruby.runtime.Selector;
 
 public final class RubyClassClass extends RubyBaseClassClass {
@@ -47,6 +48,24 @@ public final class RubyClassClass extends RubyBaseClassClass {
 			
 		});
 		
+		meta.register_module_method(">=", new PublicMethod1() {
+
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject arg, RubyBlock block) {
+				return ((RubyClass)receiver).op_ge(arg);
+			}
+			
+		});
+		
+		meta.register_module_method("===", new PublicMethod1() {
+
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject arg, RubyBlock block) {
+				return ((RubyClass)receiver).op_eq3(arg);
+			}
+			
+		});
+		
 		meta.register_module_method("new", new PublicMethod1() {
 			public IRubyObject call(IRubyObject receiver,
 					IRubyObject superClass, RubyBlock block) {
@@ -67,6 +86,9 @@ public final class RubyClassClass extends RubyBaseClassClass {
 			@Override
 			public IRubyObject call(IRubyObject receiver, IRubyObject arg,
 					RubyBlock block) {
+				if (! (receiver instanceof RubyClass)) {
+					System.out.println("receiver is "+receiver.getClass());
+				}
 				RubyClass self = (RubyClass) receiver;
 				IRubyObject value = self.newInstance();
 				value.do_select(initialize).call(value, arg, block);
@@ -87,7 +109,16 @@ public final class RubyClassClass extends RubyBaseClassClass {
 					RubyBlock block) {
 				RubyClass self = (RubyClass) receiver;
 				IRubyObject value = self.newInstance();
-				value.do_select(initialize).call(value, args, block);
+				try {
+					if ("com.trifork.hotruby.objects.OptionParser.Switch.RequiredArgument.RequiredArgument".equals(value.getClass().getName())) {
+						System.out.print("x");
+					}
+					RubyMethod m = value.do_select(initialize);
+					m.call(value, args, block);
+				} catch (ClassCastException ex) {
+					System.err.println("self="+value.getClass());
+					throw ex;
+				}
 				return value;
 			}
 

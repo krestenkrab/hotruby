@@ -1,12 +1,15 @@
 package com.trifork.hotruby.objects;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Comparator;
 
 import com.trifork.hotruby.classes.RubyClassArray;
 import com.trifork.hotruby.marshal.UnmarshalStream;
 import com.trifork.hotruby.runtime.CallContext;
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
 import com.trifork.hotruby.runtime.NonLocalBreak;
+import com.trifork.hotruby.runtime.NonLocalJump;
 import com.trifork.hotruby.runtime.NonLocalNext;
 import com.trifork.hotruby.runtime.NonLocalRedo;
 import com.trifork.hotruby.runtime.NonLocalReturn;
@@ -39,7 +42,10 @@ public class RubyArray extends RubyBaseArray {
 	private static final IRubyObject[] EMPTY_ARRAY = new IRubyObject[0];
 
 	private static final Selector call0_call = LoadedRubyRuntime.instance
-			.getSelector(RubyClassArray.instance.get_meta_module(), "call");
+	.getSelector(RubyClassArray.instance.get_meta_module(), "call");
+
+	private static final Selector call_cmp = LoadedRubyRuntime.instance
+	.getSelector(RubyClassArray.instance.get_meta_module(), "<=>");
 
 	private IRubyObject[] value;
 
@@ -92,7 +98,7 @@ public class RubyArray extends RubyBaseArray {
 
 		int val = RubyInteger.induced_from(index).intValue();
 		if (val < 0) {
-			val = size - val;
+			val = size + val;
 		}
 
 		if (val >= size || val < 0) {
@@ -431,5 +437,51 @@ public class RubyArray extends RubyBaseArray {
 			return bool(true);
 		}
 		return bool(false);
+	}
+
+	public IRubyObject delete_at(IRubyObject index) {
+		int val = RubyInteger.induced_from(index).intValue();
+		if (val < 0) {
+			val = size + val;
+		}
+
+		if (val >= size || val < 0) {
+			return LoadedRubyRuntime.NIL;
+		} else {
+			IRubyObject res = value[val];
+			for (int i = val+1; i < size; i++) {
+				value[i-1] = value[i];
+			}
+			size -= 1;
+			return res;
+		}
+	}
+
+	public IRubyObject sort_bang(final RubyBlock block) {
+		Comparator<IRubyObject> cmp = new Comparator<IRubyObject>() {
+
+			public int compare(IRubyObject o1, IRubyObject o2) {
+				IRubyObject val;
+				if (block == null) {
+					val = o1.fast_cmp(o2, call_cmp);
+				} else {
+					try {
+						val = block.call(o1, o2);
+					} catch (NonLocalBreak e) {
+						throw LoadedRubyRuntime.instance.newLocalJumpError("non-local break", e);
+					} catch (NonLocalNext e) {
+						throw LoadedRubyRuntime.instance.newLocalJumpError("non-local next", e);
+					} catch (NonLocalRedo e) {
+						throw LoadedRubyRuntime.instance.newLocalJumpError("non-local redo", e);
+					}
+				}
+				return RubyInteger.induced_from(val).intValue();
+			}
+			
+		};
+		
+		Arrays.sort(value, 0, size, cmp);
+		
+		return this;
 	}
 }

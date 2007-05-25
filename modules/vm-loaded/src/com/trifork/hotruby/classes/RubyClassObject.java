@@ -10,6 +10,7 @@ import com.trifork.hotruby.objects.RubyModule;
 import com.trifork.hotruby.objects.RubyString;
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
 import com.trifork.hotruby.runtime.MetaClass;
+import com.trifork.hotruby.runtime.MetaModule;
 import com.trifork.hotruby.runtime.PublicMethodN;
 import com.trifork.hotruby.runtime.RubyBlock;
 import com.trifork.hotruby.runtime.RubyMethod;
@@ -39,6 +40,7 @@ public class RubyClassObject extends RubyBaseClassObject {
 			}
 		});
 		
+		
 		meta.register_instance_method("__send__", new PublicMethodN() {
 			@Override
 			public IRubyObject call(IRubyObject receiver, IRubyObject[] args, RubyBlock block) {
@@ -62,6 +64,7 @@ public class RubyClassObject extends RubyBaseClassObject {
 			}
 		});
 		
+		meta.alias_instance_method("send", "__send__");
 		meta.register_instance_method("method", new PublicMethod1() {
 
 			@Override
@@ -243,6 +246,36 @@ public class RubyClassObject extends RubyBaseClassObject {
 				return -2;
 			}
 		});
+		
+		meta.register_instance_method("extend", new PublicMethodN() {
+
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject[] args, RubyBlock block) {
+				MetaModule mm;
+				boolean receiver_is_module;
+				if (receiver instanceof IRubyModule) {
+					mm = ((IRubyModule)receiver).get_meta_module();
+					receiver_is_module = true;
+				} else {
+					mm = receiver.get_singleton_meta_class();
+					receiver_is_module = false;
+				}
+				
+				for (int i = 0; i < args.length; i++) {
+					if (args[i] instanceof IRubyModule) {
+						
+						MetaModule being_added_from = ((IRubyModule)args[i]).get_meta_module();
+						
+						being_added_from.copy_methods_to(mm, receiver_is_module);
+						
+					} else {
+						throw getRuntime().newArgumentError("argument not a module");
+					}
+				}
+				
+				return receiver;
+				
+			}});
 
 	}
 }

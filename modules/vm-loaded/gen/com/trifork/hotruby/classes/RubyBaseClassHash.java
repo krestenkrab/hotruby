@@ -14,7 +14,7 @@ public abstract class RubyBaseClassHash
 		instance = (RubyClassHash)this; 
 		super.init(meta);
 	}
-	interface SelectHash { RubyMethod get_RubyClassHash(); }
+	public interface SelectHash { RubyMethod get_RubyClassHash(); }
 	public RubyMethod select(Selector sel) {
 		if(sel instanceof SelectHash) { return ((SelectHash)sel).get_RubyClassHash(); }
 		else { return LoadedRubyRuntime.resolve_method((RubyClass)this,sel,SelectHash.class); }

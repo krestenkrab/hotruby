@@ -93,6 +93,13 @@ public class RubyClassHash
 			}
 		});
 		
+		meta.register_instance_method("has_key?", new PublicMethod1() {
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject arg, RubyBlock block) {
+				return ((RubyHash)receiver).has_key_p(arg, block);
+			}
+		});
+		
 		meta.register_instance_method("each", new PublicMethod0() {
 			@Override
 			public IRubyObject call(IRubyObject receiver, RubyBlock block) {

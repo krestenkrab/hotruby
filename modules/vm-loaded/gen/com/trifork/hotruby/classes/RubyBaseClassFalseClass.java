@@ -14,7 +14,7 @@ public abstract class RubyBaseClassFalseClass
 		instance = (RubyClassFalseClass)this; 
 		super.init(meta);
 	}
-	interface SelectFalseClass { RubyMethod get_RubyClassFalseClass(); }
+	public interface SelectFalseClass { RubyMethod get_RubyClassFalseClass(); }
 	public RubyMethod select(Selector sel) {
 		if(sel instanceof SelectFalseClass) { return ((SelectFalseClass)sel).get_RubyClassFalseClass(); }
 		else { return LoadedRubyRuntime.resolve_method((RubyClass)this,sel,SelectFalseClass.class); }

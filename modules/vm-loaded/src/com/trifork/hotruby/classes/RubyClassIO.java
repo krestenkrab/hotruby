@@ -8,6 +8,7 @@ import com.trifork.hotruby.objects.RubyIO;
 import com.trifork.hotruby.objects.RubyObject;
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
 import com.trifork.hotruby.runtime.MetaClass;
+import com.trifork.hotruby.runtime.PublicMethodN;
 import com.trifork.hotruby.runtime.RubyBlock;
 import com.trifork.hotruby.runtime.RubyMethod;
 import com.trifork.hotruby.runtime.Selector;
@@ -20,7 +21,7 @@ public class RubyClassIO extends RubyClass {
 	public void init(MetaClass meta) {
 		super.init(meta);
 
-		instance = new RubyClassIO();
+		instance = this;
 
 		meta.include(RubyModuleEnumerable.instance.get_meta_module());
 
@@ -31,6 +32,14 @@ public class RubyClassIO extends RubyClass {
 				return new RubyIO().initialize(arg1, arg2);
 			}
 		});
+		
+		meta.register_instance_method("print", new PublicMethodN() {
+
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject[] args, RubyBlock block) {
+				((RubyIO)receiver).print(args);
+				return LoadedRubyRuntime.NIL;
+			}});
 
 	}
 

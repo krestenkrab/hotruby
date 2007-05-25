@@ -24,7 +24,7 @@ public abstract class RubyBaseClassInteger extends RubyClass {
 		});
 	}
 
-	interface SelectInteger {
+	public interface SelectInteger {
 		RubyMethod get_RubyClassInteger();
 	}
 

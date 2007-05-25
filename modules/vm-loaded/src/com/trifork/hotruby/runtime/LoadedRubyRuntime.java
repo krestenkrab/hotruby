@@ -24,6 +24,7 @@ import com.trifork.hotruby.objects.RubyFalseClass;
 import com.trifork.hotruby.objects.RubyFixnum;
 import com.trifork.hotruby.objects.RubyFloat;
 import com.trifork.hotruby.objects.RubyHash;
+import com.trifork.hotruby.objects.RubyIO;
 import com.trifork.hotruby.objects.RubyInteger;
 import com.trifork.hotruby.objects.RubyModule;
 import com.trifork.hotruby.objects.RubyNilClass;
@@ -72,6 +73,8 @@ public class LoadedRubyRuntime extends RubyRuntime {
 		meta_object.const_set("Object", meta_object.get_base_class());
 
 		MetaModule kernel = new_system_module("Kernel");
+		MetaModule enumerable = new_system_module("Enumerable");
+		MetaModule objectspace = new_system_module("ObjectSpace");
 		
 		// include the kernel module in object
 		meta_object.include(kernel);
@@ -108,6 +111,7 @@ public class LoadedRubyRuntime extends RubyRuntime {
 		new_system_class("Range");
 		new_system_class("File");
 		new_system_class("Method");
+		new_system_class("IO");
 		
 		RubyString.init(string_class);
 	}
@@ -249,6 +253,11 @@ public class LoadedRubyRuntime extends RubyRuntime {
 		return new RubyArray().initialize(size);
 	}
 
+	@Override
+	public IRubyObject newIO(int i, String mode) {
+		return new RubyIO().initialize(new RubyFixnum(i), new RubyString(mode));
+	}
+	
 	@Override
 	public IRubyFixnum newFixnum(int intvalue) {
 		return new RubyFixnum(intvalue);

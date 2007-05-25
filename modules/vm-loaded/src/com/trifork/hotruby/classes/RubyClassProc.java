@@ -116,5 +116,7 @@ public class RubyClassProc extends RubyBaseClassProc {
 			}
 
 		});
+		
+		meta.alias_instance_method("[]", "call");
 	}
 }

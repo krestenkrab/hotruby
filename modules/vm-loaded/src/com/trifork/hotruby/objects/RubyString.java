@@ -102,6 +102,15 @@ public class RubyString
 		throw LoadedRubyRuntime.instance.newTypeError("object is not string");
 	}
 
+	@Override
+	public IRubyObject fast_cmp(IRubyObject arg, Selector selector) {
+		IRubyString s = RubyString.induce_from(arg);
+		
+		int val = value.compareTo(s.asSymbol());
+		
+		return new RubyFixnum(val);
+	}
+	
 	public IRubyObject op_eq2(IRubyObject arg) {
 		return bool(arg instanceof RubyString && ((RubyString)arg).value.equals(value));
 	}
@@ -173,6 +182,23 @@ public class RubyString
 		 
 	}
 
+	public IRubyObject op_mult(IRubyObject arg) {
+		RubyInteger ri = RubyInteger.induced_from(arg);
+		int val = ri.intValue();
+		
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < val; i++) {
+			sb.append(this.value);
+		}
+		
+		return new RubyString(sb.toString());
+	}
+
+	public IRubyObject op_lshift(IRubyObject arg) {
+		IRubyString val = RubyString.induce_from(arg);
+		return new RubyString(value + val.asSymbol());
+	}
+
 	public IRubyObject op_concat(IRubyObject arg) {
 		if (arg instanceof IRubyFixnum) {
 			IRubyFixnum num = (IRubyFixnum) arg;
@@ -195,5 +221,14 @@ public class RubyString
 			result = 0;
 		}
 		return new RubyFixnum(result);
+	}
+
+	public IRubyObject downcase() {
+		return new RubyString(value.toLowerCase());
+	}
+
+	public IRubyObject downcase_bang() {
+		value = value.toLowerCase();
+		return this;
 	}
 }

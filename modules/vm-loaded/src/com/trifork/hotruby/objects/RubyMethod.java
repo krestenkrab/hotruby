@@ -9,7 +9,7 @@ import com.trifork.hotruby.runtime.NonLocalReturn;
 import com.trifork.hotruby.runtime.RubyBlock;
 import com.trifork.hotruby.runtime.Selector;
 
-public class RubyMethod extends RubyObject implements IRubyMethod {
+public class RubyMethod extends RubyObject implements IRubyMethod, IRubyProc {
 	
 	private final com.trifork.hotruby.runtime.RubyMethod m;
 	private final IRubyObject receiver;
@@ -35,7 +35,11 @@ public class RubyMethod extends RubyObject implements IRubyMethod {
 	}
 	
 	public IRubyObject to_proc() {
-		return new RubyProc(new RubyBlock() {
+		return new RubyProc(get_block());
+	}
+	
+	public RubyBlock get_block() {
+		return new RubyBlock() {
 
 			@Override
 			public IRubyObject call() throws NonLocalBreak, NonLocalNext, NonLocalRedo, NonLocalReturn {
@@ -55,7 +59,7 @@ public class RubyMethod extends RubyObject implements IRubyMethod {
 			@Override
 			public IRubyObject call(IRubyObject[] args) throws NonLocalBreak, NonLocalNext, NonLocalRedo, NonLocalReturn {
 				return m.call(receiver, args, (RubyBlock)null);
-			}});
+			}};
 	}
 
 }

@@ -1,15 +1,20 @@
 package com.trifork.hotruby.classes;
 
+import java.util.Collection;
+import java.util.Iterator;
+
 import com.trifork.hotruby.ast.LocalVariable;
 import com.trifork.hotruby.ast.LocalVariableAccess;
 import com.trifork.hotruby.callable.PublicMethod0;
 import com.trifork.hotruby.callable.PublicMethod1;
+import com.trifork.hotruby.callable.PublicMethod2;
 import com.trifork.hotruby.objects.IRubyClass;
 import com.trifork.hotruby.objects.IRubyModule;
 import com.trifork.hotruby.objects.IRubyObject;
 import com.trifork.hotruby.objects.IRubyString;
 import com.trifork.hotruby.objects.IRubySymbol;
 import com.trifork.hotruby.objects.RubyModule;
+import com.trifork.hotruby.objects.RubyString;
 import com.trifork.hotruby.runtime.EvalContext;
 import com.trifork.hotruby.runtime.ExposedLocals;
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
@@ -30,6 +35,23 @@ public class RubyClassModule extends RubyBaseClassModule {
 				return getRuntime().newString(((RubyModule)receiver).get_meta_module().getName());
 			}
 		} );
+		
+		meta.register_instance_method("public_instance_methods", new PublicMethodN() {
+
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject[] args, RubyBlock block) {
+				RubyModule self = (RubyModule) receiver;
+				boolean include_super = (args.length > 0 && args[0].isTrue());
+				Collection<String> names = self.get_meta_module().public_instance_methods(include_super);
+				IRubyObject[] result = new IRubyObject[names.size()];
+				Iterator<String> iter = names.iterator();
+				for (int i = 0; i < result.length; i++) {
+					result[i] = new RubyString(iter.next());
+				}
+				return getRuntime().newArray(result);
+			}
+			
+		});
 		
 		meta.register_instance_method("include", new PublicMethodN() {
 
@@ -115,6 +137,17 @@ public class RubyClassModule extends RubyBaseClassModule {
 				IRubySymbol sym = (IRubySymbol) arg;
 				return ((IRubyModule) receiver).get_meta_module()
 						.getConstantAccessor(sym.asSymbol(), null).get();
+			}
+		});
+
+		meta.register_instance_method("const_set", new PublicMethod2() {
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject arg, IRubyObject arg2,
+					RubyBlock block) {
+				IRubySymbol sym = (IRubySymbol) arg;
+				((IRubyModule) receiver).get_meta_module()
+						.getConstantAccessor(sym.asSymbol(), null).set(arg2);
+				return arg2;
 			}
 		});
 
