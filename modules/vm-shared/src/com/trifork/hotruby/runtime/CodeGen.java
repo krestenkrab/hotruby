@@ -480,7 +480,7 @@ public class CodeGen implements Opcodes, CompilerConsts {
 	}
 
 	private void add_fast_override(ClassWriter cw, Method method) {
-		System.out.println("should generate "+method);
+		//System.out.println("should generate "+method);
 		
 		GeneratorAdapter mg = begin_method(cw, ACC_PUBLIC, method);
 		
