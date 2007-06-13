@@ -22,6 +22,7 @@ public class RubyClassObject extends RubyBaseClassObject {
 		super.init(meta);
 
 		final Selector call_to_s = getRuntime().getSelector(meta, "to_s");
+		final Selector call_eq2 = getRuntime().getSelector(meta, "==");
 		
 		meta.register_instance_method("freeze", new PublicMethod0() {
 
@@ -133,7 +134,15 @@ public class RubyClassObject extends RubyBaseClassObject {
 			}
 		});
 
-		meta.alias_instance_method("===", "==");
+		meta.register_instance_method("===", new PublicMethod1() {
+
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject arg, RubyBlock block) {
+				return receiver.fast_eq2(arg, call_eq2);
+			}
+			
+		});
+		// meta.alias_instance_method("===", "==");
 
 		meta.register_instance_method("class", new PublicMethod0() {
 			@Override
