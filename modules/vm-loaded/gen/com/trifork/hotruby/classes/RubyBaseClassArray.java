@@ -8,6 +8,7 @@ import com.trifork.hotruby.objects.RubyArray;
 import com.trifork.hotruby.objects.RubyClass;
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
 import com.trifork.hotruby.runtime.MetaClass;
+import com.trifork.hotruby.runtime.PublicMethodN;
 import com.trifork.hotruby.runtime.RubyBlock;
 import com.trifork.hotruby.runtime.RubyMethod;
 import com.trifork.hotruby.runtime.Selector;
@@ -44,7 +45,13 @@ public abstract class RubyBaseClassArray extends RubyClass {
 		});
 		meta.register_instance_method("reverse", new PublicMethod0() {
 			public IRubyObject call(IRubyObject receiver, RubyBlock b) {
-				return ((RubyArray) receiver).reverse();
+				return ((RubyArray) receiver).reverse(false);
+			}
+		});
+		
+		meta.register_instance_method("reverse!", new PublicMethod0() {
+			public IRubyObject call(IRubyObject receiver, RubyBlock b) {
+				return ((RubyArray) receiver).reverse(true);
 			}
 		});
 		meta.register_instance_method("at", new PublicMethod1() {
@@ -53,6 +60,15 @@ public abstract class RubyBaseClassArray extends RubyClass {
 				return ((RubyArray) receiver).at(idx);
 			}
 		});
+
+		meta.register_instance_method("insert", new PublicMethodN() {
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject[] args, RubyBlock block) {
+				return ((RubyArray) receiver).insert(args);
+			}
+		});
+
+		
 //		meta.register_instance_method("[]", new PublicMethod1() {
 //			public IRubyObject call(IRubyObject receiver, IRubyObject idx,
 //					RubyBlock b) {

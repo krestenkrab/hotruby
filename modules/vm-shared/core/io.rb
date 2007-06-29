@@ -1,6 +1,12 @@
 
 
 
+class Object
+  def puts(*vals)
+     STDOUT.puts(vals)
+  end
+end
+
 class IO
 
    def puts(*vals)
@@ -8,7 +14,7 @@ class IO
         vals = vals[0]
       end
       vals.each { |v| print v }
-      print '\n'
+      print "\n"
    end
 
    def write(*vals)

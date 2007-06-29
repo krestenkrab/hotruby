@@ -64,7 +64,7 @@ public class RubyClassTime
 					IRubyObject expr2, RubyBlock b) {
 				long secs = RubyFixnum.induced_from(expr1).longValue();
 				long usecs = RubyFixnum.induced_from(expr2).longValue();
-				long msecs = (secs * 1000) + (usecs == 0 ? 0 : usecs / 1000);   
+				long msecs = (secs * 1000) + (usecs / 1000);   
 				return new RubyTime(msecs, null);
 			}
 

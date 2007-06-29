@@ -48,7 +48,7 @@ public class RubyClassArray
 			}
 		});
 		
-		meta.register_instance_method("to_s", new PublicMethod0() {
+		meta.register_instance_method("inspect", new PublicMethod0() {
 			@Override
 			public IRubyObject call(IRubyObject receiver, RubyBlock block) {
 				return new RubyString(receiver.inspect());

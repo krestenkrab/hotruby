@@ -129,6 +129,13 @@ public class RubyClassString
 			}			
 		});
 		
+		meta.register_instance_method("%", new PublicMethod1() {
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject arg, RubyBlock block) {
+				return ((RubyString)receiver).format(arg);
+			}			
+		});
+		
 		meta.register_instance_method("*", new PublicMethod1() {
 
 			@Override

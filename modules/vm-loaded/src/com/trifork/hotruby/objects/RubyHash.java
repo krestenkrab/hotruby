@@ -135,6 +135,7 @@ public class RubyHash extends RubyBaseHash {
 		return this;
 	}
 
+	//TODO: ruby Hash uses key.eql? to test keys for equality
 	public IRubyObject has_key_p(IRubyObject arg, RubyBlock block) {
 		return bool(data.containsKey(arg));
 	}

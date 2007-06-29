@@ -16,6 +16,7 @@ import com.trifork.hotruby.objects.IRubyObject;
 import com.trifork.hotruby.objects.IRubyString;
 import com.trifork.hotruby.objects.RubyClass;
 import com.trifork.hotruby.objects.RubyException;
+import com.trifork.hotruby.objects.RubyFixnum;
 import com.trifork.hotruby.objects.RubyInteger;
 import com.trifork.hotruby.objects.RubyModule;
 import com.trifork.hotruby.objects.RubyProc;
@@ -52,6 +53,37 @@ public final class RubyModuleKernel extends RubyModule {
 			}
 			
 		});
+		
+		meta.register_instance_method("exit", new PublicMethodN() {
+
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject[] args, RubyBlock block) {
+				if (args.length == 0) {
+					return call(receiver, new RubyFixnum(0), (RubyBlock)null);
+				} else {
+					return call(receiver, args[0], (RubyBlock)null);
+				}
+			}
+			
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject arg, RubyBlock block) {
+				
+				int val;
+				
+				if (arg == LoadedRubyRuntime.TRUE) {
+					val = 0;
+				} else if (arg == LoadedRubyRuntime.FALSE) {
+					val = 1;
+				} else {					
+					val = RubyInteger.induced_from_allow_string(arg).intValue();
+				}
+				System.exit(val);
+				
+				return receiver; // make compiler happy
+			}
+		});
+		
+		
 		
 		meta.register_instance_method("public", new PublicMethodN() {
 

@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
+import com.trifork.hotruby.ast.ArgumentList;
 import com.trifork.hotruby.classes.RubyClassArray;
 import com.trifork.hotruby.marshal.UnmarshalStream;
 import com.trifork.hotruby.runtime.CallContext;
@@ -86,10 +89,15 @@ public class RubyArray extends RubyBaseArray {
 		return new RubyFixnum(size);
 	}
 
-	public RubyArray reverse() {
+	public RubyArray reverse(boolean modifySelf) {
 		IRubyObject[] out = new IRubyObject[size];
 		for (int i = 0; i < size; i++) {
 			out[i] = value[size - 1 - i];
+		}
+		if (modifySelf)
+		{
+			value = out;
+			return this;
 		}
 		return new RubyArray(out);
 	}
@@ -108,6 +116,29 @@ public class RubyArray extends RubyBaseArray {
 		}
 	}
 
+	//TODO handle negative index (wrap) and index > size (null-out)
+	public IRubyArray insert(IRubyObject[] rArgs) {
+		if (rArgs.length <= 1) return this;
+
+		IRubyObject[] result = new IRubyObject[size + rArgs.length-1];
+		
+		IRubyObject index = rArgs[0];
+		int indexOffset = RubyInteger.induced_from(index).intValue();
+		if (indexOffset < 0)
+		{
+			throw new NotImplementedException();
+		} else if (indexOffset >= 0)
+		{
+			System.arraycopy(value, 0, result, 0, indexOffset);
+			//first element in rArgs is the index-value
+			System.arraycopy(rArgs, 1, result, indexOffset, rArgs.length - 1);
+			System.arraycopy(value, indexOffset, result, (rArgs.length - 1) + indexOffset, size - indexOffset);
+			value = result;
+			size = value.length;
+		}
+		return this;
+	}
+	
 	public IRubyArray add(IRubyObject elem) {
 		ensure_capacity(size + 1);
 		value[size++] = elem;

@@ -569,6 +569,7 @@ public abstract class RubyRuntime {
 		arr2.add(newString("core.rb"));
 
 		getGlobal("$\"").set(arr2);
+		getGlobal("$!").set(getNil());
 		
 	}
 

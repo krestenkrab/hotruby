@@ -35,6 +35,20 @@ module Enumerable
      index = 0
      each { |val| yield(val, index); index += 1 }
    end
+  
+   def partition
+      result = []
+      true_arr = []
+      false_arr = []
+      each { |e| 
+        if yield(e)
+          true_arr << e
+        else
+          false_arr << e
+        end
+      }
+      [true_arr, false_arr]
+   end
 
 end
 
@@ -44,11 +58,13 @@ end
 class Array
 
 private
-   NOARG = Object.new
-
+   NOARG = Object.new    
+   
 public
 
    include Enumerable
+
+   alias :length :size
 
    def Array.[] (*args) 
       args
@@ -116,6 +132,13 @@ public
    def ===(val)
       each { |e| return true if e===val }
       false
+   end
+   
+   def slice (val, length=nil)
+   return self[](val, length) unless length==nil
+   self[](val)
+   
+    
    end
    
    def [] (val, length=nil)
@@ -187,13 +210,82 @@ public
       nil
     end
     
-    
     ##
     ## at is defined natively
     ##
    
-    
+   def concat (other)
+      other.each {|e| self << e}
+      self
+   end
    
+   def first(count = nil)
+      raise ArgumentError, "negative array size (or size too big)" if count != nil && count < 0
+      return  self.dup if count != nil && count >= length
+      
+      result = nil
+      if count == nil
+        result = self [0]
+      else
+        result = []
+        i = 0
+        while i < count && i < length
+          result << self[i]
+          i += 1
+        end
+      end
+      result
+   end
+   
+   def last (count = nil)
+      raise ArgumentError, "negative array size (or size too big)" if count != nil && count < 0
+      return  self.dup if count != nil && count >= length
+      
+      result = nil
+      if count == nil
+        result = self [length-1]
+      else
+        result = []
+        i = 0
+        while i < count && i < length
+          result << self[length-count+i]
+          i += 1
+        end
+      end
+      result
+   end
+   
+   def flatten
+      result = []
+      self.each {|e|
+        if (e.respond_to? :flatten)
+           result.concat(e.flatten)
+        else
+           result << e
+        end
+      }
+      result
+   end
+
+   def flatten!
+      i = 0
+      flattened = false
+      while (i < size)
+        if (self[i].respond_to? :flatten)
+          flattened = true 
+          arr = self[i].flatten
+          if arr.length <= 0
+            self.delete_at(i)
+          else
+            self[i] = arr.first
+            arr.last(arr.length - 1).each {|e| i += 1; self.insert(i, e)}
+          end
+        else
+          i += 1
+        end
+      end
+      self if flattened
+   end
 
    def map!
       idx = 0;
@@ -209,6 +301,20 @@ public
          yield self[idx]
          idx -= 1
       end
+   end
+   
+   def delete item
+      org_length = length
+      idx = 0;
+      while (idx  < size)
+         if self[idx] == item
+           delete_at(idx)
+         else
+           idx += 1
+         end
+      end
+      return yield if block_given?
+      item unless org_length == length
    end
    
    def delete_if
@@ -234,6 +340,10 @@ public
      result
    end
    
+   def to_s
+    self.join
+   end
+   
    def join(sep = $,)
       result = ""
       first = true
@@ -252,6 +362,17 @@ public
       else
         self.at(idx)
       end
+   end
+      
+   #works when Hash.has_key? is fixed. 
+   #now ["1", "2", "1"].uniq will return the same
+   def uniq
+     h = Hash.new
+     result = []
+     each { |e|
+      (result << e; h[e] = nil) unless h.has_key? e
+     }
+     result
    end
    
    def sort

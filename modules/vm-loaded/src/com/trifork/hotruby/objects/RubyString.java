@@ -8,10 +8,10 @@ import com.trifork.hotruby.runtime.LoadedRubyRuntime;
 import com.trifork.hotruby.runtime.MetaClass;
 import com.trifork.hotruby.runtime.Selector;
 public class RubyString 
-	extends RubyBaseString
+extends RubyBaseString
 {
 	String value;
-	
+
 	public RubyString(String value) {
 		this.value = value;
 		if (value == null) { throw new NullPointerException(); }
@@ -26,13 +26,13 @@ public class RubyString
 	public String asSymbol() {
 		return value;
 	}
-	
+
 	public static IRubyObject unmarshalFrom(UnmarshalStream stream) throws IOException {
 		RubyString string = new RubyString(stream.unmarshalString());
 		stream.registerLinkTarget(string);
 		return string;
 	}
-	
+
 	public String inspect() {
 		StringBuilder sb = new StringBuilder();
 		sb.append('"');
@@ -51,15 +51,15 @@ public class RubyString
 	}
 
 	static private char[] HEX_DIGIT = new char[] {
-			'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
+		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
 	};
-	
+
 	private static Selector to_str_sel;
-	
+
 	public static void init(MetaClass string_class) {
-			to_str_sel = LoadedRubyRuntime.instance.getSelector(string_class, "to_str");
+		to_str_sel = LoadedRubyRuntime.instance.getSelector(string_class, "to_str");
 	}
-	
+
 	private void unicode(StringBuilder sb, int ch) {
 		sb.append("\\u");
 		sb.append(HEX_DIGIT[(ch>>>12)&0xf]);
@@ -71,16 +71,16 @@ public class RubyString
 	public IRubyObject at_x(IRubyObject arg) {
 		if (arg instanceof RubyFixnum) {
 			int fix = ((RubyFixnum)arg).intValue();
-			
+
 			if (fix < 0) {
 				fix = value.length() + fix;
 			}
-			
+
 			if (fix < 0) { return LoadedRubyRuntime.NIL; }
 			if (fix >= value.length()) { return LoadedRubyRuntime.NIL; }
 			return new RubyFixnum(value.charAt(fix));
 		}
-		
+
 		throw new InternalError("not implemented");
 	}
 
@@ -93,28 +93,28 @@ public class RubyString
 		if (arg1 instanceof IRubyString) {
 			return (IRubyString) arg1;
 		}
-		
+
 		IRubyObject o = arg1.fast_to_str(to_str_sel);
 		if (o instanceof IRubyString) {
 			return (IRubyString) o;
 		}
-		
+
 		throw LoadedRubyRuntime.instance.newTypeError("object is not string");
 	}
 
 	@Override
 	public IRubyObject fast_cmp(IRubyObject arg, Selector selector) {
 		IRubyString s = RubyString.induce_from(arg);
-		
+
 		int val = value.compareTo(s.asSymbol());
-		
+
 		return new RubyFixnum(val);
 	}
-	
+
 	public IRubyObject op_eq2(IRubyObject arg) {
 		return bool(arg instanceof RubyString && ((RubyString)arg).value.equals(value));
 	}
-	
+
 	@Override
 	public IRubyObject fast_eq3(IRubyObject arg, Selector selector) {
 		return op_eq2(arg);
@@ -133,46 +133,46 @@ public class RubyString
 	}
 
 	public IRubyObject gsub(RubyRegexp regexp, RubyString string) {
-		
-		 Matcher m = regexp.pattern.matcher(value);
-		 StringBuffer sb = new StringBuffer();
-		 while (m.find()) {
-		     m.appendReplacement(sb, string.asSymbol());
-		 }
-		 m.appendTail(sb);
 
-		 return new RubyString(sb.toString());
+		Matcher m = regexp.pattern.matcher(value);
+		StringBuffer sb = new StringBuffer();
+		while (m.find()) {
+			m.appendReplacement(sb, string.asSymbol());
+		}
+		m.appendTail(sb);
+
+		return new RubyString(sb.toString());
 	}
-	
-	
+
+
 	public IRubyObject rb_sub(RubyRegexp regexp, RubyString string) {
-		
-		 Matcher m = regexp.pattern.matcher(value);
-		 StringBuffer sb = new StringBuffer();
-		 if (m.find()) {
-		     m.appendReplacement(sb, string.asSymbol());
-		 }
-		 m.appendTail(sb);
 
-		 return new RubyString(sb.toString());
+		Matcher m = regexp.pattern.matcher(value);
+		StringBuffer sb = new StringBuffer();
+		if (m.find()) {
+			m.appendReplacement(sb, string.asSymbol());
+		}
+		m.appendTail(sb);
+
+		return new RubyString(sb.toString());
 	}
-	
-	
+
+
 	public IRubyObject rb_sub_bang(RubyRegexp regexp, RubyString string) {
-		
-		 Matcher m = regexp.pattern.matcher(value);
-		 StringBuffer sb = new StringBuffer();
-		 if (m.find()) {
-		     m.appendReplacement(sb, string.asSymbol());
-		 }
-		 m.appendTail(sb);
 
-		 value = sb.toString();
-		 return this;
+		Matcher m = regexp.pattern.matcher(value);
+		StringBuffer sb = new StringBuffer();
+		if (m.find()) {
+			m.appendReplacement(sb, string.asSymbol());
+		}
+		m.appendTail(sb);
+
+		value = sb.toString();
+		return this;
 	}
-	
-	
-	
+
+
+
 	@Override
 	public IRubyObject fast_eq2(IRubyObject arg, Selector selector) {
 		return op_eq2(arg);
@@ -181,7 +181,7 @@ public class RubyString
 	public IRubyObject split_by_string(RubyString string, RubyFixnum fixnum) {
 		String sep = string.asSymbol();
 		int lim = fixnum.intValue();
-		
+
 		if (" ".equals(sep)) {
 			String val = value.trim();
 			String[] splitted = val.split("\\s+", lim);
@@ -192,34 +192,34 @@ public class RubyString
 			return result;
 		} 
 
-		 Matcher m = Pattern.compile("(\\[|\\]|\\(|\\)|\\.|\\|)").matcher(sep);
-		 
-		 StringBuffer sb = new StringBuffer();
-		 while (m.find()) {
-			 sb.append('\\');
-		     m.appendReplacement(sb, "$1");
-		 }
-		 m.appendTail(sb);
+		Matcher m = Pattern.compile("(\\[|\\]|\\(|\\)|\\.|\\|)").matcher(sep);
 
-			String val = value;
-			String[] splitted = val.split(sb.toString(), lim);
-			IRubyArray result = getRuntime().newArray();
-			for (int i = 0; i < splitted.length; i++) {
-				result.add(new RubyString(splitted[i]));
-			}
-			return result;
-		 
+		StringBuffer sb = new StringBuffer();
+		while (m.find()) {
+			sb.append('\\');
+			m.appendReplacement(sb, "$1");
+		}
+		m.appendTail(sb);
+
+		String val = value;
+		String[] splitted = val.split(sb.toString(), lim);
+		IRubyArray result = getRuntime().newArray();
+		for (int i = 0; i < splitted.length; i++) {
+			result.add(new RubyString(splitted[i]));
+		}
+		return result;
+
 	}
 
 	public IRubyObject op_mult(IRubyObject arg) {
 		RubyInteger ri = RubyInteger.induced_from(arg);
 		int val = ri.intValue();
-		
+
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < val; i++) {
 			sb.append(this.value);
 		}
-		
+
 		return new RubyString(sb.toString());
 	}
 
@@ -259,5 +259,35 @@ public class RubyString
 	public IRubyObject downcase_bang() {
 		value = value.toLowerCase();
 		return this;
+	}
+
+	public IRubyObject format(IRubyObject arg) {
+		Object[] args = null;
+		if (arg instanceof IRubyArray)
+		{
+			RubyArray arr = (RubyArray) arg;
+			args = new Object[arr.int_size()];
+			for (int i = 0; i < args.length; i++) {
+				args[i] = to_java(arr.int_at(i));
+			}
+		} else {
+			args = new Object[] { to_java(arg) };
+		}
+		return new RubyString(String.format(value, args));
+	}
+
+	/*
+	 * TODO: There must be a better way to get the underlying java-object	 
+	 */ 
+	private Object to_java(IRubyObject arg)
+	{
+		if (arg instanceof IRubyString)
+		{
+			return ((RubyString)RubyString.induce_from(arg)).value;
+		} else if (arg instanceof IRubyInteger)
+		{
+			return ((RubyInteger) RubyInteger.induced_from(arg)).intValue();
+		}
+		return null;
 	}
 }
