@@ -29,3 +29,10 @@ class IO
    end
 
 end
+
+
+class Object
+  def puts(*vals) 
+    STDOUT.puts(vals)
+  end
+end

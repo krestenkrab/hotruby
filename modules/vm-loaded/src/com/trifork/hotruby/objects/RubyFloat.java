@@ -176,4 +176,8 @@ public class RubyFloat extends RubyBaseFloat {
 		}
 	}
 
+	public double doubleValue() {
+		return value;
+	}
+
 }

@@ -483,7 +483,7 @@ public class MetaModule implements CallContext {
 		return false;
 	}
 
-	protected RubyMethod lookup_instance_method(String name, boolean recurse) {
+	public RubyMethod lookup_instance_method(String name, boolean recurse) {
 		RubyMethod rm = instance_methods.get(name);
 		if (rm != null) {
 			return rm;
@@ -764,6 +764,10 @@ public class MetaModule implements CallContext {
 
 	public Collection<String> public_instance_methods(boolean include_super) {
 		return instance_methods.keySet();
+	}
+
+	public boolean const_definedp(String name) {
+		return find_constant(name, false) != null;
 	}
 
 }

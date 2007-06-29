@@ -102,6 +102,15 @@ public final class RubyModuleKernel extends RubyModule {
 			}});
 		
 		
+		meta.register_instance_method("protected", new PublicMethodN() {
+
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject[] args, RubyBlock block) {
+				// todo: implement
+				return LoadedRubyRuntime.NIL;
+			}});
+		
+		
 		meta.register_instance_method("breakpoint", new PublicMethod0() {
 
 			@Override

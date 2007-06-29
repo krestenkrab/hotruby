@@ -7,6 +7,7 @@ import com.trifork.hotruby.callable.PublicMethod1;
 import com.trifork.hotruby.callable.PublicMethod2;
 import com.trifork.hotruby.objects.IRubyObject;
 import com.trifork.hotruby.objects.RubyFixnum;
+import com.trifork.hotruby.objects.RubyFloat;
 import com.trifork.hotruby.objects.RubyString;
 import com.trifork.hotruby.objects.RubyTime;
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
@@ -80,6 +81,16 @@ public class RubyClassTime
 				return ((RubyTime)receiver).subtract(arg);
 			}
 		});
+		
+		meta.register_instance_method("to_f", 
+				new PublicMethod0() {
+				@Override
+				public IRubyObject call(IRubyObject receiver, RubyBlock block) {
+					return ((RubyTime) receiver).to_f();
+				}
+			});
+
+
 	}
 	
 }

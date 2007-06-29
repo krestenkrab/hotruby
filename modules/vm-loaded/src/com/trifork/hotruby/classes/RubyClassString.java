@@ -28,6 +28,13 @@ public class RubyClassString
 
 		call_cmp = LoadedRubyRuntime.instance.getSelector(meta, "<=>");
 		
+		meta.register_instance_method("dup", new PublicMethod0() {
+
+			@Override
+			public IRubyObject call(IRubyObject receiver, RubyBlock block) {
+				return new RubyString((receiver.asSymbol()));
+			}});
+		
 		meta.register_instance_method("split_by_string", new PublicMethod2() {
 			@Override
 			public IRubyObject call(IRubyObject receiver, IRubyObject arg1, IRubyObject arg2, RubyBlock block) {
@@ -38,6 +45,18 @@ public class RubyClassString
 			@Override
 			public IRubyObject call(IRubyObject receiver, IRubyObject arg1, IRubyObject arg2, RubyBlock block) {
 				return ((RubyString)receiver).gsub((RubyRegexp)arg1, (RubyString)arg2);
+			}
+			
+		});
+		
+		meta.register_instance_method("gsub!", new PublicMethod2() {
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject arg1, RubyBlock block) {
+				return ((RubyString)receiver).gsub_bang2((RubyRegexp)arg1, block);
+			}
+			
+			public IRubyObject call(IRubyObject receiver, IRubyObject arg1, IRubyObject arg2, RubyBlock block) {
+				return ((RubyString)receiver).gsub_bang((RubyRegexp)arg1, (RubyString)arg2);
 			}
 			
 		});

@@ -432,6 +432,24 @@ end
   
 class Module
   
+  def module_function (*names)
+    anon = nil
+    if const_defined? :MODULE_FUNS
+       anon = self.const_get(:MODULE_FUNS)
+    else
+       const_set (:MODULE_FUNS, anon = Class.new(Object))
+    end
+    
+    anon.extend(self)
+    
+    names.each {|name|
+      sname = name.to_s
+      script = "def self.#{sname}(*args, &block) MODULE_FUNS.#{sname}(*args, &block) end"
+      module_eval script;
+    }
+    nil
+  end
+  
 
   def attr_reader (*names)
     names.each {|name|
@@ -487,3 +505,25 @@ end
 require 'numeric.rb'
 require 'integer.rb'
 require 'string.rb'
+
+
+class Process
+  class Tms
+    def utime 
+      0.0
+    end
+    def stime 
+      0.0
+    end
+    def cutime 
+      0.0
+    end
+    def cstime 
+      0.0
+    end
+  end
+
+  def self.times
+    Tms.new
+  end
+end

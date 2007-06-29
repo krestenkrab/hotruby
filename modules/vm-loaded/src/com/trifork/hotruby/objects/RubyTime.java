@@ -16,6 +16,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
 import com.trifork.hotruby.runtime.RaisedException;
+import com.trifork.hotruby.runtime.Selector;
 
 public class RubyTime extends RubyBaseTime {
 	private static final String[] MONTH_VALUES = 
@@ -175,5 +176,14 @@ public class RubyTime extends RubyBaseTime {
 			}
 		}
 		return RubyFixnum.induced_from_allow_string(monthArg).intValue();
+	}
+	
+	@Override
+	public IRubyObject fast_to_f(Selector selector) {
+		return to_f();
+	}
+
+	public IRubyObject to_f() {
+		return new RubyFloat(when * 1.0 / 1000.0);
 	}
 }

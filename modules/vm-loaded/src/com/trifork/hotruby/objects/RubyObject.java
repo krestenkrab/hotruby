@@ -11,13 +11,13 @@ import com.trifork.hotruby.runtime.RubyMethod;
 import com.trifork.hotruby.runtime.RubyRuntime;
 import com.trifork.hotruby.runtime.Selector;
 import com.trifork.hotruby.runtime.SingletonState;
-import com.trifork.hotruby.util.L4RootManager;
+//import com.trifork.hotruby.util.L4RootManager;
 
 public class RubyObject extends RubyBaseObject implements IRubyObject {
 	SingletonState singleton;
 	
 	public RubyObject() {
-		RubyModuleObjectSpace.register(this);
+		// RubyModuleObjectSpace.register(this);
 	}
 
 	public boolean isFrozen() {

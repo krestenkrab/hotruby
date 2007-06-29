@@ -6,6 +6,12 @@ import java.util.regex.Pattern;
 import com.trifork.hotruby.marshal.UnmarshalStream;
 import com.trifork.hotruby.runtime.LoadedRubyRuntime;
 import com.trifork.hotruby.runtime.MetaClass;
+import com.trifork.hotruby.runtime.NonLocalBreak;
+import com.trifork.hotruby.runtime.NonLocalJump;
+import com.trifork.hotruby.runtime.NonLocalNext;
+import com.trifork.hotruby.runtime.NonLocalRedo;
+import com.trifork.hotruby.runtime.NonLocalReturn;
+import com.trifork.hotruby.runtime.RubyBlock;
 import com.trifork.hotruby.runtime.Selector;
 public class RubyString 
 extends RubyBaseString
@@ -145,6 +151,46 @@ extends RubyBaseString
 	}
 
 
+	public IRubyObject gsub_bang(RubyRegexp regexp, RubyString string) {
+		
+		 Matcher m = regexp.pattern.matcher(value);
+		 StringBuffer sb = new StringBuffer();
+		 while (m.find()) {
+		     m.appendReplacement(sb, string.asSymbol());
+		 }
+		 m.appendTail(sb);
+
+		 this.value = sb.toString();
+		 return this;
+	}
+	
+	public IRubyObject gsub_bang2(RubyRegexp regexp, RubyBlock block) {
+		
+		 Matcher m = regexp.pattern.matcher(value);
+		 StringBuffer sb = new StringBuffer();
+		 while (m.find()) {
+			 
+			 for (int i = 0; i < m.groupCount()+1; i++) {			 
+			 String group = m.group(i);
+			 getRuntime().getGlobal("$"+i).set(new RubyString(group));
+			 }
+			 IRubyObject str;
+			try {
+				str = block.call();
+			} catch (NonLocalReturn e) {
+				throw e;
+			} catch (NonLocalJump e) {
+				throw getRuntime().newLocalJumpError("non-local exit", e);
+			}
+		     m.appendReplacement(sb, str.fast_to_str(to_str_sel).asSymbol());
+		 }
+		 m.appendTail(sb);
+
+		 this.value = sb.toString();
+		 return this;
+	}
+	
+	
 	public IRubyObject rb_sub(RubyRegexp regexp, RubyString string) {
 
 		Matcher m = regexp.pattern.matcher(value);
@@ -287,6 +333,9 @@ extends RubyBaseString
 		} else if (arg instanceof IRubyInteger)
 		{
 			return ((RubyInteger) RubyInteger.induced_from(arg)).intValue();
+		} else if (arg instanceof IRubyFloat)
+		{
+			return ((RubyFloat) arg).doubleValue();
 		}
 		return null;
 	}

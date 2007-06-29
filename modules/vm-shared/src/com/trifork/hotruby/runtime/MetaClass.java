@@ -118,7 +118,7 @@ public final class MetaClass extends MetaModule {
 	}
 	
 	@Override
-	protected RubyMethod lookup_instance_method(String name, boolean recurse) {
+	public RubyMethod lookup_instance_method(String name, boolean recurse) {
 		RubyMethod m = super.lookup_instance_method(name, recurse);
 		if (m == null) {
 			if (super_meta == null) {

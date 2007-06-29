@@ -17,7 +17,7 @@ public class Main {
 		// For quick'n'dirty testing, put "if (true)" here
 		if (true)
 		{
-			IRubyObject obj = rr.load("rb/test2/test_array.rb", rr.getObject());
+			IRubyObject obj = rr.load("rb/bench_method_dispatch.rb", rr.getObject());
 			rr.end_runtime();
 //			IRubyObject obj = rr.load("rb/oles_test.rb", rr.getObject());
 //			IRubyObject obj = rr.load("rb/qnd.rb", rr.getObject());

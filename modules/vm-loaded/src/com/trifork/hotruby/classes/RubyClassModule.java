@@ -22,6 +22,7 @@ import com.trifork.hotruby.runtime.MetaClass;
 import com.trifork.hotruby.runtime.MetaModule;
 import com.trifork.hotruby.runtime.PublicMethodN;
 import com.trifork.hotruby.runtime.RubyBlock;
+import com.trifork.hotruby.runtime.RubyMethod;
 import com.trifork.hotruby.runtime.ThreadState;
 
 public class RubyClassModule extends RubyBaseClassModule {
@@ -29,7 +30,27 @@ public class RubyClassModule extends RubyBaseClassModule {
 	public void init(MetaClass meta) {
 		super.init(meta);
 
-		meta.register_module_method("name", new PublicMethod0() {
+		meta.register_instance_method("module_function", new PublicMethodN() {
+
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject[] args, RubyBlock block) {
+
+				RubyModule mod = (RubyModule)receiver;
+				MetaModule mm = mod.get_singleton_meta_module();
+				
+				for (IRubyObject nam : args) {				
+					String name = nam.asSymbol();					
+					RubyMethod m = mm.lookup_instance_method(name, false);
+					if (m != null) {
+						mm.register_module_method(name, m);
+					}
+				}
+
+				return LoadedRubyRuntime.NIL;
+			}
+		} );
+		
+		meta.register_instance_method("name", new PublicMethod0() {
 			@Override
 			public IRubyObject call(IRubyObject receiver, RubyBlock block) {
 				return getRuntime().newString(((RubyModule)receiver).get_meta_module().getName());
@@ -137,6 +158,15 @@ public class RubyClassModule extends RubyBaseClassModule {
 				IRubySymbol sym = (IRubySymbol) arg;
 				return ((IRubyModule) receiver).get_meta_module()
 						.getConstantAccessor(sym.asSymbol(), null).get();
+			}
+		});
+
+		meta.register_instance_method("const_defined?", new PublicMethod1() {
+			@Override
+			public IRubyObject call(IRubyObject receiver, IRubyObject arg,
+					RubyBlock block) {
+				IRubySymbol sym = (IRubySymbol) arg;
+				return bool(((IRubyModule) receiver).get_meta_module().const_definedp(sym.asSymbol()));
 			}
 		});
 
